@@ -1,0 +1,6 @@
+{
+  "name": "MultiPlus Academy",
+  "description": "Premium institutional website of MultiPlus Academy, featuring English for the Legal Field in Angola.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

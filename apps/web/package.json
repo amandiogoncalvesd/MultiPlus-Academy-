@@ -1,0 +1,27 @@
+{
+  "name": "multiplus-web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@multiplus/ui": "workspace:*",
+    "@multiplus/types": "workspace:*",
+    "@multiplus/utils": "workspace:*",
+    "framer-motion": "^11.0.0",
+    "lucide-react": "^0.546.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@multiplus/ui",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "dependencies": {
+    "react": "^19.0.0",
+    "lucide-react": "^0.546.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "typescript": "^5.0.0"
+  }
+}

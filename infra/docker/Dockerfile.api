@@ -1,0 +1,25 @@
+# Step 1: Builder stage
+FROM node:20-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+FROM base AS builder
+WORKDIR /app
+COPY . .
+RUN pnpm install --frozen-lockfile
+
+# Generate Prisma Engine Client
+RUN pnpm --filter multiplus-api prisma:generate
+RUN pnpm --filter multiplus-api build
+
+# Step 2: NestJS Runner
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app /app
+
+EXPOSE 4000
+ENV PORT=4000
+
+CMD ["pnpm", "--filter", "multiplus-api", "start"]
