@@ -22,35 +22,6 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Ready-to-use professional personas
-  const personas = [
-    {
-      name: 'Dr. António Ferreira Carvalho',
-      email: 'antonio@advogados.ao',
-      role: 'STUDENT' as UserRole,
-      roleName: 'Aluno de Elite',
-      avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150',
-      description: 'Advogado júnior • Vê o streak, reproduz videoaulas com watermark, escreve notas com timestamp e descarrega certificado com QR Code.',
-    },
-    {
-      name: 'Prof. Esmeralda Bruno Sumbelelo',
-      email: 'esmeralda@gmail.com',
-      role: 'INSTRUCTOR' as UserRole,
-      roleName: 'Diretora Pedagógica',
-      avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150',
-      description: 'Diretora Letiva • Gere o currículo do curso, acompanha o progresso dos alunos e aprova ou emite certificados de excelência.',
-    },
-    {
-      name: 'Dra. Isabel Nascimento',
-      email: 'isabel@empresas.ao',
-      role: 'ADMIN' as UserRole,
-      roleName: 'Administradora Executiva',
-      avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=150&h=150',
-      description: 'Gestora Executiva • Acede as estatísticas corporativas, KPIs do Huambo, gráficos SVG interativos de receita e tabelas de usuários.',
-    },
-  ];
-
-  // Load database or initialize
   const handleAuth = async (e: FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -71,149 +42,26 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
 
         const fullName = `${firstName.trim()} ${lastName.trim()}`;
 
-        try {
-          // Attempt real Supabase sign up
-          await signUp(email.trim(), password, fullName, dbRole);
-          // Automate sign-in right after registration
-          const authUser = await signIn(email.trim(), password);
-          routeAccordingToRole(authUser.role);
-        } catch (err: any) {
-          console.warn('Real Supabase SignUp failed, using dry-run simulation fallback:', err);
-          
-          const localGrads = localStorage.getItem('multiplus_academic_db');
-          let db: any = {};
-          if (localGrads) {
-            try { db = JSON.parse(localGrads); } catch (e) {}
-          }
-          if (!db.users) db.users = [];
-
-          const userExists = db.users.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
-          if (userExists) {
-            setErrorMsg('Este correio eletrónico já está registado.');
-            setLoading(false);
-            return;
-          }
-
-          const newUser: User = {
-            id: 'user_' + Date.now(),
-            email: email.trim(),
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
-            role: userRole,
-            phone: mobilePhone.trim(),
-            status: 'ACTIVE',
-            streak: 3,
-            longestStreak: 5,
-            totalHoursLearned: 4,
-            avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150&h=150'
-          };
-
-          db.users.push(newUser);
-          localStorage.setItem('multiplus_academic_db', JSON.stringify(db));
-          setCurrentUser(newUser);
-          routeAccordingToRole(newUser.role);
-        }
+        // Attempt real Supabase sign up
+        await signUp(email.trim(), password, fullName, dbRole);
+        // Automate sign-in right after registration
+        const authUser = await signIn(email.trim(), password);
+        routeAccordingToRole(authUser.role);
       } else {
         // Login Flow
-        try {
-          const authUser = await signIn(email.trim(), password);
-          routeAccordingToRole(authUser.role);
-        } catch (err: any) {
-          console.warn('Real Supabase login unsuccessful, falling back to local simulation:', err);
-
-          const localGrads = localStorage.getItem('multiplus_academic_db');
-          let db: any = {};
-          if (localGrads) {
-            try { db = JSON.parse(localGrads); } catch (e) {}
-          }
-          if (!db.users) db.users = [];
-
-          const loggedUser = db.users?.find(
-            (u: any) => u.email.toLowerCase() === email.toLowerCase()
-          );
-
-          if (loggedUser) {
-            if (loggedUser.status === 'SUSPENDED') {
-              setErrorMsg('A sua conta está momentaneamente suspensa pela administração.');
-              setLoading(false);
-              return;
-            }
-            setCurrentUser(loggedUser);
-            routeAccordingToRole(loggedUser.role);
-          } else {
-            // Check against default personas
-            const personaMatch = personas.find(p => p.email.toLowerCase() === email.toLowerCase());
-            if (personaMatch) {
-              const personaUser: User = {
-                id: 'per_' + personaMatch.role.toLowerCase(),
-                email: personaMatch.email,
-                firstName: personaMatch.name.split(' ')[0],
-                lastName: personaMatch.name.split(' ').slice(1).join(' '),
-                role: personaMatch.role,
-                status: 'ACTIVE',
-                streak: 4,
-                longestStreak: 12,
-                totalHoursLearned: 18,
-                avatarUrl: personaMatch.avatarUrl,
-              };
-
-              db.users.push(personaUser);
-              localStorage.setItem('multiplus_academic_db', JSON.stringify(db));
-
-              setCurrentUser(personaUser);
-              routeAccordingToRole(personaMatch.role);
-            } else {
-              setErrorMsg(err.message || 'Incorreto. Experimente um dos botões de Login Instantâneo abaixo.');
-            }
-          }
+        if (!email.trim() || !password.trim()) {
+          setErrorMsg('Preencha o correio eletrónico e palavra-passe.');
+          setLoading(false);
+          return;
         }
+        const authUser = await signIn(email.trim(), password);
+        routeAccordingToRole(authUser.role);
       }
     } catch (e: any) {
-      setErrorMsg(e?.message || 'Erro inesperado.');
+      setErrorMsg(e?.message || 'Erro inesperado durante a autenticação.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handlePersonaLogin = (persona: typeof personas[0]) => {
-    setLoading(true);
-    setErrorMsg('');
-
-    setTimeout(() => {
-      setLoading(false);
-      const personaUser: User = {
-        id: 'per_' + persona.role.toLowerCase(),
-        email: persona.email,
-        firstName: persona.name.split(' ')[1] || persona.name.split(' ')[0], // Get first name properly or Dr/Prof
-        lastName: persona.name.split(' ').slice(2).join(' ') || persona.name.split(' ').slice(1).join(' '),
-        role: persona.role,
-        status: 'ACTIVE',
-        streak: persona.role === 'STUDENT' ? 5 : 0,
-        longestStreak: 15,
-        totalHoursLearned: persona.role === 'STUDENT' ? 24 : 0,
-        avatarUrl: persona.avatarUrl,
-        phone: '+244 923 456 789',
-        whatsapp: '+244 956 449 084'
-      };
-
-      // Persist to sync portals
-      const localGrads = localStorage.getItem('multiplus_academic_db');
-      let db: any = {};
-      if (localGrads) {
-        try { db = JSON.parse(localGrads); } catch (e) {}
-      }
-      if (!db.users) db.users = [];
-      const existsIndex = db.users.findIndex((u: any) => u.email.toLowerCase() === persona.email.toLowerCase());
-      if (existsIndex > -1) {
-        db.users[existsIndex] = { ...db.users[existsIndex], ...personaUser };
-      } else {
-        db.users.push(personaUser);
-      }
-      localStorage.setItem('multiplus_academic_db', JSON.stringify(db));
-
-      setCurrentUser(personaUser);
-      routeAccordingToRole(persona.role);
-    }, 500);
   };
 
   const routeAccordingToRole = (role: UserRole) => {
@@ -238,7 +86,7 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
             <div className="space-y-6 text-left">
               <div className="flex flex-col items-center text-center pb-4 border-b border-gray-100">
                 <img
-                  src="https://res.cloudinary.com/deeki0eou/image/upload/v1780311906/logo-com-fundo-branco_rt0kng.jpg"
+                  src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520965/multiplus-academy-logo-com-fundo-branco_wy9sw4.jpg"
                   alt="MultiPlus Academy"
                   className="h-20 w-auto object-contain rounded-xl mb-4 p-1 border border-gray-100 bg-white"
                 />
@@ -347,7 +195,7 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
                   {loading ? (
                     <>
                       <RefreshCw size={14} className="animate-spin" />
-                      A Autenticar de Forma Segura...
+                      A Autenticar no Supabase Auth...
                     </>
                   ) : (
                     <>
@@ -375,37 +223,44 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
           </div>
         </div>
 
-        {/* Right Column: Persona Hub */}
+        {/* Right Column: Informação Institucional */}
         <div className="lg:col-span-6 flex flex-col justify-center space-y-6 text-left">
           <div className="space-y-2">
-            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C]">Visualizador Rápido</span>
-            <h2 className="text-3xl font-serif font-black text-[#0A2E5D] leading-tight">Hub de Personas Académicas</h2>
+            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C]">Portal Académico</span>
+            <h2 className="text-3xl font-serif font-black text-[#0A2E5D] leading-tight">MultiPlus Academy LMS</h2>
             <p className="text-sm text-gray-500 leading-relaxed font-sans">
-              Para validar o website, as videoaulas estruturadas e as métricas do painel, escolha um perfil e aceda de forma imediata à respetiva área integral sem registos manuais:
+              O portal institucional de ensino letivo para juristas e profissionais de elite em Angola. Através de uma autenticação robusta integrada ao Supabase, garantimos privacidade de dados e conformidade pedagógica total.
             </p>
           </div>
 
           <div className="space-y-4">
-            {personas.map((persona, pIdx) => (
+            {[
+              {
+                title: 'Acompanhamento de Elite',
+                desc: 'Acompanhe as suas aulas assistidas, faça anotações em tempo real e descarregue materiais exclusivos anexados.',
+                icon: <GraduationCap size={18} className="text-[#C89B3C]" />
+              },
+              {
+                title: 'Secretaria Digital',
+                desc: 'Gerencie o seu histórico escolar, consulte as ementas dos cursos e comprove as suas notas diretamente online.',
+                icon: <FileCheck size={18} className="text-[#C89B3C]" />
+              },
+              {
+                title: 'Certificados Verificáveis',
+                desc: 'Ao concluir as disciplinas, obtenha certificados com código único de validação e verificação criptográfica por QR Code.',
+                icon: <ShieldCheck size={18} className="text-[#C89B3C]" />
+              }
+            ].map((feature, idx) => (
               <div
-                key={pIdx}
-                onClick={() => handlePersonaLogin(persona)}
-                className="bg-white hover:border-[#C89B3C]/35 border border-gray-150 p-5 rounded-2xl cursor-pointer transition-all hover:translate-x-1 shadow-sm flex items-center gap-4 text-left"
+                key={idx}
+                className="bg-white border border-gray-150 p-5 rounded-2xl shadow-sm flex items-start gap-4 text-left"
               >
-                <img
-                  src={persona.avatarUrl}
-                  alt={persona.name}
-                  className="w-14 h-14 rounded-full border-2 border-[#C89B3C]/20 shadow-sm object-cover object-top"
-                />
-                <div className="flex-1 space-y-1 overflow-hidden">
-                  <div className="flex items-center justify-between">
-                    <span className="font-serif font-black text-[#0A2E5D] text-sm truncate">{persona.name}</span>
-                    <span className="text-[9px] font-mono font-semibold uppercase px-2 py-0.5 rounded bg-[#C89B3C]/10 text-[#C89B3C] tracking-wide whitespace-nowrap">
-                      {persona.roleName}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-gray-400 font-mono tracking-wide">{persona.email}</p>
-                  <p className="text-xs text-gray-500 leading-normal font-sans line-clamp-2">{persona.description}</p>
+                <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 flex-shrink-0">
+                  {feature.icon}
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-serif font-black text-[#0A2E5D] text-sm">{feature.title}</h4>
+                  <p className="text-xs text-gray-500 leading-relaxed font-sans">{feature.desc}</p>
                 </div>
               </div>
             ))}
@@ -414,7 +269,7 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
           <div className="p-4 bg-[#0A2E5D]/5 border border-[#0A2E5D]/10 rounded-2xl flex items-start gap-2 text-xs text-gray-500 leading-normal">
             <Key size={14} className="text-[#C89B3C] mt-0.5 flex-shrink-0" />
             <span>
-              <strong>Padrão de Autenticação:</strong> Os acessos de simulação estão protegidos localmente de forma estrita, retendo as suas notas, streaks diários e logs de auditoria.
+              <strong>Padrão de Segurança Estrito:</strong> A plataforma utiliza criptografia ponta a ponta e Row Level Security (RLS) PostgreSQL para manter os dados de estudantes e formadores 100% privados e em conformidade corporativa.
             </span>
           </div>
 

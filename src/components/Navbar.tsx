@@ -92,7 +92,7 @@ export default function Navbar({
           <div className="flex-shrink-0 cursor-pointer" onClick={() => navigateTo('home')}>
             <div className="flex items-center gap-3">
               <img
-                src="https://res.cloudinary.com/deeki0eou/image/upload/v1780728240/logotipo-dourado-sem-fundo_abouxm.png"
+                src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png"
                 alt="MultiPlus Academy"
                 className="h-14 w-auto object-contain transition-transform duration-300 hover:scale-[1.03]"
               />

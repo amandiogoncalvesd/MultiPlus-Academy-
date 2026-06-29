@@ -1,0 +1,37 @@
+# Supabase CLI configuration file for MultiPlus Academy
+
+project_id = "multiplus-academy"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+
+[db.pooler]
+port = 54329
+enabled = false
+
+[auth]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+port = 54323
+
+[studio]
+enabled = true
+port = 54321
+
+[inbucket]
+enabled = true
+port = 54325
+
+[analytics]
+enabled = false

@@ -2,6 +2,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { motion } from 'motion/react';
 import { PageId } from '../types';
 import { CheckCircle, AlertCircle, ArrowLeft, Award, FileCheck, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { academicService } from '../services/supabase/academicService';
 
 interface VerifyCertificatePanelProps {
   setCurrentPage: (page: PageId) => void;
@@ -17,56 +18,48 @@ export default function VerifyCertificatePanel({
   const [code, setCode] = useState(verificationCode || '');
   const [result, setResult] = useState<any>(null);
   const [searched, setSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Default certificates for instant verification matching our database
-  const getMockCertificate = (searchCode: string) => {
-    const formatted = searchCode.trim().toUpperCase();
-    if (formatted.startsWith('MPA-2026-ANTONIO') || formatted === 'MPA-2026-001') {
-      return {
-        certificateNumber: 'MPA-2026-001 / ANTONIO',
-        courseName: 'English for the Legal Field in Angola',
-        recipientName: 'Dr. António Ferreira Carvalho',
-        completionDate: '2026-06-01',
-        instructorName: 'Esmeralda Bruno Sumbelelo',
-        finalGrade: '92/100',
-        validUntil: 'Sem limite',
-        isValid: true,
-        institution: 'MultiPlus Academy (Huambo, Angola)',
-        verificationCode: 'MPA-2026-001',
-      };
+  const verifyCertificate = async (searchCode: string) => {
+    setLoading(true);
+    setSearched(true);
+    try {
+      const match = await academicService.verifyCertificate(searchCode);
+      if (match) {
+        setResult({
+          certificateNumber: match.codigo_validacao,
+          courseName: match.course?.titulo || 'Curso Jurídico',
+          recipientName: match.student?.nome_completo || 'Aluno MultiPlus',
+          completionDate: match.emitido_em ? match.emitido_em.slice(0, 10) : '2026-06-01',
+          instructorName: 'Esmeralda Bruno Sumbelelo',
+          finalGrade: match.final_grade || '92/100',
+          validUntil: 'Sem limite',
+          isValid: true,
+          institution: 'MultiPlus Academy (Huambo, Angola)',
+          verificationCode: match.codigo_validacao,
+        });
+      } else {
+        setResult(null);
+      }
+    } catch (err) {
+      console.error('Network verify failed:', err);
+      setResult(null);
+    } finally {
+      setLoading(false);
     }
-    
-    // Check local storage for dynamic ones
-    const localGrads = localStorage.getItem('multiplus_academic_db');
-    if (localGrads) {
-      try {
-        const parsed = JSON.parse(localGrads);
-        const cert = parsed.certificates?.find((c: any) => c.verificationCode === formatted || c.certificateNumber === formatted);
-        if (cert) return cert;
-      } catch (e) {}
-    }
-    
-    return null;
   };
 
   useEffect(() => {
     if (verificationCode) {
       setCode(verificationCode);
-      const res = getMockCertificate(verificationCode);
-      setResult(res);
-      setSearched(true);
+      verifyCertificate(verificationCode);
     }
   }, [verificationCode]);
 
   const handleVerify = (e: FormEvent) => {
     e.preventDefault();
     if (!code.trim()) return;
-    setSearched(true);
-    const res = getMockCertificate(code);
-    setResult(res);
-    if (res) {
-      setVerificationCode(res.verificationCode || code);
-    }
+    verifyCertificate(code);
   };
 
   return (

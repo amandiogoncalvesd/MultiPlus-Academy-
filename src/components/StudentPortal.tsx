@@ -3,6 +3,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { PageId, User } from '../types';
 import { jsPDF } from 'jspdf';
 import { useAuth } from './auth/AuthProvider';
+import { supabase } from '../lib/supabase/client';
+import { userService } from '../services/supabase/userService';
+import { academicService } from '../services/supabase/academicService';
+
+
 import { 
   Award, 
   Clock, 
@@ -72,32 +77,25 @@ export default function StudentPortal({
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Streak simulation helper
-  const [streakCount, setStreakCount] = useState(currentUser?.streak || 5);
-  const hours = currentUser?.totalHoursLearned || 24;
+  const [streakCount, setStreakCount] = useState(0);
+  const hours = 0;
 
   // Active Video course selections
   const [activeLessonIdx, setActiveLessonIdx] = useState(0);
   const [videoPlaybackSpeed, setVideoPlaybackSpeed] = useState(1);
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
-  const [videoPlaySec, setVideoPlaySec] = useState(42);
+  const [videoPlaySec, setVideoPlaySec] = useState(0);
   const [randomWatermark, setRandomWatermark] = useState({ top: '30%', left: '40%' });
 
   // Student notebook
-  const [notesList, setNotesList] = useState<{ id: string; timestamp: number; text: string; date: string }[]>([
-    {
-      id: 'n_1',
-      timestamp: 85,
-      text: 'Código Civil Angolano no Art. 230 prevê interpretações severas sobre cláusulas gerais vagas.',
-      date: '2026-06-03 14:20'
-    }
-  ]);
+  const [notesList, setNotesList] = useState<{ id: string; timestamp: number; text: string; date: string }[]>([]);
   const [newNoteInput, setNewNoteInput] = useState('');
 
   // Editable Profile Form state
   const [profileForm, setProfileForm] = useState({
     firstName: currentUser?.firstName || '',
     lastName: currentUser?.lastName || '',
-    phone: currentUser?.phone || '+244 923 000 000',
+    phone: currentUser?.phone || '',
     email: currentUser?.email || '',
     country: 'Angola',
     language: 'Português / Inglês',
@@ -109,11 +107,70 @@ export default function StudentPortal({
   const [isGoogleSynced, setIsGoogleSynced] = useState(false);
 
   // Simulated notifications list
-  const [notifications, setNotifications] = useState([
-    { id: 'not_1', text: 'Prof. Esmeralda enviou materiais de isenção de responsabilidades', read: false },
-    { id: 'not_2', text: 'Aula ao vivo agendada para Terça-Feira às 18h30', read: false },
-    { id: 'not_3', text: 'A sua nota do trabalho de tradução de concessões foi publicada', read: true }
-  ]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  // Real-time Supabase state managers
+  const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [certificates, setCertificates] = useState<any[]>([]);
+  const [realLessons, setRealLessons] = useState<any[]>([]);
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+  const [academicLoading, setAcademicLoading] = useState<boolean>(true);
+  const [selectedCourseId, setSelectedCourseId] = useState<string>('');
+
+  const fetchStudentData = async () => {
+    if (!currentUser) return;
+    setAcademicLoading(true);
+    try {
+      // 1. Fetch student enrollments
+      const enrollData = await academicService.getStudentEnrollments(currentUser.id);
+      setEnrollments(enrollData || []);
+      
+      if (enrollData && enrollData.length > 0) {
+        const activeCourseId = selectedCourseId || enrollData[0].course_id;
+        setSelectedCourseId(activeCourseId);
+        
+        // Fetch lessons
+        const lessonsData = await academicService.getLessons(activeCourseId);
+        setRealLessons(lessonsData || []);
+        
+        // Fetch completed lessons
+        const completions = await academicService.getCompletedLessons(currentUser.id, activeCourseId);
+        setCompletedLessons(completions || []);
+      } else {
+        setRealLessons([]);
+        setCompletedLessons([]);
+      }
+
+      // 2. Fetch certificates
+      const certs = await academicService.getStudentCertificates(currentUser.id);
+      setCertificates(certs || []);
+    } catch (err) {
+      console.warn('Silent fallback on dynamic user profiles and enrollments:', err);
+    } finally {
+      setAcademicLoading(false);
+    }
+  };
+
+  const handleCourseChange = async (courseId: string) => {
+    if (!currentUser) return;
+    setSelectedCourseId(courseId);
+    try {
+      setAcademicLoading(true);
+      const lessonsData = await academicService.getLessons(courseId);
+      setRealLessons(lessonsData || []);
+      const completions = await academicService.getCompletedLessons(currentUser.id, courseId);
+      setCompletedLessons(completions || []);
+    } catch (err) {
+      console.error('Error switching course:', err);
+    } finally {
+      setAcademicLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudentData();
+  }, [currentUser]);
+
 
   // Update real-time clock every second
   useEffect(() => {
@@ -152,9 +209,10 @@ export default function StudentPortal({
   }, [currentUser]);
 
   // Sync profile edits globally state
-  const handleSaveProfile = (e: FormEvent) => {
+  const handleSaveProfile = async (e: FormEvent) => {
     e.preventDefault();
     if (!currentUser) return;
+    
     const updatedUser: User = {
       ...currentUser,
       firstName: profileForm.firstName,
@@ -162,22 +220,32 @@ export default function StudentPortal({
       phone: profileForm.phone,
       email: profileForm.email
     };
-    setCurrentUser(updatedUser);
     
-    // Save to simulated database
-    const rawDB = localStorage.getItem('multiplus_academic_db');
-    if (rawDB) {
-      try {
-        const parsed = JSON.parse(rawDB);
-        const userIdx = parsed.users?.findIndex((u: any) => u.id === currentUser.id);
-        if (userIdx > -1) {
-          parsed.users[userIdx] = updatedUser;
-          localStorage.setItem('multiplus_academic_db', JSON.stringify(parsed));
-        }
-      } catch (err) {}
+    try {
+      // Update public.users
+      const fullName = `${profileForm.firstName} ${profileForm.lastName}`.trim();
+      const { error: userError } = await supabase
+        .from('users')
+        .update({
+          nome_completo: fullName,
+          telefone: profileForm.phone
+        })
+        .eq('id', currentUser.id);
+        
+      if (userError) throw userError;
+      
+      // Update public.profiles
+      await userService.updateUserProfile(currentUser.id, {
+        biografia: `País: ${profileForm.country} | Idioma: ${profileForm.language} | Preferência: ${profileForm.preference}`
+      });
+
+      setCurrentUser(updatedUser);
+      localStorage.setItem('multiplus_current_session', JSON.stringify(updatedUser));
+      alert('As coordenadas do seu perfil académico foram sincronizadas e salvas com integridade no Supabase.');
+    } catch (err: any) {
+      console.error('Erro ao atualizar perfil no Supabase:', err);
+      alert(`Falha ao sincronizar perfil: ${err.message || 'Erro desconhecido'}`);
     }
-    
-    alert('As coordenadas do seu perfil académico foram sincronizadas e salvas com integridade.');
   };
 
   const handleExportPDF = () => {
@@ -299,32 +367,19 @@ export default function StudentPortal({
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.text('2. CURSO PRINCIPAL E APROVEITAMENTO MODULAR', 15, 87);
 
-    // Pull enrollments and certificates database
-    let enrollments: any[] = [];
-    let certificates: any[] = [];
+    // Pull enrollments and certificates database from Supabase state
+    let pdfEnrollments = enrollments && enrollments.length > 0 ? enrollments : [
+      {
+        courseId: 'eng-legal-angola',
+        progressPercent: 66,
+        status: 'ACTIVE',
+        enrolledAt: '2026-06-01'
+      }
+    ];
+    let pdfCertificates = certificates && certificates.length > 0 ? certificates : [];
     
-    const rawDB = localStorage.getItem('multiplus_academic_db');
-    if (rawDB) {
-      try {
-        const parsed = JSON.parse(rawDB);
-        enrollments = parsed.enrollments || [];
-        certificates = parsed.certificates || [];
-      } catch (e) {}
-    }
-
-    // Default simulation values if database is empty
-    if (enrollments.length === 0) {
-      enrollments = [
-        {
-          courseId: 'eng-legal-angola',
-          progressPercent: 66,
-          status: 'ACTIVE',
-          enrolledAt: '2026-06-01'
-        }
-      ];
-    }
-    if (certificates.length === 0 && currentUser.email.includes('antonio')) {
-      certificates = [
+    if (pdfCertificates.length === 0 && currentUser.email.includes('antonio')) {
+      pdfCertificates = [
         {
           certificateNumber: 'MPA-2026-001',
           courseName: 'English for the Legal Field in Angola',
@@ -342,17 +397,18 @@ export default function StudentPortal({
 
     // Course detail outline
     // Loop through enrollments
-    enrollments.forEach((enroll: any, index: number) => {
-      const courseId = enroll.courseId;
-      const title = courseId === 'eng-legal-angola' 
+    pdfEnrollments.forEach((enroll: any, index: number) => {
+      const courseId = enroll.course_id || enroll.courseId;
+      const title = enroll.course?.titulo || (courseId === 'eng-legal-angola' 
         ? 'English for the Legal Field in Angola' 
         : courseId === 'legal-writing'
           ? 'Advanced Legal Writing & Contract Drafting'
-          : 'English for Oil, Gas & Energy in Angola';
+          : 'English for Oil, Gas & Energy in Angola');
       
-      const duration = courseId === 'eng-legal-angola' ? '3 Meses (72h)' : '4 Semanas (24h)';
-      const enrolledAt = enroll.enrolledAt || '2026-06-01';
-      const progress = enroll.progressPercent || 66;
+      const duration = enroll.course?.duracao || (courseId === 'eng-legal-angola' ? '3 Meses (72h)' : '4 Semanas (24h)');
+      const enrolledAt = enroll.data_inicio ? enroll.data_inicio.slice(0, 10) : (enroll.enrolledAt || '2026-06-01');
+      const progress = enroll.progress_percent || enroll.progressPercent || 66;
+
 
       doc.setFillColor(255, 255, 255);
       doc.rect(15, yOffset, 180, 32, 'F');
@@ -384,7 +440,7 @@ export default function StudentPortal({
       doc.text(`${progress}% Concluido`, 115, yOffset + 22);
 
       // Check if certificate exists for this course
-      const matchedCert = certificates.find((c: any) => c.courseName.toLowerCase().includes('legal') || c.courseName.toLowerCase().includes(courseId));
+      const matchedCert = pdfCertificates.find((c: any) => (c.courseName || c.course?.titulo || '').toLowerCase().includes('legal') || (c.courseName || c.course?.titulo || '').toLowerCase().includes(courseId));
       if (progress >= 100 || matchedCert) {
         doc.setFont('Helvetica', 'bold');
         doc.setTextColor(0, 120, 0);
@@ -406,7 +462,7 @@ export default function StudentPortal({
 
     yOffset += 5;
 
-    if (certificates.length === 0) {
+    if (pdfCertificates.length === 0) {
       doc.setFillColor(248, 248, 246);
       doc.rect(15, yOffset, 180, 15, 'F');
       doc.setFont('Helvetica', 'normal');
@@ -415,7 +471,7 @@ export default function StudentPortal({
       doc.text('Nenhum certificado emitido ate ao momento. Complete 100% das sessoes e avaliacoes.', 20, yOffset + 9);
       yOffset += 20;
     } else {
-      certificates.forEach((cert: any) => {
+      pdfCertificates.forEach((cert: any) => {
         doc.setFillColor(250, 247, 240);
         doc.rect(15, yOffset, 180, 26, 'F');
         doc.setDrawColor(goldColor[0], goldColor[1], goldColor[2]);
@@ -573,7 +629,7 @@ export default function StudentPortal({
           <div className="p-6 border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
-                src="https://res.cloudinary.com/deeki0eou/image/upload/v1780728240/logotipo-dourado-sem-fundo_abouxm.png"
+                src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png"
                 alt="MultiPlus Logo"
                 className="h-9 w-auto object-contain shrink-0"
               />
@@ -828,153 +884,187 @@ export default function StudentPortal({
               {/* 1. DASHBOARD VIEW PORTAL HOMEPAGE */}
               {activeTab === 'dashboard' && (
                 <div className="space-y-6">
-                  
-                  {/* Personal Greetings Block with UTC live date clock and progress indicator */}
-                  <div className={`p-6 sm:p-8 rounded-3xl relative overflow-hidden text-left ${
-                    isHighContrast ? 'border-4 border-yellow-500 bg-black text-white' : 'bg-[#0A2E5D] text-white border border-[#C89B3C]/20 shadow-md'
-                  }`}>
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#C89B3C]/10 to-transparent rounded-full pointer-events-none" />
-                    
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
-                      <div>
-                        {/* Live real-time clock and precise formatted dates */}
-                        <div className="flex items-center gap-3 text-[#C89B3C] text-[10px] font-mono tracking-widest uppercase font-bold">
-                          <span>ASSENTO ACADÉMICO ATIVO • MULTIPLUS</span>
-                          <span className="px-2 py-0.5 rounded bg-black/40 text-white select-none">
-                            ⏱ {currentTime.toLocaleTimeString()}
-                          </span>
-                        </div>
-
-                        <h2 className="text-2xl sm:text-3xl font-serif font-black m-0 text-white mt-1.5 leading-tight">
-                          Olá, {profileForm.firstName || 'Doutor(a)'}! 👋
-                        </h2>
-                        <p className="text-xs text-white/70 mt-1 max-w-xl">
-                          Bem-vindo(a) de volta à MultiPlus Academy. Desenvolva as suas competências de oratória ("oral advocacy") e drafting formal de contratos em inglês hoje.
-                        </p>
+                  {enrollments.length === 0 ? (
+                    <div className="bg-white dark:bg-slate-900 border border-gray-150 dark:border-slate-800 rounded-3xl p-8 sm:p-12 text-center max-w-lg mx-auto space-y-6 shadow-sm mt-6">
+                      <div className="w-16 h-16 bg-[#0A2E5D]/5 text-[#C89B3C] rounded-full flex items-center justify-center mx-auto">
+                        <BookOpen size={28} />
                       </div>
-
-                      <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/5 space-y-2 shrink-0">
-                        <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block font-bold">PRÓXIMA AULA SÍNCRONA</span>
-                        <h4 className="text-xs font-serif font-black m-0">Tuesday Legal Advisory Class</h4>
-                        <span className="text-[10px] font-mono text-emerald-400 block font-bold">TERÇA-FEIRA • 18h30 - 20h30</span>
-                        
-                        <a 
-                          href="https://meet.google.com/lookup/mock-multiplus"
-                          target="_blank"
-                          className="px-3.5 py-1.5 bg-[#C89B3C] hover:bg-white hover:text-slate-900 text-slate-950 font-mono text-3xs font-extrabold rounded-lg tracking-wider transition-all inline-flex items-center gap-1"
-                        >
-                          Entrar Meet do Google <ExternalLink size={10} />
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Responsive Grid statistics metrics using clean neon SaaS indicators */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {[
-                      { title: 'Cunho de Estudo', value: `${streakCount} Dias`, note: 'Acompanhando a constância', icon: <Flame size={18} fill="currentColor" className="text-orange-600" /> },
-                      { title: 'Aulas Vídeo Concluídas', value: '2 de 3 sessões', note: 'Unidade de Isenção em curso', icon: <CheckCircle size={18} className="text-emerald-600" /> },
-                      { title: 'Dedicação Acumulada', value: `${hours} Horas`, note: 'Meta: 3 horas semanais', icon: <Clock size={18} className="text-blue-600" /> },
-                      { title: 'Certificados Ganhos', value: currentUser?.email.includes('antonio') ? '2 Credenciais' : '1 Credencial', note: 'Sincronizados em tempo real', icon: <Award size={18} className="text-amber-500" /> }
-                    ].map((stat, idx) => (
-                      <div key={idx} className={`p-5 rounded-2xl text-left flex flex-col justify-between ${cardThemeClass}`}>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <span className="text-[8px] font-mono text-gray-400 uppercase tracking-widest block mb-1">{stat.title}</span>
-                            <span className="text-xl font-serif font-black text-[#0A2E5D] dark:text-white leading-tight">{stat.value}</span>
-                          </div>
-                          <div className="p-2.5 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shrink-0">
-                            {stat.icon}
-                          </div>
-                        </div>
-                        <span className="text-[9px] font-mono text-gray-400 mt-3 block">{stat.note}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Active Lessons course review and Google meet widgets partition */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                    
-                    {/* Flagship Course card retake */}
-                    <div className={`lg:col-span-8 p-6 rounded-3xl text-left space-y-4 flex flex-col justify-between ${cardThemeClass}`}>
-                      <div className="border-b border-gray-150 pb-3 flex justify-between items-center w-full">
-                        <div>
-                          <span className="text-[9px] font-mono text-gray-400 uppercase font-black tracking-wide">Módulo Ativo</span>
-                          <h3 className="text-base font-serif font-black m-0 text-[#0A2E5D] dark:text-white">Retome do Módulo II: Drafting Prático</h3>
-                        </div>
-                        <span className="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded text-[9px] font-mono">66% COMPLETO</span>
-                      </div>
-
-                      <div className="p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 space-y-3">
-                        <span className="text-[9px] font-mono text-[#C89B3C] tracking-wide block uppercase font-bold">RETOMAR HOJE:</span>
-                        <h4 className="text-xs font-serif font-black text-gray-800 dark:text-gray-200 mt-1 m-0">
-                          {currentLecture.title}
+                      <div className="space-y-2 text-center">
+                        <h4 className="font-serif font-black text-lg text-[#0A2E5D] dark:text-white leading-tight m-0">
+                          Você ainda não está inscrito em nenhum curso.
                         </h4>
-                        <p className="text-2xs text-gray-500 dark:text-gray-300 leading-relaxed font-sans mt-1 m-0">
-                          {currentLecture.description}
+                        <p className="text-xs text-gray-500 dark:text-gray-450 leading-relaxed font-sans m-0">
+                          Entre em contato com o seu instrutor ou administrador da MultiPlus Academy para efetuar a sua matrícula nos cursos disponíveis.
                         </p>
                       </div>
-
-                      <button
-                        onClick={() => setActiveTab('courses')}
-                        className="px-4 py-2.5 bg-[#011a3d] hover:bg-[#C89B3C] text-white hover:text-slate-900 border-0 transition-colors text-2xs font-mono font-bold uppercase rounded-xl tracking-wider flex items-center justify-center gap-1.5 cursor-pointer w-full"
-                      >
-                        <PlayCircle size={14} />
-                        <span>Abrir Leitor de Videoaulas</span>
-                      </button>
                     </div>
-
-                    {/* Support block info links */}
-                    <div className={`lg:col-span-4 p-6 rounded-3xl text-left flex flex-col justify-between space-y-4 ${cardThemeClass}`}>
-                      <div className="space-y-3">
-                        <span className="text-[9px] font-mono text-[#C89B3C] uppercase tracking-widest font-black block">Atalhos Úteis</span>
-                        <h3 className="text-sm font-serif font-black text-[#0A2E5D] dark:text-white m-0">Biblioteca de Dicionários</h3>
-                        <p className="text-2xs text-gray-500 font-sans leading-relaxed m-0">Assegure eficácia na redação perante tribunais descarregando dicionarizações jurídicas na secção de materiais.</p>
-                      </div>
-
-                      <div className="space-y-2.5">
-                        <button
-                          onClick={() => setActiveTab('materials')}
-                          className="w-full py-2 bg-gray-100 hover:bg-gray-200 dark:bg-slate-850 dark:hover:bg-slate-705 text-gray-700 dark:text-gray-200 border-0 transition-colors rounded-xl text-3xs font-mono font-bold uppercase tracking-wider"
-                        >
-                          Ir para os Manuais
-                        </button>
+                  ) : (
+                    <>
+                      {/* Personal Greetings Block with UTC live date clock and progress indicator */}
+                      <div className={`p-6 sm:p-8 rounded-3xl relative overflow-hidden text-left ${
+                        isHighContrast ? 'border-4 border-yellow-500 bg-black text-white' : 'bg-[#0A2E5D] text-white border border-[#C89B3C]/20 shadow-md'
+                      }`}>
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#C89B3C]/10 to-transparent rounded-full pointer-events-none" />
                         
-                        <div className="p-3 bg-amber-50 dark:bg-amber-950/10 border border-amber-100 rounded-xl text-[10px] text-amber-800">
-                          <strong>Exame final:</strong> Prático oral agendado no campus de Huambo para data limite em Junho de 2026.
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+                          <div>
+                            {/* Live real-time clock and precise formatted dates */}
+                            <div className="flex items-center gap-3 text-[#C89B3C] text-[10px] font-mono tracking-widest uppercase font-bold">
+                              <span>ASSENTO ACADÉMICO ATIVO • MULTIPLUS</span>
+                              <span className="px-2 py-0.5 rounded bg-black/40 text-white select-none">
+                                ⏱ {currentTime.toLocaleTimeString()}
+                              </span>
+                            </div>
+
+                            <h2 className="text-2xl sm:text-3xl font-serif font-black m-0 text-white mt-1.5 leading-tight">
+                              Olá, {profileForm.firstName || 'Doutor(a)'}! 👋
+                            </h2>
+                            <p className="text-xs text-white/70 mt-1 max-w-xl">
+                              Bem-vindo(a) de volta à MultiPlus Academy. Desenvolva as suas competências de oratória ("oral advocacy") e drafting formal de contratos em inglês hoje.
+                            </p>
+                          </div>
+
+                          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/5 space-y-2 shrink-0">
+                            <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block font-bold">PRÓXIMA AULA SÍNCRONA</span>
+                            <h4 className="text-xs font-serif font-black m-0">Tuesday Legal Advisory Class</h4>
+                            <span className="text-[10px] font-mono text-emerald-400 block font-bold">TERÇA-FEIRA • 18h30 - 20h30</span>
+                            
+                            <a 
+                              href="https://meet.google.com/lookup/mock-multiplus"
+                              target="_blank"
+                              className="px-3.5 py-1.5 bg-[#C89B3C] hover:bg-white hover:text-slate-900 text-slate-950 font-mono text-3xs font-extrabold rounded-lg tracking-wider transition-all inline-flex items-center gap-1"
+                            >
+                              Entrar Meet do Google <ExternalLink size={10} />
+                            </a>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                  </div>
+                      {/* Responsive Grid statistics metrics using clean neon SaaS indicators */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[
+                          { title: 'Cunho de Estudo', value: `${streakCount} Dias`, note: 'Acompanhando a constância', icon: <Flame size={18} fill="currentColor" className="text-orange-600" /> },
+                          { title: 'Aulas Vídeo Concluídas', value: '2 de 3 sessões', note: 'Unidade de Isenção em curso', icon: <CheckCircle size={18} className="text-emerald-600" /> },
+                          { title: 'Dedicação Acumulada', value: `${hours} Horas`, note: 'Meta: 3 horas semanais', icon: <Clock size={18} className="text-blue-600" /> },
+                          { title: 'Certificados Ganhos', value: currentUser?.email.includes('antonio') ? '2 Credenciais' : '1 Credencial', note: 'Sincronizados em tempo real', icon: <Award size={18} className="text-amber-500" /> }
+                        ].map((stat, idx) => (
+                          <div key={idx} className={`p-5 rounded-2xl text-left flex flex-col justify-between ${cardThemeClass}`}>
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <span className="text-[8px] font-mono text-gray-400 uppercase tracking-widest block mb-1">{stat.title}</span>
+                                <span className="text-xl font-serif font-black text-[#0A2E5D] dark:text-white leading-tight">{stat.value}</span>
+                              </div>
+                              <div className="p-2.5 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shrink-0">
+                                {stat.icon}
+                              </div>
+                            </div>
+                            <span className="text-[9px] font-mono text-gray-400 mt-3 block">{stat.note}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Active Lessons course review and Google meet widgets partition */}
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                        
+                        {/* Flagship Course card retake */}
+                        <div className={`lg:col-span-8 p-6 rounded-3xl text-left space-y-4 flex flex-col justify-between ${cardThemeClass}`}>
+                          <div className="border-b border-gray-150 pb-3 flex justify-between items-center w-full">
+                            <div>
+                              <span className="text-[9px] font-mono text-gray-400 uppercase font-black tracking-wide">Módulo Ativo</span>
+                              <h3 className="text-base font-serif font-black m-0 text-[#0A2E5D] dark:text-white">Retome do Módulo II: Drafting Prático</h3>
+                            </div>
+                            <span className="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded text-[9px] font-mono">66% COMPLETO</span>
+                          </div>
+
+                          <div className="p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 space-y-3">
+                            <span className="text-[9px] font-mono text-[#C89B3C] tracking-wide block uppercase font-bold">RETOMAR HOJE:</span>
+                            <h4 className="text-xs font-serif font-black text-gray-800 dark:text-gray-200 mt-1 m-0">
+                              {currentLecture.title}
+                            </h4>
+                            <p className="text-2xs text-gray-500 dark:text-gray-300 leading-relaxed font-sans mt-1 m-0">
+                              {currentLecture.description}
+                            </p>
+                          </div>
+
+                          <button
+                            onClick={() => setActiveTab('courses')}
+                            className="px-4 py-2.5 bg-[#011a3d] hover:bg-[#C89B3C] text-white hover:text-slate-900 border-0 transition-colors text-2xs font-mono font-bold uppercase rounded-xl tracking-wider flex items-center justify-center gap-1.5 cursor-pointer w-full"
+                          >
+                            <PlayCircle size={14} />
+                            <span>Abrir Leitor de Videoaulas</span>
+                          </button>
+                        </div>
+
+                        {/* Support block info links */}
+                        <div className={`lg:col-span-4 p-6 rounded-3xl text-left flex flex-col justify-between space-y-4 ${cardThemeClass}`}>
+                          <div className="space-y-3">
+                            <span className="text-[9px] font-mono text-[#C89B3C] uppercase tracking-widest font-black block">Atalhos Úteis</span>
+                            <h3 className="text-sm font-serif font-black text-[#0A2E5D] dark:text-white m-0">Biblioteca de Dicionários</h3>
+                            <p className="text-2xs text-gray-500 font-sans leading-relaxed m-0">Assegure eficácia na redação perante tribunais descarregando dicionarizações jurídicas na secção de materiais.</p>
+                          </div>
+
+                          <div className="space-y-2.5">
+                            <button
+                              onClick={() => setActiveTab('materials')}
+                              className="w-full py-2 bg-gray-100 hover:bg-gray-200 dark:bg-slate-850 dark:hover:bg-slate-705 text-gray-700 dark:text-gray-200 border-0 transition-colors rounded-xl text-3xs font-mono font-bold uppercase tracking-wider"
+                            >
+                              Ir para os Manuais
+                            </button>
+                            
+                            <div className="p-3 bg-amber-50 dark:bg-amber-950/10 border border-amber-100 rounded-xl text-[10px] text-amber-800">
+                              <strong>Exame final:</strong> Prático oral agendado no campus de Huambo para data limite em Junho de 2026.
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
               {/* 2. COURSES ENGINE VIDEO PLAYER VIEW */}
               {activeTab === 'courses' && (
                 <div className="space-y-6 text-left">
-                  
-                  {/* Section Title and grid selector */}
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-150 pb-4">
-                    <div>
-                      <span className="text-[10px] font-mono tracking-widest text-[#C89B3C] uppercase block mb-1">Módulo I & II Ativos</span>
-                      <h3 className="text-lg font-serif font-black m-0 text-[#0A2E5D] dark:text-white">Leitor Integrado de Videoaulas</h3>
+                  {enrollments.length === 0 ? (
+                    <div className="bg-white dark:bg-slate-900 border border-gray-150 dark:border-slate-800 rounded-3xl p-8 sm:p-12 text-center max-w-lg mx-auto space-y-6 shadow-sm mt-6">
+                      <div className="w-16 h-16 bg-[#0A2E5D]/5 text-[#C89B3C] rounded-full flex items-center justify-center mx-auto">
+                        <BookOpen size={28} />
+                      </div>
+                      <div className="space-y-2 text-center">
+                        <h4 className="font-serif font-black text-lg text-[#0A2E5D] dark:text-white leading-tight m-0">
+                          Você ainda não está inscrito em nenhum curso.
+                        </h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-450 leading-relaxed font-sans m-0">
+                          A área de videoaulas estará disponível assim que for matriculado num curso oficial.
+                        </p>
+                      </div>
                     </div>
+                  ) : (
+                    <>
+                      {/* Section Title and grid selector */}
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-150 pb-4">
+                        <div>
+                          <span className="text-[10px] font-mono tracking-widest text-[#C89B3C] uppercase block mb-1">Módulo I & II Ativos</span>
+                          <h3 className="text-lg font-serif font-black m-0 text-[#0A2E5D] dark:text-white">Leitor Integrado de Videoaulas</h3>
+                        </div>
 
-                    {/* Preparation course future catalog displays as requested */}
-                    <select
-                      className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 text-xs font-serif font-bold text-[#0A2E5D] dark:text-white focus:outline-none"
-                      onChange={(e) => alert(`O preparatório "${e.target.value}" está no modo expansão e reservas de turmas em Angola. O seu assento está atualmente ativo apenas no currículo principal de Direito.`)}
-                    >
-                      <option value="legal">English for the Legal Field in Angola (Ativo)</option>
-                      <option value="oil">English for Oil, Gas & Energy in Angola (Brevemente)</option>
-                      <option value="corp">Advanced Corporate Legal Drafting (Brevemente)</option>
-                      <option value="toefl">TOEFL & IELTS Exam Preparation Masterclass (Brevemente)</option>
-                    </select>
-                  </div>
+                        {/* Preparation course future catalog displays as requested */}
+                        <select
+                          className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 text-xs font-serif font-bold text-[#0A2E5D] dark:text-white focus:outline-none"
+                          value={selectedCourseId}
+                          onChange={(e) => handleCourseChange(e.target.value)}
+                        >
+                          {enrollments.map((enroll: any) => (
+                            <option key={enroll.course_id} value={enroll.course_id}>
+                              {enroll.course?.title || enroll.course?.titulo || 'Curso Ativo'}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-                  {/* Left Player vs Right curricular tree list partitions */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                      {/* Left Player vs Right curricular tree list partitions */}
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                     
                     {/* Left Frame column: Video placeholder plus legal notebooks */}
                     <div className="lg:col-span-8 space-y-4">
@@ -1132,10 +1222,11 @@ export default function StudentPortal({
                         </div>
                       </div>
                     </div>
-
                   </div>
-                </div>
+                </>
               )}
+            </div>
+          )}
 
               {/* 3. CALENDAR VIEW PAGE PANEL */}
               {activeTab === 'calendar' && (

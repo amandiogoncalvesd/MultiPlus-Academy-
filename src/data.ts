@@ -137,7 +137,7 @@ export const MAIN_INSTRUCTOR: Instructor = {
     'ISCED (Instituto Superior de Ciências da Educação)',
     'ATIA (Associação de Tradutores e Intérpretes)'
   ],
-  photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=600&h=700' // Premium look dark suit professional woman
+  photo: 'https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg'
 };
 
 export const BLOG_POSTS: BlogPost[] = [
@@ -158,7 +158,7 @@ A MultiPlus Academy estruturou o curso de Inglês Jurídico precisamente para qu
     author: {
       name: 'Esmeralda Sumbelelo',
       role: 'Formadora MultiPlus',
-      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150'
+      avatar: 'https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg'
     }
   },
   {
@@ -183,7 +183,7 @@ Entender o significado técnico destes termos garante que eventuais imprevistos 
     author: {
       name: 'Esmeralda Sumbelelo',
       role: 'Formadora MultiPlus',
-      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150'
+      avatar: 'https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg'
     }
   },
   {
@@ -203,7 +203,7 @@ Estudar vocabulário prático como "arbitral award" (sentença arbitral), "inter
     author: {
       name: 'Esmeralda Sumbelelo',
       role: 'Formadora MultiPlus',
-      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150'
+      avatar: 'https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg'
     }
   }
 ];

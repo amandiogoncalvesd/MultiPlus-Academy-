@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { COURSES_LIST } from '../data';
+import { supabase } from '../lib/supabase/client';
 import { Course, PageId } from '../types';
 import { 
   Search, 
@@ -26,9 +26,50 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedModality, setSelectedModality] = useState<string>('all');
   const [activeCourseDetails, setActiveCourseDetails] = useState<Course | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadCourses() {
+      try {
+        const { data, error } = await supabase
+          .from('courses')
+          .select('*')
+          .eq('status', 'PUBLISHED');
+        
+        if (error) throw error;
+        if (data && data.length > 0) {
+          const mapped: Course[] = data.map((d: any) => ({
+            id: d.id,
+            slug: d.slug || d.id,
+            title: d.title || d.titulo,
+            subtitle: d.description || d.descricao || '',
+            summary: d.description || d.descricao || '',
+            duration: d.duration || d.duracao || '12 Semanas',
+            hours: '72 Horas',
+            language: 'Inglês / Português',
+            modality: d.category === 'Online' ? 'Online' : 'Híbrido',
+            schedule: 'Terças e Quintas, 18h30',
+            startDate: 'Em breve',
+            targetAudience: [],
+            modules: []
+          }));
+          setCourses(mapped);
+        } else {
+          setCourses([]);
+        }
+      } catch (err) {
+        console.error('Error fetching courses in catalog:', err);
+        setCourses([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadCourses();
+  }, []);
 
   // Filter implementation
-  const filteredCourses = COURSES_LIST.filter((course) => {
+  const filteredCourses = courses.filter((course) => {
     const matchesSearch = 
       course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       course.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -94,7 +135,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                     : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
                 }`}
               >
-                Todos ({COURSES_LIST.length})
+                Todos ({courses.length})
               </button>
 
               <button
@@ -237,75 +278,77 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setActiveCourseDetails(null)}
-              className="absolute inset-0 bg-[#0A2E5D]/80 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-lg"
             />
 
             {/* Modal Box */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              initial={{ opacity: 0, scale: 0.93, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              transition={{ cubicBezier: [0.16, 1, 0.3, 1], duration: 0.4 }}
-              className="relative w-full max-w-3xl bg-[#F8F8F6] rounded-3xl overflow-hidden shadow-2xl border border-[#C89B3C]/30 flex flex-col max-h-[85vh]"
+              exit={{ opacity: 0, scale: 0.93, y: 20 }}
+              transition={{ cubicBezier: [0.16, 1, 0.3, 1], duration: 0.5 }}
+              className="relative w-full max-w-3xl bg-[#F8F8F6] rounded-3xl overflow-hidden shadow-2xl border border-[#C89B3C]/40 flex flex-col max-h-[85vh]"
             >
-              
+              {/* Premium golden visual bar */}
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#C89B3C] via-[#E2B755] to-[#C89B3C]" />
+
               {/* Modal Banner */}
-              <div className="bg-[#0A2E5D] text-white p-6 sm:p-8 relative">
+              <div className="bg-gradient-to-b from-[#0A2E5D] to-[#08254c] text-white p-6 sm:p-8 relative pt-10">
                 <button
                   onClick={() => setActiveCourseDetails(null)}
-                  className="absolute right-6 top-6 p-2 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/15 transition-all"
+                  className="absolute right-6 top-8 p-2 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/15 transition-all focus:outline-none focus:ring-2 focus:ring-[#C89B3C]"
                   aria-label="Retroceder"
                 >
                   <X size={16} />
                 </button>
                 
-                <span className="px-3 py-1 rounded bg-[#C89B3C]/10 text-[#C89B3C] text-[10px] font-mono tracking-widest font-bold uppercase border border-[#C89B3C]/20">
+                <span className="px-3.5 py-1 rounded-lg bg-[#C89B3C]/10 text-[#C89B3C] text-[9px] font-mono tracking-widest font-bold uppercase border border-[#C89B3C]/30 shadow-inner">
                   {activeCourseDetails.modality}
                 </span>
 
-                <h3 className="text-xl sm:text-2xl font-serif font-black mt-4 pr-10 text-white">
+                <h3 className="text-xl sm:text-2xl font-serif font-bold mt-4 pr-10 text-white leading-tight">
                   {activeCourseDetails.title}
                 </h3>
                 <p className="text-xs text-white/60 mt-1 font-mono">{activeCourseDetails.subtitle}</p>
               </div>
 
               {/* Scrollable description box */}
-              <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6">
+              <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 scrollbar-thin">
                 
                 {/* General facts row */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pb-6 border-b border-gray-200">
-                  <div>
-                    <span className="block text-[9px] font-mono uppercase tracking-wider text-gray-400">Duração</span>
-                    <span className="text-xs font-semibold text-[#0A2E5D]">{activeCourseDetails.duration}</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pb-6 border-b border-slate-200">
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-xs">
+                    <span className="block text-[8px] font-mono uppercase tracking-wider text-slate-400 mb-0.5">Duração</span>
+                    <span className="text-xs font-bold text-[#0A2E5D]">{activeCourseDetails.duration}</span>
                   </div>
-                  <div>
-                    <span className="block text-[9px] font-mono uppercase tracking-wider text-gray-400">Carga Horária</span>
-                    <span className="text-xs font-semibold text-[#0A2E5D]">{activeCourseDetails.hours}</span>
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-xs">
+                    <span className="block text-[8px] font-mono uppercase tracking-wider text-slate-400 mb-0.5">Carga Horária</span>
+                    <span className="text-xs font-bold text-[#0A2E5D]">{activeCourseDetails.hours}</span>
                   </div>
-                  <div>
-                    <span className="block text-[9px] font-mono uppercase tracking-wider text-gray-400">Idioma Oficial</span>
-                    <span className="text-xs font-semibold text-[#0A2E5D]">{activeCourseDetails.language}</span>
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-xs">
+                    <span className="block text-[8px] font-mono uppercase tracking-wider text-slate-400 mb-0.5">Idioma Oficial</span>
+                    <span className="text-xs font-bold text-[#0A2E5D]">{activeCourseDetails.language}</span>
                   </div>
-                  <div>
-                    <span className="block text-[9px] font-mono uppercase tracking-wider text-gray-400">Início letivo</span>
-                    <span className="text-xs font-semibold text-[#0A2E5D]">{activeCourseDetails.startDate}</span>
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-xs">
+                    <span className="block text-[8px] font-mono uppercase tracking-wider text-slate-400 mb-0.5">Início letivo</span>
+                    <span className="text-xs font-bold text-[#0A2E5D]">{activeCourseDetails.startDate}</span>
                   </div>
                 </div>
 
                 {/* Scope descriptive body */}
-                <div className="space-y-3 text-xs sm:text-sm text-gray-600 leading-relaxed">
-                  <span className="block font-serif font-bold text-[#0A2E5D] text-base">Enquadramento Científico</span>
-                  <p>{activeCourseDetails.summary}</p>
+                <div className="space-y-2.5 text-xs sm:text-sm text-slate-600 leading-relaxed bg-white p-5 rounded-2xl border border-slate-100 shadow-xs">
+                  <span className="block font-serif font-bold text-[#0A2E5D] text-base mb-1">Enquadramento Científico</span>
+                  <p className="text-slate-600 font-medium leading-relaxed">{activeCourseDetails.summary}</p>
                 </div>
 
                 {/* Target Audience Bullet Point list */}
                 <div className="space-y-3">
-                  <span className="block font-mono font-bold uppercase text-[10px] tracking-widest text-[#C89B3C]">Grupo De Candidaturas Elegíveis</span>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <span className="block font-mono font-bold uppercase text-[9px] tracking-widest text-[#C89B3C]">Grupo De Candidaturas Elegíveis</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
                     {activeCourseDetails.targetAudience.map((aud, i) => (
-                      <div key={i} className="flex items-center gap-2 text-gray-700 bg-white p-2.5 rounded-lg border border-gray-150">
-                        <CheckCircle size={14} className="text-[#C89B3C] flex-shrink-0" />
-                        <span>{aud}</span>
+                      <div key={i} className="flex items-center gap-2.5 text-slate-700 bg-white p-3 rounded-xl border border-slate-150 shadow-xs hover:border-[#C89B3C]/30 transition-all">
+                        <CheckCircle size={15} className="text-[#C89B3C] flex-shrink-0" />
+                        <span className="font-medium text-slate-700">{aud}</span>
                       </div>
                     ))}
                   </div>
@@ -317,16 +360,16 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                   
                   <div className="space-y-4">
                     {activeCourseDetails.modules.map((mod, i) => (
-                      <div key={i} className="p-5 rounded-2xl bg-white border border-gray-150 space-y-3">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded bg-[#0A2E5D]/5 text-[10px] font-mono font-bold text-[#0A2E5D] border border-[#0A2E5D]/10">
+                      <div key={i} className="p-5 rounded-2xl bg-white border border-slate-150 space-y-3 shadow-xs hover:border-[#C89B3C]/30 transition-all group">
+                        <div className="flex items-center gap-2.5">
+                          <span className="px-2.5 py-0.5 rounded bg-[#0A2E5D]/5 text-[10px] font-mono font-bold text-[#0A2E5D] border border-[#0A2E5D]/10 group-hover:bg-[#0A2E5D] group-hover:text-white transition-all">
                             {mod.number}
                           </span>
                           <h4 className="text-sm font-serif font-bold text-[#0A2E5D]">{mod.title}</h4>
                         </div>
-                        <ul className="grid grid-cols-1 gap-2 text-xs text-gray-500 pl-4 list-disc">
+                        <ul className="grid grid-cols-1 gap-2 text-xs text-slate-500 pl-4 list-disc font-medium">
                           {mod.topics.map((topic, tIdx) => (
-                            <li key={tIdx}>{topic}</li>
+                            <li key={tIdx} className="text-slate-500 hover:text-slate-800 transition-colors">{topic}</li>
                           ))}
                         </ul>
                       </div>
@@ -337,16 +380,16 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
               </div>
 
               {/* Modal controls */}
-              <div className="p-6 bg-white border-t border-gray-150 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                <div className="text-xs text-gray-500">
-                  <span className="block font-mono tracking-wider text-[9px] uppercase">Dúvidas Letivas?</span>
-                  <span className="font-semibold text-gray-600">Telefone: +244 956 449 084</span>
+              <div className="p-6 bg-white border-t border-slate-150 flex flex-col sm:flex-row gap-4 items-center justify-between shadow-xs">
+                <div className="text-xs text-slate-500 self-start sm:self-center">
+                  <span className="block font-mono tracking-wider text-[8px] uppercase text-slate-400">Dúvidas Letivas?</span>
+                  <span className="font-semibold text-slate-600">Telefone: +244 956 449 084</span>
                 </div>
                 
                 <div className="flex gap-3 w-full sm:w-auto">
                   <button
                     onClick={() => setActiveCourseDetails(null)}
-                    className="flex-1 sm:flex-none px-6 py-3 border border-gray-200 rounded-xl text-xs font-semibold uppercase text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="flex-1 sm:flex-none px-6 py-3 border border-slate-200 rounded-xl text-xs font-semibold uppercase text-slate-500 hover:bg-slate-50 transition-all font-mono active:scale-[0.98]"
                   >
                     Fechar
                   </button>
@@ -356,7 +399,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                       setActiveCourseDetails(null);
                       onOpenSignUp();
                     }}
-                    className="flex-1 sm:flex-none px-8 py-3 bg-[#C89B3C] hover:bg-[#D4A747] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-md"
+                    className="flex-1 sm:flex-none px-8 py-3 bg-[#C89B3C] hover:bg-[#D4A747] text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all neo-button-gold shadow-lg shadow-[#C89B3C]/10 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     Prosseguir Inscrição
                   </button>

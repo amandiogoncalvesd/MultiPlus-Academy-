@@ -75,6 +75,11 @@ export interface Course {
     title: string;
     topics: string[];
   }[];
+  teacher_id?: string;
+  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  level?: string;
+  category?: string;
+  thumbnail?: string;
 }
 
 export interface Instructor {

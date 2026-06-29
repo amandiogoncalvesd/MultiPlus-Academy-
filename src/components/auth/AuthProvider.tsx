@@ -6,13 +6,18 @@ import { User, UserRole } from '../../types';
 
 interface AuthContextType {
   user: User | null;
+  session: any;
   profile: SupabaseUserProfile | null;
   role: 'ALUNO' | 'PROFESSOR' | 'ADMIN' | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<User>;
+  login: (email: string, password: string) => Promise<User>;
   signUp: (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR' | 'ADMIN') => Promise<any>;
+  register: (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR' | 'ADMIN') => Promise<any>;
   signOut: () => Promise<void>;
+  logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<any>;
+  recoverPassword: (email: string) => Promise<any>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -20,6 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children, onPageRedirect }: { children: React.ReactNode, onPageRedirect?: (page: any) => void }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [session, setSession] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<SupabaseUserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -39,13 +45,15 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
 
   const syncAuthSession = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
+      const { data: { session: sbSession } } = await supabase.auth.getSession();
+      setSession(sbSession);
+      
+      if (sbSession?.user) {
         // Fetch custom user profile info
         const { data: userData } = await supabase
           .from('users')
           .select('*')
-          .eq('id', session.user.id)
+          .eq('id', sbSession.user.id)
           .single();
 
         if (userData) {
@@ -71,11 +79,11 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
           setUserProfile(profileData);
         } else {
           // If public.users is slow, build from auth meta
-          const uMeta = session.user.user_metadata;
+          const uMeta = sbSession.user.user_metadata;
           const mappedRole = mapSupabaseRole(uMeta?.role || 'ALUNO');
           const localUser: User = {
-            id: session.user.id,
-            email: session.user.email || '',
+            id: sbSession.user.id,
+            email: sbSession.user.email || '',
             firstName: uMeta?.nome_completo?.split(' ')[0] || uMeta?.firstName || '',
             lastName: uMeta?.nome_completo?.split(' ').slice(1).join(' ') || uMeta?.lastName || '',
             role: mappedRole,
@@ -89,22 +97,15 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
           localStorage.setItem('multiplus_current_session', JSON.stringify(localUser));
         }
       } else {
-        // Check localStorage local fallback session
-        const localSession = localStorage.getItem('multiplus_current_session');
-        if (localSession) {
-          try {
-            const parsed = JSON.parse(localSession);
-            setCurrentUser(parsed);
-            const prof = await userService.getUserProfile(parsed.id);
-            setUserProfile(prof);
-          } catch (e) {}
-        } else {
-          setCurrentUser(null);
-          setUserProfile(null);
-        }
+        // No active Supabase session
+        setCurrentUser(null);
+        setUserProfile(null);
+        localStorage.removeItem('multiplus_current_session');
       }
     } catch (e) {
       console.warn('Failed to sync auth session:', e);
+      setCurrentUser(null);
+      setUserProfile(null);
     } finally {
       setLoading(false);
     }
@@ -114,12 +115,14 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
     syncAuthSession();
 
     // Listen to Auth State Changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, sbSession) => {
+      setSession(sbSession);
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         await syncAuthSession();
       } else if (event === 'SIGNED_OUT') {
         setCurrentUser(null);
         setUserProfile(null);
+        setSession(null);
         localStorage.removeItem('multiplus_current_session');
       }
     });
@@ -162,6 +165,8 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
     }
   };
 
+  const login = signIn;
+
   const signUp = async (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR' | 'ADMIN'): Promise<any> => {
     setLoading(true);
     try {
@@ -172,21 +177,28 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
     }
   };
 
+  const register = signUp;
+
   const signOut = async () => {
     setLoading(true);
     try {
       await authService.logout();
       setCurrentUser(null);
       setUserProfile(null);
+      setSession(null);
       localStorage.removeItem('multiplus_current_session');
     } finally {
       setLoading(false);
     }
   };
 
+  const logout = signOut;
+
   const resetPassword = async (email: string) => {
     return await authService.recoverPassword(email);
   };
+
+  const recoverPassword = resetPassword;
 
   const refreshProfile = async () => {
     if (currentUser) {
@@ -202,13 +214,18 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
     <AuthContext.Provider
       value={{
         user: currentUser,
+        session,
         profile: userProfile,
         role: mappedRole,
         loading,
         signIn,
+        login,
         signUp,
+        register,
         signOut,
+        logout,
         resetPassword,
+        recoverPassword,
         refreshProfile
       }}
     >

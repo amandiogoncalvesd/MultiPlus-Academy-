@@ -23,6 +23,7 @@ interface InstructorDashboardTabProps {
   certificatesIssuedCount: number;
   completionRate: number;
   onNavigate: (tab: string) => void;
+  lessonsCount?: number;
 }
 
 export default function InstructorDashboardTab({
@@ -32,7 +33,8 @@ export default function InstructorDashboardTab({
   evaluationsPendingCount,
   certificatesIssuedCount,
   completionRate,
-  onNavigate
+  onNavigate,
+  lessonsCount = 0
 }: InstructorDashboardTabProps) {
   const [activeMetricChart, setActiveMetricChart] = useState<'completion' | 'engagement'>('completion');
 
@@ -65,9 +67,9 @@ export default function InstructorDashboardTab({
       {/* Modern High-End Neo-Skeuomorphic KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
-          { title: 'Total de Cursos', value: courses.length, note: '2 em expansão', icon: <BookOpen size={16} />, tab: 'cursos', color: 'text-blue-600 bg-blue-50' },
+          { title: 'Total de Cursos', value: courses.length, note: courses.length === 1 ? '1 Ativo' : `${courses.length} Ativos`, icon: <BookOpen size={16} />, tab: 'cursos', color: 'text-blue-600 bg-blue-50' },
           { title: 'Total de Alunos', value: students.length, note: 'Todos regulados', icon: <Users size={16} />, tab: 'alunos', color: 'text-amber-500 bg-amber-50/60' },
-          { title: 'Aulas Publicadas', value: '18 aulas', note: '900 min gravados', icon: <Clock size={16} />, tab: 'aulas', color: 'text-purple-600 bg-purple-50' },
+          { title: 'Aulas Publicadas', value: lessonsCount, note: lessonsCount === 1 ? '1 Mapeada' : `${lessonsCount} Mapeadas`, icon: <Clock size={16} />, tab: 'cursos', color: 'text-purple-600 bg-purple-50' },
           { title: 'Avaliações Pendentes', value: evaluationsPendingCount, note: 'Requer correção', icon: <HelpCircle size={16} />, tab: 'avaliacoes', color: 'text-red-500 bg-red-50' },
           { title: 'Certificados Emitidos', value: certificatesIssuedCount, note: 'QR Code válidos', icon: <Award size={16} />, tab: 'certificados', color: 'text-emerald-600 bg-emerald-50' },
           { title: 'Taxa de Conclusão', value: `${completionRate}%`, note: 'Fidelidade letiva', icon: <TrendingUp size={16} />, tab: 'relatorios', color: 'text-sky-600 bg-sky-50' }

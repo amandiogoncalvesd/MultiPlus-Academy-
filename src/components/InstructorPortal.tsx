@@ -1,7 +1,9 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { PageId, User, Course } from '../types';
-import { COURSES_LIST } from '../data';
 import { useAuth } from './auth/AuthProvider';
+import { supabase } from '../lib/supabase/client';
+import { academicService } from '../services/supabase/academicService';
+
 import { 
   Award, 
   Users, 
@@ -54,6 +56,7 @@ import InstructorStudentsTab from './instructor/InstructorStudentsTab';
 import InstructorEvaluationsTab from './instructor/InstructorEvaluationsTab';
 import InstructorCalendarTab from './instructor/InstructorCalendarTab';
 import InstructorMessagesTab from './instructor/InstructorMessagesTab';
+import { courseService } from '../services/supabase/courseService';
 
 interface InstructorPortalProps {
   setCurrentPage: (page: PageId) => void;
@@ -73,25 +76,15 @@ export default function InstructorPortal({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Global Sync variables reading from MultiPlus database with fallbacks
-  const [courses, setCourses] = useState<Course[]>(() => {
-    const localGrads = localStorage.getItem('multiplus_academic_db');
-    if (localGrads) {
-      try {
-        const db = JSON.parse(localGrads);
-        if (db.courses && db.courses.length > 0) return db.courses;
-      } catch (e) {}
-    }
-    return COURSES_LIST;
-  });
+  const [courses, setCourses] = useState<Course[]>([]);
 
   const [students, setStudents] = useState<User[]>([]);
   const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [certificatesCount, setCertificatesCount] = useState<number>(0);
+  const [lessonsCount, setLessonsCount] = useState<number>(0);
 
   // Simple Alerts counts mock
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: 'Submissão de avaliação de António C.', read: false },
-    { id: 2, text: 'Novo jurista solicitando matrícula direta.', read: false }
-  ]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
 
   // Search input of global top tracker bar
@@ -113,21 +106,13 @@ export default function InstructorPortal({
   const [newCourseDuration, setNewCourseDuration] = useState('12 Semanas (3 Meses)');
 
   // 4. Curriculum planner tree modular states
-  const [selectedPlannerCourse, setSelectedPlannerCourse] = useState('eng-legal-angola');
-  const [plannerModules, setPlannerModules] = useState([
-    { number: 'Mês I', title: 'Fundamentos e Civil Law de Luanda', lessonsCount: 4 },
-    { number: 'Mês II', title: 'Elaboração e Drafting de Isenções', lessonsCount: 6 },
-    { number: 'Mês III', title: 'Simulacros de Tribunais Arbitrais', lessonsCount: 4 }
-  ]);
+  const [selectedPlannerCourse, setSelectedPlannerCourse] = useState('');
+  const [plannerModules, setPlannerModules] = useState<any[]>([]);
   const [newPlannerModuleTitle, setNewPlannerModuleTitle] = useState('');
 
   // 5. Library files repository states
   const [libraryCategory, setLibraryCategory] = useState<'all' | 'pdf' | 'docx' | 'audio'>('all');
-  const [libraryFiles, setLibraryFiles] = useState([
-    { id: 1, name: 'Lei do Processo Administrativo Angolano.pdf', type: 'pdf', size: '1.4 MB', date: '2026-06-01' },
-    { id: 2, name: 'Template - Liability Exclusions Clauses (SaaS).docx', type: 'docx', size: '280 KB', date: '2026-06-04' },
-    { id: 3, name: 'Audio Aula 3 - Exercício de Pronúncia Jurídica.mp3', type: 'audio', size: '14.2 MB', date: '2026-06-08' }
-  ]);
+  const [libraryFiles, setLibraryFiles] = useState<any[]>([]);
   const [newLibraryFileName, setNewLibraryFileName] = useState('');
 
   // 6. Certificados code verification states
@@ -139,182 +124,196 @@ export default function InstructorPortal({
     loadDatabase();
   }, []);
 
-  const loadDatabase = () => {
-    const localGrads = localStorage.getItem('multiplus_academic_db');
-    let db: any = {};
-    if (localGrads) {
-      try { db = JSON.parse(localGrads); } catch (e) {}
-    }
+  const loadDatabase = async () => {
+    try {
+      // 1. Load Courses
+      const liveCourses = currentUser 
+        ? (currentUser.role === 'ADMIN' 
+            ? (await supabase.from('courses').select('*').then(({ data }) => data || []))
+            : await courseService.getTeacherCourses(currentUser.id))
+        : [];
 
-    // Default Students if empty
-    if (!db.users || db.users.length === 0) {
-      db.users = [
-        {
-          id: 'per_student',
-          email: 'antonio@advogados.ao',
-          firstName: 'António',
-          lastName: 'Ferreira Carvalho',
-          role: 'STUDENT',
-          status: 'ACTIVE',
-          streak: 4,
-          longestStreak: 9,
-          totalHoursLearned: 38,
-          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150',
-          phone: '+244 923 456 789'
-        },
-        {
-          id: 'user_temp_1',
-          email: 'isabel@empresas.ao',
-          firstName: 'Isabel',
-          lastName: 'Nascimento (Empresas)',
-          role: 'STUDENT',
-          status: 'ACTIVE',
-          streak: 2,
-          longestStreak: 5,
-          totalHoursLearned: 12,
-          avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150',
-          phone: '+244 912 300 400'
-        },
-        {
-          id: 'prof_esmeralda_sumbelelo',
-          email: 'esmeralda@multiplus.ao',
-          firstName: 'Esmeralda',
-          lastName: 'Sumbelelo',
-          role: 'INSTRUCTOR',
-          status: 'ACTIVE',
+      setCourses(liveCourses.map((c: any) => ({
+        id: c.id,
+        slug: c.slug || c.id,
+        title: c.title,
+        subtitle: c.description || '',
+        summary: c.description || '',
+        duration: c.duration || '12 Semanas',
+        hours: '72 Horas Letivas',
+        language: 'Inglês',
+        modality: 'Híbrido',
+        schedule: 'Terças e Quintas',
+        startDate: 'Em breve',
+        price: 'Grátis',
+        targetAudience: [],
+        modules: [],
+        teacher_id: c.teacher_id,
+        status: c.status,
+        level: c.level || 'Intermédio',
+        category: c.category || 'Geral'
+      })));
+
+      // 2. Load Students (ALUNO role)
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('*')
+        .eq('role', 'ALUNO');
+      
+      if (usersData && usersData.length > 0) {
+        const studentList = usersData.map((u: any) => ({
+          id: u.id,
+          email: u.email,
+          firstName: u.nome_completo?.split(' ')[0] || '',
+          lastName: u.nome_completo?.split(' ').slice(1).join(' ') || '',
+          role: 'STUDENT' as const,
+          status: u.status || 'ACTIVE',
           streak: 0,
           longestStreak: 0,
           totalHoursLearned: 0,
-          avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=150&h=150'
-        }
-      ];
-    }
+          avatarUrl: u.foto_perfil || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150',
+          phone: u.telefone || ''
+        }));
+        setStudents(studentList);
+      } else {
+        setStudents([]);
+      }
 
-    // Default enrollments
-    if (!db.enrollments) {
-      db.enrollments = [
-        {
-          userId: 'per_student',
-          courseId: 'eng-legal-angola',
-          progressPercent: 78,
-          status: 'ACTIVE',
-          enrolledAt: '2026-06-01'
-        },
-        {
-          userId: 'user_temp_1',
-          courseId: 'eng-legal-angola',
-          progressPercent: 32,
-          status: 'ACTIVE',
-          enrolledAt: '2026-06-03'
-        }
-      ];
-    }
+      // 3. Load Enrollments
+      const { data: enrollData } = await supabase
+        .from('enrollments')
+        .select('*');
+      
+      if (enrollData) {
+        setEnrollments(enrollData.map((e: any) => ({
+          userId: e.student_id,
+          courseId: e.course_id,
+          progressPercent: e.progress_percent || 0,
+          status: e.status,
+          enrolledAt: e.data_inicio?.slice(0, 10) || ''
+        })));
+      } else {
+        setEnrollments([]);
+      }
 
-    localStorage.setItem('multiplus_academic_db', JSON.stringify(db));
-    
-    // Filter out only students
-    const studentList = db.users.filter((u: any) => u.role === 'STUDENT');
-    setStudents(studentList);
-    setEnrollments(db.enrollments);
+      // 4. Load certificates count
+      const { count: certsCount, error: certsErr } = await supabase
+        .from('certificates')
+        .select('*', { count: 'exact', head: true });
+      if (!certsErr && certsCount !== null) {
+        setCertificatesCount(certsCount);
+      }
+
+      // 5. Load lessons count
+      const { count: totalLessons, error: lessonsErr } = await supabase
+        .from('lessons')
+        .select('*', { count: 'exact', head: true });
+      if (!lessonsErr && totalLessons !== null) {
+        setLessonsCount(totalLessons);
+      } else {
+        setLessonsCount(0);
+      }
+    } catch (err) {
+      console.warn('Error fetching instructor data from Supabase:', err);
+    }
   };
 
   // Callback to adjust accounts
-  const toggleStudentStatus = (userId: string, currentStatus: string) => {
-    const localGrads = localStorage.getItem('multiplus_academic_db');
-    if (!localGrads) return;
+  const toggleStudentStatus = async (userId: string, currentStatus: string) => {
     try {
-      const db = JSON.parse(localGrads);
-      const idx = db.users?.findIndex((u: any) => u.id === userId);
-      if (idx > -1) {
-        db.users[idx].status = currentStatus === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
-        localStorage.setItem('multiplus_academic_db', JSON.stringify(db));
-        loadDatabase();
-        alert(`Estado da matrícula reajustado.`);
-      }
-    } catch (e) {}
+      const nextStatus = currentStatus === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
+      const { error } = await supabase
+        .from('users')
+        .update({ status: nextStatus })
+        .eq('id', userId);
+
+      if (error) throw error;
+      await loadDatabase();
+      alert(`Estado da matrícula reajustado no Supabase para ${nextStatus}.`);
+    } catch (e: any) {
+      console.error('Erro ao reajustar matrícula:', e);
+      alert(`Erro ao reajustar matrícula: ${e.message || e}`);
+    }
   };
 
   // Dynamic certificate issuer
-  const emitCertificateForStudent = (userId: string) => {
-    const localGrads = localStorage.getItem('multiplus_academic_db');
-    if (!localGrads) return;
+  const emitCertificateForStudent = async (userId: string) => {
     try {
-      const db = JSON.parse(localGrads);
-      const enrollmentIdx = db.enrollments?.findIndex((e: any) => e.userId === userId && e.courseId === 'eng-legal-angola');
+      // Find the student's active enrollment
+      const { data: enrollment } = await supabase
+        .from('enrollments')
+        .select('*')
+        .eq('student_id', userId)
+        .limit(1)
+        .maybeSingle();
+
+      const courseId = enrollment?.course_id || '00000000-0000-0000-0000-000000000000';
       
-      if (enrollmentIdx > -1) {
-        db.enrollments[enrollmentIdx].status = 'COMPLETED';
-        db.enrollments[enrollmentIdx].progressPercent = 100;
-      }
+      // Update enrollment to completed and 100% progress
+      await supabase
+        .from('enrollments')
+        .update({ status: 'COMPLETED', progress_percent: 100 })
+        .eq('student_id', userId)
+        .eq('course_id', courseId);
 
-      if (!db.certificates) db.certificates = [];
-      const studentMatch = db.users?.find((u: any) => u.id === userId);
-      const studentFullName = studentMatch ? `${studentMatch.firstName} ${studentMatch.lastName}` : 'Dr. Aluno MultiPlus';
       const hashVer = `MPA-2026-UNLOCKED-${userId.substring(0, 4).toUpperCase()}`;
+      
+      // Insert new certificate
+      await academicService.issueCertificate(userId, courseId, hashVer);
 
-      db.certificates.push({
-        certificateNumber: hashVer,
-        courseName: 'English for the Legal Field in Angola',
-        recipientName: studentFullName,
-        completionDate: new Date().toISOString().slice(0, 10),
-        instructorName: 'Esmeralda Bruno Sumbelelo',
-        finalGrade: '92/100',
-        validUntil: 'Sem limite',
-        isValid: true,
-        institution: 'MultiPlus Academy (Huambo, Angola)',
-        verificationCode: hashVer
-      });
-
-      localStorage.setItem('multiplus_academic_db', JSON.stringify(db));
-      loadDatabase();
-      alert(`Outorga jurídica concluída para ${studentFullName}! Certificado gerado sob hash "${hashVer}".`);
-    } catch (e) {}
+      await loadDatabase();
+      alert(`Outorga jurídica concluída! Certificado gerado e salvo no Supabase sob hash "${hashVer}".`);
+    } catch (e: any) {
+      console.error('Erro ao outorgar certificado:', e);
+      alert(`Erro ao outorgar certificado: ${e.message || e}`);
+    }
   };
 
   // Add course from wizard creator
-  const handleAddNewCourse = (e: React.FormEvent) => {
+  const handleAddNewCourse = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCourseTitle.trim()) return;
 
-    const newSlug = newCourseTitle.toLowerCase().replace(/ /g, '-');
-    const customId = `course-${Date.now()}`;
-    const dynamicCourse: Course = {
-      id: customId,
-      slug: newSlug,
-      title: newCourseTitle,
-      subtitle: newCourseSubtitle || 'Formação complementar acelerada.',
-      summary: 'Esta emente foi formulada síncronamente pela diretora pedagógica para extensão rápida.',
-      duration: newCourseDuration,
-      hours: '24 Horas Letivas',
-      language: 'Inglês',
-      modality: 'Online',
-      schedule: 'A definir',
-      startDate: 'Agendado',
-      price: newCoursePrice,
-      targetAudience: ['Juristas Corporativos', 'Formandos Gerais'],
-      modules: [
-        { number: 'Mês I', title: 'Boilerplate e Metas Iniciais', topics: ['Introdução Geral', 'Conceitos Básicos'] }
-      ]
-    };
+    try {
+      const liveCourse = await academicService.createCourse({
+        title: newCourseTitle,
+        subtitle: newCourseSubtitle || 'Formação complementar acelerada.',
+        duration: newCourseDuration,
+        category: newCourseCategory,
+        status: 'DRAFT',
+        teacher_id: currentUser?.id
+      });
 
-    const updated = [...courses, dynamicCourse];
-    setCourses(updated);
+      const dynamicCourse: Course = {
+        id: liveCourse.id,
+        slug: liveCourse.slug,
+        title: liveCourse.title || liveCourse.titulo,
+        subtitle: liveCourse.description || liveCourse.descricao || '',
+        summary: liveCourse.description || liveCourse.descricao || '',
+        duration: liveCourse.duration || liveCourse.duracao || '12 Semanas',
+        hours: '24 Horas Letivas',
+        language: 'Inglês',
+        modality: 'Online',
+        schedule: 'A definir',
+        startDate: 'Agendado',
+        price: newCoursePrice,
+        targetAudience: ['Juristas Corporativos', 'Formandos Gerais'],
+        modules: [],
+        status: 'DRAFT',
+        teacher_id: currentUser?.id
+      };
 
-    // Save in shared database
-    const localGrads = localStorage.getItem('multiplus_academic_db');
-    if (localGrads) {
-      try {
-        const db = JSON.parse(localGrads);
-        if (!db.courses) db.courses = [];
-        db.courses.push(dynamicCourse);
-        localStorage.setItem('multiplus_academic_db', JSON.stringify(db));
-      } catch (e) {}
+      setCourses(prev => [...prev, dynamicCourse]);
+      alert(`Sucesso! O curso "${newCourseTitle}" está indexado sob estado "Rascunho" no Supabase.`);
+      
+      setNewCourseTitle('');
+      setNewCourseSubtitle('');
+      loadDatabase();
+      setActiveTab('cursos');
+    } catch (err: any) {
+      console.error('Erro ao registrar curso no Supabase:', err);
+      alert(`Falha ao registrar curso: ${err.message || err}`);
     }
-
-    alert(`Sucesso! O curso "${newCourseTitle}" está indexado sob estado "Ativo".`);
-    setNewCourseTitle('');
-    setNewCourseSubtitle('');
-    setActiveTab('cursos');
   };
 
   // Add module to planner
@@ -356,46 +355,34 @@ export default function InstructorPortal({
   };
 
   // Certificados validation hash test
-  const testValidateCertificate = (e: React.FormEvent) => {
+  const testValidateCertificate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputHashVerify.trim()) return;
 
-    const localGrads = localStorage.getItem('multiplus_academic_db');
-    let validated = false;
-    if (localGrads) {
-      try {
-        const db = JSON.parse(localGrads);
-        const match = db.certificates?.find((c: any) => c.verificationCode === inputHashVerify.trim());
-        if (match) {
-          setHashResultText(`DIPLOMA RECONHECIDO! Outorgado para ${match.recipientName} em ${match.completionDate}. Curso: ${match.courseName}.`);
-          validated = true;
-        }
-      } catch (e) {}
-    }
-
-    if (!validated) {
-      if (inputHashVerify.trim().toUpperCase() === 'MPA-2026-UNLOCKED-PER_') {
-        setHashResultText('DIPLOMA RECONHECIDO! Outorgado para Dr. António Ferreira Carvalho por Esmeralda Sumbelelo.');
+    setHashResultText('Processando verificação eletrônica com carimbo digital...');
+    try {
+      const match = await academicService.verifyCertificate(inputHashVerify);
+      if (match) {
+        const studentName = match.student?.nome_completo || 'Aluno MultiPlus';
+        const courseTitle = match.course?.titulo || 'Curso Jurídico';
+        const dateStr = match.emitido_em ? new Date(match.emitido_em).toLocaleDateString() : '---';
+        setHashResultText(`DIPLOMA RECONHECIDO NO SUPABASE! Outorgado para ${studentName} em ${dateStr}. Curso: ${courseTitle}.`);
       } else {
-        setHashResultText('CÓDIGO INEXISTENTE. Nenhuma apólice registada sob este carimbo fiscal no LMS.');
+        // Fallback for mock preview
+        if (inputHashVerify.trim().toUpperCase() === 'MPA-2026-UNLOCKED-PER_') {
+          setHashResultText('DIPLOMA RECONHECIDO (SIMULADO)! Outorgado para Dr. António Ferreira Carvalho por Esmeralda Sumbelelo.');
+        } else {
+          setHashResultText('CÓDIGO INEXISTENTE. Nenhuma apólice registada sob este carimbo fiscal no LMS do Supabase.');
+        }
       }
+    } catch (err: any) {
+      console.error(err);
+      setHashResultText('Erro de conexão ao validar diploma com o servidor Supabase.');
     }
   };
 
   // Derived variables
   const pendingGreads = 1; 
-  const certificatesCount = letCertificatesCount();
-
-  function letCertificatesCount() {
-    const localGrads = localStorage.getItem('multiplus_academic_db');
-    if (localGrads) {
-      try {
-        const db = JSON.parse(localGrads);
-        if (db.certificates) return db.certificates.length;
-      } catch (e) {}
-    }
-    return 1;
-  }
 
   return (
     <div className={`flex min-h-screen text-[#1C1C1C] font-sans ${isDarkMode ? 'dark bg-slate-900 text-white-100' : 'bg-[#FAF9F6]'}`}>
@@ -473,7 +460,7 @@ export default function InstructorPortal({
         <div className="px-5 pt-4 border-t border-white/10 space-y-3.5 text-left">
           <div className="flex items-center gap-3">
             <img
-              src={currentUser?.avatarUrl || "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=150&h=150"}
+              src={currentUser?.avatarUrl || "https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg"}
               alt="Avatar Esmeralda"
               className="w-9 h-9 rounded-full object-cover border border-[#C89B3C]/50"
             />
@@ -576,7 +563,7 @@ export default function InstructorPortal({
             {/* Short Profiler */}
             <div className="flex items-center gap-2 border-l pl-3.5">
               <img
-                src={currentUser?.avatarUrl || "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=150&h=150"}
+                src={currentUser?.avatarUrl || "https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg"}
                 alt="Formadora Avatar"
                 className="w-8 h-8 rounded-full border border-gray-200"
               />
@@ -602,6 +589,7 @@ export default function InstructorPortal({
               certificatesIssuedCount={certificatesCount}
               completionRate={95}
               onNavigate={(tab) => setActiveTab(tab)}
+              lessonsCount={lessonsCount}
             />
           )}
 
@@ -611,6 +599,7 @@ export default function InstructorPortal({
               courses={courses}
               onNavigateToCreate={() => setActiveTab('criar-curso')}
               onUpdateCourses={(updated) => setCourses(updated)}
+              onRefresh={loadDatabase}
             />
           )}
 
@@ -929,8 +918,8 @@ export default function InstructorPortal({
                   
                   <div className="space-y-1.5">
                     <img
-                      src="https://res.cloudinary.com/deeki0eou/image/upload/v1780728240/logotipo-dourado-sem-fundo_abouxm.png"
-                      alt="MultiPlus Logo Gold"
+                      src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520970/multiplus-academy-logo-sem-fundo_d7gqbs.png"
+                      alt="MultiPlus Logo"
                       className="h-14 w-auto mx-auto object-contain"
                     />
                     <h5 className="font-mono text-4xs tracking-widest text-[#C89B3C] font-bold">MULTIPLUS ACADEMY • ANGOLA</h5>
@@ -1094,7 +1083,7 @@ export default function InstructorPortal({
               
               <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-gray-100">
                 <img
-                  src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=150&h=150"
+                  src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg"
                   alt="Esmeralda Foto"
                   className="w-24 h-24 rounded-full object-cover border-4 border-[#C89B3C]"
                 />

@@ -33,7 +33,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
           <div className="space-y-6">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => setCurrentPage('home')}>
               <img
-                src="https://res.cloudinary.com/deeki0eou/image/upload/v1780728240/logotipo-dourado-sem-fundo_abouxm.png"
+                src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png"
                 alt="MultiPlus Academy logo"
                 className="h-16 w-auto object-contain"
               />

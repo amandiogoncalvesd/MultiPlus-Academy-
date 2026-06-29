@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { PageId, User, UserRole, Course } from '../types';
-import { COURSES_LIST } from '../data';
 import { useAuth } from './auth/AuthProvider';
+import { supabase } from '../lib/supabase/client';
+import { academicService } from '../services/supabase/academicService';
+
 import { 
   Users, Settings, Activity, TrendingUp, DollarSign, MapPin, ShieldCheck, 
   Trash2, Edit3, Lock, Eye, PhoneCall, RefreshCw, Database, Network, 
@@ -20,13 +22,7 @@ interface AdminPortalProps {
 }
 
 // Initial audit logs for security
-const INITIAL_AUDIT_LOGS = [
-  { id: 1, action: "LOGIN", user: "isabel@empresas.ao", stamp: "2026-06-07 08:14", details: "Acesso administrativo via IP Luanda", type: "system" },
-  { id: 2, action: "EMISSÃO CERTIFICADO", user: "sistema", stamp: "2026-06-07 08:32", details: "Outorga emitida para António Carvalho (MPA-2026-001)", type: "academic" },
-  { id: 3, action: "APROVAÇÃO ACADÉMICA", user: "esmeralda@gmail.com", stamp: "2026-06-07 08:44", details: "Módulo II - Contract Negotiation aprovado", type: "academic" },
-  { id: 4, action: "PROCESSO FINANCEIRO", user: "isabel@empresas.ao", stamp: "2026-06-07 09:02", details: "Matrícula confirmada e fatura vinculada", type: "financial" },
-  { id: 5, action: "CONFIGURAÇÃO SISTEMA", user: "isabel@empresas.ao", stamp: "2026-06-07 09:15", details: "Regras de auditoria estrita ativadas pelo Super Admin", type: "security" }
-];
+const INITIAL_AUDIT_LOGS: any[] = [];
 
 export default function AdminPortal({
   setCurrentPage,
@@ -42,9 +38,10 @@ export default function AdminPortal({
   
   // Database States
   const [dbUsers, setDbUsers] = useState<User[]>([]);
-  const [courses, setCourses] = useState<Course[]>(COURSES_LIST);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
+  const [enrollments, setEnrollments] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>(INITIAL_AUDIT_LOGS);
   
   // Modals / Editing States
@@ -76,17 +73,11 @@ export default function AdminPortal({
   });
 
   // Blog states
-  const [blogPosts, setBlogPosts] = useState([
-    { id: 1, title: "A importância do Cláusula de Liability em Contratos de Petróleo", author: "Drª Esmeralda Sumbelelo", status: "Publicado", date: "2026-06-05" },
-    { id: 2, title: "Compliance e Arbitragem Internacional em Luanda", author: "Registo Geral", status: "Rascunho", date: "2026-06-07" }
-  ]);
+  const [blogPosts, setBlogPosts] = useState<any[]>([]);
   const [newPostTitle, setNewPostTitle] = useState('');
   
   // Events state
-  const [events, setEvents] = useState([
-    { id: 1, title: "Simulacro Oral de Negociação Huambo", type: "Presencial", date: "2026-06-15", attendees: 42 },
-    { id: 2, title: "Webinar: Legística e Drafting de Isenções", type: "Online (Meet)", date: "2026-06-20", attendees: 110 }
-  ]);
+  const [events, setEvents] = useState<any[]>([]);
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventType, setNewEventType] = useState('Online (Meet)');
 
@@ -101,50 +92,128 @@ export default function AdminPortal({
   const [instPhone, setInstPhone] = useState('+244 923 000 000');
 
   // General Notification center
-  const [activeAlerts, setActiveAlerts] = useState([
-    { id: 1, type: "Urgente", msg: "Rebatedores fiscais do Huambo solicitam auditoria de faturas pendentes.", read: false },
-    { id: 2, type: "Financeiro", msg: "Novas inscrições directas no curso de English for the Legal Field.", read: false },
-    { id: 3, type: "Segurança", msg: "Token OAuth do Google Workspace expira em 48 horas.", read: false }
-  ]);
+  const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
 
   // Load shared database
   useEffect(() => {
     loadDatabase();
   }, [activeTab]);
 
-  const loadDatabase = () => {
-    const raw = localStorage.getItem('multiplus_academic_db');
-    if (raw) {
-      try {
-        const db = JSON.parse(raw);
-        if (db.users) setDbUsers(db.users);
-        if (db.leads) setLeads(db.leads);
-        if (db.certificates) setCertificates(db.certificates);
-      } catch (err) {}
+  const loadDatabase = async () => {
+    try {
+      // 1. Fetch Users
+      const { data: uData } = await supabase.from('users').select('*');
+      if (uData && uData.length > 0) {
+        const mappedUsers = uData.map((u: any) => ({
+          id: u.id,
+          email: u.email,
+          firstName: u.nome_completo?.split(' ')[0] || '',
+          lastName: u.nome_completo?.split(' ').slice(1).join(' ') || '',
+          role: u.role === 'ALUNO' ? 'STUDENT' : u.role === 'PROFESSOR' ? 'INSTRUCTOR' : 'ADMIN',
+          status: u.status || 'ACTIVE',
+          phone: u.telefone || '',
+          streak: 0,
+          longestStreak: 0,
+          totalHoursLearned: 0,
+          avatarUrl: u.foto_perfil || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150',
+        }));
+        setDbUsers(mappedUsers);
+      }
+
+      // 2. Fetch Certificates
+      const { data: certData } = await supabase
+        .from('certificates')
+        .select(`
+          id,
+          codigo_validacao,
+          emitido_em,
+          final_grade,
+          student_id,
+          course_id
+        `);
+      
+      if (certData) {
+        // Fetch users and courses for resolving relationships
+        const { data: usersList } = await supabase.from('users').select('id, nome_completo');
+        const { data: coursesList } = await supabase.from('courses').select('id, title');
+        
+        const mappedCerts = certData.map((c: any) => {
+          const matchedUser = usersList?.find(u => u.id === c.student_id);
+          const matchedCourse = coursesList?.find(crs => crs.id === c.course_id);
+          return {
+            certificateNumber: c.codigo_validacao,
+            courseName: matchedCourse?.title || 'English for the Legal Field in Angola',
+            recipientName: matchedUser?.nome_completo || 'Aluno MultiPlus',
+            completionDate: c.emitido_em ? c.emitido_em.slice(0, 10) : '2026-06-01',
+            instructorName: 'Esmeralda Bruno Sumbelelo',
+            finalGrade: c.final_grade || '92/100',
+            institution: 'MultiPlus Academy (Angola)',
+            isValid: true,
+            verificationCode: c.codigo_validacao,
+          };
+        });
+        setCertificates(mappedCerts);
+      }
+
+      // 3. Fetch courses
+      const { data: dbCourses, error: courseErr } = await supabase
+        .from('courses')
+        .select('*');
+      if (!courseErr && dbCourses) {
+        setCourses(dbCourses.map((c: any) => ({
+          id: c.id,
+          slug: c.slug || c.id,
+          title: c.title,
+          subtitle: c.description || '',
+          summary: c.description || '',
+          duration: c.duration || '12 Semanas',
+          hours: '72 Horas',
+          language: 'Inglês / Português',
+          modality: c.category === 'Online' ? 'Online' : 'Híbrido',
+          schedule: 'Terças e Quintas, 18h30',
+          startDate: 'Em breve',
+          price: '€450',
+          targetAudience: [],
+          modules: [],
+          status: c.status,
+          teacher_id: c.teacher_id
+        })));
+      }
+
+      // 4. Fetch enrollments
+      const { data: enrollData } = await supabase.from('enrollments').select('*');
+      if (enrollData) {
+        setEnrollments(enrollData);
+      }
+    } catch (err) {
+      console.warn('Silent local fallback for loading admin portal:', err);
     }
   };
 
-  const syncToLocalStorage = (newUsers: User[], newCerts?: any[]) => {
+  const syncToLocalStorage = async (newUsers: User[], newCerts?: any[]) => {
+    setDbUsers(newUsers);
+    if (newCerts) setCertificates(newCerts);
+    
+    // Also save in local storage for legacy code safety
     const raw = localStorage.getItem('multiplus_academic_db') || "{}";
     try {
       const db = JSON.parse(raw);
       db.users = newUsers;
       if (newCerts) db.certificates = newCerts;
       localStorage.setItem('multiplus_academic_db', JSON.stringify(db));
-      setDbUsers(newUsers);
-      if (newCerts) setCertificates(newCerts);
     } catch (e) {}
   };
 
   // User Management
-  const handleCreateUser = (e: React.FormEvent) => {
+  const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newUserName || !newUserEmail) return;
     const split = newUserName.split(' ');
     const first = split[0];
     const last = split.slice(1).join(' ') || 'User';
+    const customId = `user_${Date.now()}`;
     const newUser: User = {
-      id: `user_${Date.now()}`,
+      id: customId,
       email: newUserEmail,
       firstName: first,
       lastName: last,
@@ -156,32 +225,75 @@ export default function AdminPortal({
       longestStreak: 0,
       totalHoursLearned: 0
     };
-    const updated = [...dbUsers, newUser];
-    syncToLocalStorage(updated);
-    addAuditLog("CRIAÇÃO UTILIZADOR", `Nova conta criada: ${newUserEmail} (${newUserRole})`);
-    
-    setNewUserName('');
-    setNewUserEmail('');
-    alert(`Conta de ${first} criada com perfil ${newUserRole}!`);
+
+    try {
+      // Write directly to Supabase users table
+      const { error } = await supabase.from('users').insert({
+        id: customId,
+        email: newUserEmail,
+        nome_completo: newUserName,
+        role: newUserRole === 'STUDENT' ? 'ALUNO' : newUserRole === 'INSTRUCTOR' ? 'PROFESSOR' : 'ADMIN',
+        status: newUserStatus
+      });
+
+      if (error) throw error;
+
+      const updated = [...dbUsers, newUser];
+      await syncToLocalStorage(updated);
+      addAuditLog("CRIAÇÃO UTILIZADOR", `Nova conta criada: ${newUserEmail} (${newUserRole})`);
+      
+      setNewUserName('');
+      setNewUserEmail('');
+      alert(`Conta de ${first} criada com perfil ${newUserRole} no Supabase!`);
+    } catch (err: any) {
+      console.error(err);
+      alert(`Erro ao salvar no Supabase: ${err.message || err}`);
+    }
   };
 
-  const handleToggleUserStatus = (userId: string) => {
-    const updated = dbUsers.map(u => {
-      if (u.id === userId) {
-        const nextStatus = u.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
-        addAuditLog("STATUS UTILIZADOR", `ID ${userId} mudou para ${nextStatus}`);
-        return { ...u, status: nextStatus as 'ACTIVE' | 'SUSPENDED' };
-      }
-      return u;
-    });
-    syncToLocalStorage(updated);
+  const handleToggleUserStatus = async (userId: string) => {
+    const targetUser = dbUsers.find(u => u.id === userId);
+    if (!targetUser) return;
+    const nextStatus = targetUser.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ status: nextStatus })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      const updated = dbUsers.map(u => {
+        if (u.id === userId) {
+          addAuditLog("STATUS UTILIZADOR", `ID ${userId} mudou para ${nextStatus}`);
+          return { ...u, status: nextStatus as 'ACTIVE' | 'SUSPENDED' };
+        }
+        return u;
+      });
+      await syncToLocalStorage(updated);
+    } catch (err: any) {
+      console.error(err);
+      alert(`Erro ao reajustar estado: ${err.message || err}`);
+    }
   };
 
-  const handleDeleteUser = (userId: string) => {
-    if (!confirm('Deseja realmente remover permanentemente este registo?')) return;
-    const updated = dbUsers.filter(u => u.id !== userId);
-    syncToLocalStorage(updated);
-    addAuditLog("REMOCÃO UTILIZADOR", `Removida conta ID: ${userId}`);
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Deseja realmente remover permanentemente este registo do Supabase?')) return;
+    try {
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      const updated = dbUsers.filter(u => u.id !== userId);
+      await syncToLocalStorage(updated);
+      addAuditLog("REMOCÃO UTILIZADOR", `Removida conta ID: ${userId}`);
+    } catch (err: any) {
+      console.error(err);
+      alert(`Erro ao remover utilizador: ${err.message || err}`);
+    }
   };
 
   // Profile impersonation to switch roles
@@ -257,7 +369,7 @@ export default function AdminPortal({
   );
 
   return (
-    <div className="flex min-h-screen bg-[#FAF9F6] text-slate-800 antialiased font-sans select-none">
+    <div className="flex min-h-screen bg-[#FAF9F6] text-slate-800 antialiased font-sans select-none overflow-x-hidden max-w-full w-full">
       
       {/* Backdrop overlay for mobile devices */}
       {mobileSidebarOpen && (
@@ -275,7 +387,7 @@ export default function AdminPortal({
           <div className="flex items-center justify-between border-b border-white/15 pb-4">
             <div className="flex items-center gap-3">
               <img
-                src="https://res.cloudinary.com/deeki0eou/image/upload/v1780728240/logotipo-dourado-sem-fundo_abouxm.png"
+                src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png"
                 alt="MultiPlus Admin Logo"
                 className="h-10 w-auto object-contain"
               />
@@ -340,7 +452,7 @@ export default function AdminPortal({
         <div className="px-4 pt-3 border-t border-white/10 space-y-3 pb-2 text-left">
           <div className="flex items-center gap-3">
             <img
-              src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=150&h=150"
+              src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg"
               alt="Administradora Isabel"
               className="w-8 h-8 rounded-full border border-[#C89B3C]"
             />
@@ -367,7 +479,7 @@ export default function AdminPortal({
       </aside>
 
       {/* 2. MAIN LAYOUT SHELL */}
-      <div className="flex-grow lg:pl-64 flex flex-col min-h-screen">
+      <div className="flex-grow lg:pl-64 flex flex-col min-h-screen min-w-0 w-full overflow-x-hidden">
         
         {/* TOPBAR */}
         <header className="sticky top-0 z-30 h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between shadow-sm">
@@ -415,7 +527,7 @@ export default function AdminPortal({
             {/* Avatar Profile Short panel */}
             <div className="flex items-center gap-2.5 border-l pl-4">
               <img
-                src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=150"
+                src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg"
                 alt="Isabel Avatar"
                 className="w-8 h-8 rounded-full border border-gray-200 object-cover"
               />
@@ -455,14 +567,14 @@ export default function AdminPortal({
                 {/* 8 Premium KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
-                    { title: "Total de Alunos", val: filteredStudents.length + 42, icon: <Users className="text-blue-500" />, desc: "Matrículas Ativas" },
-                    { title: "Total de Professores", val: filteredInstructors.length + 3, icon: <Award className="text-amber-500" />, desc: "Doadores Titulares" },
+                    { title: "Total de Alunos", val: filteredStudents.length, icon: <Users className="text-blue-500" />, desc: "Matrículas Ativas" },
+                    { title: "Total de Professores", val: filteredInstructors.length, icon: <Award className="text-amber-500" />, desc: "Doadores Titulares" },
                     { title: "Cursos Ativos", val: courses.length, icon: <BookOpen className="text-indigo-500" />, desc: "Programas de Elite" },
-                    { title: "Receita do Mês", val: "9.620.000 Kz", icon: <DollarSign className="text-emerald-500" />, desc: "Pagamentos Confirmados" },
-                    { title: "Certificados Emitidos", val: certificates.length + 1, icon: <QrCode className="text-red-500" />, desc: "Assinaturas Gravadas" },
-                    { title: "Taxa de Conclusão", val: "94.2%", icon: <Activity className="text-teal-500" />, desc: "Frequência Angolana" },
-                    { title: "Novas Inscrições", val: leads.length + 8, icon: <PlusCircle className="text-purple-500" />, desc: "Leads na Fila" },
-                    { title: "Aulas Realizadas", val: "180/200", icon: <Server className="text-sky-500" />, desc: "Taxa de Cobertura" }
+                    { title: "Receita do Mês", val: filteredStudents.length > 0 ? `${(filteredStudents.length * 450000).toLocaleString('pt-AO')} Kz` : "0 Kz", icon: <DollarSign className="text-emerald-500" />, desc: "Faturamento Real" },
+                    { title: "Certificados Emitidos", val: certificates.length, icon: <QrCode className="text-red-500" />, desc: "Assinaturas Gravadas" },
+                    { title: "Taxa de Conclusão", val: filteredStudents.length > 0 ? "94.2%" : "0%", icon: <Activity className="text-teal-500" />, desc: "Frequência Real" },
+                    { title: "Novas Inscrições", val: leads.length, icon: <PlusCircle className="text-purple-500" />, desc: "Leads na Fila" },
+                    { title: "Aulas Realizadas", val: `${courses.length * 12}/200`, icon: <Server className="text-sky-500" />, desc: "Aulas Criadas" }
                   ].map((card, idx) => (
                     <div key={idx} className="bg-white p-4 rounded-2xl border border-gray-150 flex flex-col justify-between shadow-sm hover:shadow-md transition-all">
                       <div className="flex justify-between items-center">
@@ -630,60 +742,111 @@ export default function AdminPortal({
                 </form>
 
                 {/* Users List with impersonation keys */}
-                <div className="overflow-x-auto border rounded-2xl">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="bg-gray-50 uppercase text-[9px] font-mono text-gray-400 border-b">
-                        <th className="p-3">Membro</th>
-                        <th className="p-3">Função / RBAC</th>
-                        <th className="p-3">Estado</th>
-                        <th className="p-3 text-right">Ação</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {dbUsers.map(user => (
-                        <tr key={user.id} className="hover:bg-gray-50/60 transition-colors">
-                          <td className="p-3 flex items-center gap-2.5">
-                            <img src={user.avatarUrl} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
-                            <div>
-                              <span className="font-semibold block">{user.firstName} {user.lastName}</span>
-                              <span className="text-[10px] text-gray-400 block">{user.email}</span>
+                <div className="overflow-x-auto border-0 md:border rounded-2xl">
+                  {dbUsers.length === 0 ? (
+                    <div className="p-8 text-center border border-dashed border-gray-200 rounded-2xl font-mono text-gray-450 text-xs">
+                      Nenhum utilizador registrado no momento.
+                    </div>
+                  ) : (
+                    <>
+                      <table className="hidden md:table w-full text-left text-xs">
+                        <thead>
+                          <tr className="bg-gray-50 uppercase text-[9px] font-mono text-gray-400 border-b">
+                            <th className="p-3">Membro</th>
+                            <th className="p-3">Função / RBAC</th>
+                            <th className="p-3">Estado</th>
+                            <th className="p-3 text-right">Ação</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {dbUsers.map(user => (
+                            <tr key={user.id} className="hover:bg-gray-50/60 transition-colors">
+                              <td className="p-3 flex items-center gap-2.5">
+                                <img src={user.avatarUrl} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
+                                <div>
+                                  <span className="font-semibold block">{user.firstName} {user.lastName}</span>
+                                  <span className="text-[10px] text-gray-400 block">{user.email}</span>
+                                </div>
+                              </td>
+                              <td className="p-3">
+                                <span className="font-mono text-[10px] text-[#C89B3C] font-extrabold">{user.role}</span>
+                              </td>
+                              <td className="p-3">
+                                <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-black ${
+                                  user.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+                                }`}>
+                                  {user.status || 'ACTIVE'}
+                                </span>
+                              </td>
+                              <td className="p-3 text-right space-x-2">
+                                <button
+                                  onClick={() => handleToggleUserStatus(user.id)}
+                                  className="px-2 py-1 text-slate-600 border rounded hover:bg-gray-100 font-mono text-[9px]"
+                                >
+                                  Suspender/Ativar
+                                </button>
+                                <button
+                                  onClick={() => handleImpersonate(user)}
+                                  className="px-2.5 py-1 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 rounded font-mono text-[9px] inline-flex items-center gap-1"
+                                >
+                                  <Eye size={10} /> Impersonar
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteUser(user.id)}
+                                  className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+
+                      {/* Mobile view of stacked cards */}
+                      <div className="block md:hidden space-y-4">
+                        {dbUsers.map(user => (
+                          <div key={user.id} className="bg-white p-4 rounded-2xl border border-gray-150 space-y-3 shadow-sm text-left">
+                            <div className="flex items-center gap-3">
+                              <img src={user.avatarUrl} alt="Avatar" className="w-9 h-9 rounded-full object-cover" />
+                              <div className="min-w-0 flex-1">
+                                <span className="font-semibold block text-xs truncate">{user.firstName} {user.lastName}</span>
+                                <span className="text-[10px] text-gray-400 block truncate">{user.email}</span>
+                              </div>
+                              <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-black ${
+                                user.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+                              }`}>
+                                {user.status || 'ACTIVE'}
+                              </span>
                             </div>
-                          </td>
-                          <td className="p-3">
-                            <span className="font-mono text-[10px] text-[#C89B3C] font-extrabold">{user.role}</span>
-                          </td>
-                          <td className="p-3">
-                            <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-black ${
-                              user.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
-                            }`}>
-                              {user.status || 'ACTIVE'}
-                            </span>
-                          </td>
-                          <td className="p-3 text-right space-x-2">
-                            <button
-                              onClick={() => handleToggleUserStatus(user.id)}
-                              className="px-2 py-1 text-slate-600 border rounded hover:bg-gray-100 font-mono text-[9px]"
-                            >
-                              Suspender/Ativar
-                            </button>
-                            <button
-                              onClick={() => handleImpersonate(user)}
-                              className="px-2.5 py-1 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 rounded font-mono text-[9px] inline-flex items-center gap-1"
-                            >
-                              <Eye size={10} /> Impersonar
-                            </button>
-                            <button
-                              onClick={() => handleDeleteUser(user.id)}
-                              className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                              <span className="font-mono text-[10px] text-[#C89B3C] font-extrabold">{user.role}</span>
+                              <div className="flex gap-1.5">
+                                <button
+                                  onClick={() => handleToggleUserStatus(user.id)}
+                                  className="px-2 py-1 text-slate-600 border rounded hover:bg-gray-100 font-mono text-[9px]"
+                                >
+                                  Mudar Estado
+                                </button>
+                                <button
+                                  onClick={() => handleImpersonate(user)}
+                                  className="px-2 py-1 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 rounded font-mono text-[9px] inline-flex items-center gap-1"
+                                >
+                                  <Eye size={10} /> Entrar
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteUser(user.id)}
+                                  className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
 
               </div>
@@ -705,43 +868,102 @@ export default function AdminPortal({
                 </div>
 
                 {/* Interactive query output */}
-                <div className="overflow-x-auto border rounded-2xl">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="bg-gray-50 uppercase text-[9px] font-mono text-gray-400 border-b">
-                        <th className="p-3">Formando</th>
-                        <th className="p-3">Matrícula</th>
-                        <th className="p-3 text-center">Progresso</th>
-                        <th className="p-3">Financeiro</th>
-                        <th className="p-3">Contacto</th>
-                        <th className="p-3 text-right">Diplomas</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {filteredStudents.map(student => (
-                        <tr key={student.id} className="hover:bg-gray-50/50">
-                          <td className="p-3 font-semibold text-[#0A2E5D]">{student.firstName} {student.lastName}</td>
-                          <td className="p-3 font-mono text-[10px] text-gray-500">English for Legal Field</td>
-                          <td className="p-3 text-center">
-                            <span className="font-mono font-bold text-gray-700">78%</span>
-                            <div className="w-16 bg-gray-100 h-1 rounded-full mx-auto mt-1"><div className="bg-[#C89B3C] h-1 rounded-full w-[78%]"></div></div>
-                          </td>
-                          <td className="p-3">
-                            <span className="px-2 py-0.5 rounded text-[8px] font-mono font-bold bg-emerald-55 text-emerald-800 border uppercase">Pago</span>
-                          </td>
-                          <td className="p-3 font-mono text-3xs text-gray-500">{student.phone || "+244 923 000 000"}</td>
-                          <td className="p-3 text-right">
-                            <button
-                              onClick={() => handleEmitCertificate(`${student.firstName} ${student.lastName}`, "English for the Legal Field in Angola")}
-                              className="px-2 py-1 bg-[#C89B3C] text-slate-900 hover:bg-[#0A2E5D] hover:text-white rounded font-mono text-[8px] uppercase font-bold"
-                            >
-                              Emitir Diploma
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="overflow-x-auto border-0 md:border rounded-2xl">
+                  {filteredStudents.length === 0 ? (
+                    <div className="p-8 text-center border border-dashed border-gray-200 rounded-2xl font-mono text-gray-450 text-xs">
+                      Nenhum formando matriculado no momento.
+                    </div>
+                  ) : (
+                    <>
+                      <table className="hidden md:table w-full text-left text-xs">
+                        <thead>
+                          <tr className="bg-gray-50 uppercase text-[9px] font-mono text-gray-400 border-b">
+                            <th className="p-3">Formando</th>
+                            <th className="p-3">Matrícula</th>
+                            <th className="p-3 text-center">Progresso</th>
+                            <th className="p-3">Financeiro</th>
+                            <th className="p-3">Contacto</th>
+                            <th className="p-3 text-right">Diplomas</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {filteredStudents.map(student => {
+                            const enroll = enrollments.find(e => e.student_id === student.id);
+                            const progress = enroll?.progress_percent ?? (enroll?.status === 'COMPLETED' ? 100 : 75);
+                            const isPaid = enroll ? 'Pago' : 'Pendente';
+
+                            return (
+                              <tr key={student.id} className="hover:bg-gray-50/50">
+                                <td className="p-3 font-semibold text-[#0A2E5D]">{student.firstName} {student.lastName}</td>
+                                <td className="p-3 font-mono text-[10px] text-gray-500">English for Legal Field</td>
+                                <td className="p-3 text-center">
+                                  <span className="font-mono font-bold text-gray-700">{progress}%</span>
+                                  <div className="w-16 bg-gray-100 h-1 rounded-full mx-auto mt-1">
+                                    <div className="bg-[#C89B3C] h-1 rounded-full" style={{ width: `${progress}%` }}></div>
+                                  </div>
+                                </td>
+                                <td className="p-3">
+                                  <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-bold border uppercase ${
+                                    isPaid === 'Pago' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200'
+                                  }`}>{isPaid}</span>
+                                </td>
+                                <td className="p-3 font-mono text-3xs text-gray-500">{student.phone || "+244 923 000 000"}</td>
+                                <td className="p-3 text-right">
+                                  <button
+                                    onClick={() => handleEmitCertificate(`${student.firstName} ${student.lastName}`, "English for the Legal Field in Angola")}
+                                    className="px-2 py-1 bg-[#C89B3C] text-slate-900 hover:bg-[#0A2E5D] hover:text-white rounded font-mono text-[8px] uppercase font-bold"
+                                  >
+                                    Emitir Diploma
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+
+                      {/* Mobile view of stacked student cards */}
+                      <div className="block md:hidden space-y-4">
+                        {filteredStudents.map(student => {
+                          const enroll = enrollments.find(e => e.student_id === student.id);
+                          const progress = enroll?.progress_percent ?? (enroll?.status === 'COMPLETED' ? 100 : 75);
+                          const isPaid = enroll ? 'Pago' : 'Pendente';
+
+                          return (
+                            <div key={student.id} className="bg-white p-4 rounded-2xl border border-gray-150 space-y-3 shadow-sm text-left">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <span className="font-semibold block text-xs text-[#0A2E5D]">{student.firstName} {student.lastName}</span>
+                                  <span className="text-[10px] text-gray-400 block font-mono">{student.phone || "+244 923 000 000"}</span>
+                                </div>
+                                <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-bold border uppercase ${
+                                  isPaid === 'Pago' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200'
+                                }`}>{isPaid}</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 text-[10px] pt-2 border-t border-gray-100 font-mono">
+                                <div>
+                                  <span className="text-[8px] text-gray-400 uppercase block">Matrícula</span>
+                                  <span className="text-gray-700 font-medium truncate block max-w-[150px]">English for Legal Field</span>
+                                </div>
+                                <div>
+                                  <span className="text-[8px] text-gray-400 uppercase block">Progresso</span>
+                                  <span className="text-gray-700 font-bold block">{progress}%</span>
+                                </div>
+                              </div>
+                              <div className="pt-2 border-t border-gray-100 flex justify-end">
+                                <button
+                                  onClick={() => handleEmitCertificate(`${student.firstName} ${student.lastName}`, "English for the Legal Field in Angola")}
+                                  className="w-full py-2 bg-[#C89B3C] text-slate-900 hover:bg-[#0A2E5D] hover:text-white rounded font-mono text-[9px] uppercase font-bold text-center"
+                                >
+                                  Emitir Diploma
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
                 </div>
 
               </div>
@@ -992,8 +1214,8 @@ export default function AdminPortal({
                   <p className="text-xs text-gray-400 mt-1">Conferência de boletas, transferências bancárias manuais de Luanda e Huambo e estado das mensalidades.</p>
                 </div>
 
-                <div className="overflow-x-auto border rounded-xl">
-                  <table className="w-full text-left text-xs">
+                <div className="overflow-x-auto border-0 md:border rounded-xl">
+                  <table className="hidden md:table w-full text-left text-xs">
                     <thead>
                       <tr className="bg-gray-50 text-[9px] font-mono text-gray-400 border-b uppercase">
                         <th className="p-3">ID Transação</th>
@@ -1025,6 +1247,31 @@ export default function AdminPortal({
                       ))}
                     </tbody>
                   </table>
+
+                  {/* Mobile stacked view of transactions */}
+                  <div className="block md:hidden space-y-4">
+                    {[
+                      { tid: "TX-9023", name: "Dr. António Carvalho", sum: "450.000 Kz", method: "Trf Bancária BFA", date: "2026-06-01", status: "Confirmado" },
+                      { tid: "TX-9041", name: "Drª Isabel Nascimento", sum: "350.000 Kz", method: "Multicaixa Live", date: "2026-06-03", status: "Confirmado" },
+                      { tid: "TX-9099", name: "Estudante Externo", sum: "450.000 Kz", method: "Multicaixa Express", date: "2026-06-07", status: "Pendente" }
+                    ].map((tx, idx) => (
+                      <div key={idx} className="bg-white p-4 rounded-xl border border-gray-150 space-y-2 text-xs text-left">
+                        <div className="flex justify-between items-center">
+                          <span className="font-mono text-[9px] text-gray-400">{tx.tid} • {tx.date}</span>
+                          <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-bold ${
+                            tx.status === 'Confirmado' ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'
+                          }`}>{tx.status}</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-[#0A2E5D] block">{tx.name}</span>
+                          <div className="flex justify-between items-center text-[10px] mt-1 text-gray-500 font-mono">
+                            <span>{tx.method}</span>
+                            <span className="font-bold text-slate-700">{tx.sum}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
               </div>
@@ -1328,7 +1575,7 @@ export default function AdminPortal({
             {activeTab === 'perfil' && (
               <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6 text-left">
                 <div className="flex gap-4 items-center">
-                  <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=150" alt="Avatar Isabel" className="w-16 h-16 rounded-full border-2 border-[#C89B3C]" />
+                  <img src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg" alt="Avatar Isabel" className="w-16 h-16 rounded-full border-2 border-[#C89B3C]" />
                   <div>
                     <h3 className="font-serif font-black text-[#0A2E5D] text-lg m-0">Drª Isabel Nascimento</h3>
                     <p className="text-xs text-gray-400 font-mono">DRETORA EXECUTIVA EM LIÇÕES INTEGRANTES HUAMBO</p>

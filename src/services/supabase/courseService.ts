@@ -1,166 +1,198 @@
 import { supabase } from '../../lib/supabase/client';
-import { Course } from '../../types';
 
 export interface SupabaseCourse {
   id: string;
-  titulo: string;
+  title: string;
   slug: string;
-  descricao: string;
-  imagem: string;
-  categoria: string;
-  duracao: string;
-  status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED';
+  description: string;
+  thumbnail: string;
+  category: string;
+  level: string;
+  duration: string;
+  teacher_id: string;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const courseService = {
   /**
-   * Retrieves active courses.
+   * Retrieves all published courses for the public catalog.
    */
   async getCourses(): Promise<SupabaseCourse[]> {
-    try {
-      const { data, error } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('status', 'ACTIVE');
-      
-      if (!error && data && data.length > 0) {
-        return data as SupabaseCourse[];
-      }
-    } catch (e) {
-      console.warn('Supabase courses fetching skipped or error. Falling back to local data.');
+    const { data, error } = await supabase
+      .from('courses')
+      .select('*')
+      .eq('status', 'PUBLISHED');
+    
+    if (error) {
+      console.error('Error fetching courses from Supabase:', error);
+      return [];
     }
-
-    // Default institutional courses from data.ts
-    return [
-      {
-        id: 'eng-legal-angola',
-        titulo: 'English for the Legal Field in Angola',
-        slug: 'eng-legal-angola',
-        descricao: 'Inglês Jurídico especializado na oratória e termos jurídicos angolanos.',
-        imagem: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&auto=format&fit=crop&q=60',
-        categoria: 'Inglês Jurídico',
-        duracao: '3 Meses (72h)',
-        status: 'ACTIVE'
-      },
-      {
-        id: 'legal-writing',
-        titulo: 'Advanced Legal Writing & Contract Drafting',
-        slug: 'legal-writing',
-        descricao: 'Técnicas avançadas de redação técnica e elaboração de contratos em Inglês.',
-        imagem: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?w=800&auto=format&fit=crop&q=60',
-        categoria: 'Inglês Jurídico',
-        duracao: '4 Semanas (24h)',
-        status: 'ACTIVE'
-      }
-    ];
+    return (data || []) as SupabaseCourse[];
   },
 
+  /**
+   * Retrieves a course by its ID.
+   */
+  async getCourseById(id: string): Promise<SupabaseCourse | null> {
+    const { data, error } = await supabase
+      .from('courses')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    
+    if (error) {
+      console.error(`Error fetching course with id ${id}:`, error);
+      return null;
+    }
+    return data as SupabaseCourse | null;
+  },
+
+  /**
+   * Retrieves a course by its slug.
+   */
   async getCourseBySlug(slug: string): Promise<SupabaseCourse | null> {
-    try {
-      const { data, error } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('slug', slug)
-        .single();
-      
-      if (!error && data) {
-         return data as SupabaseCourse;
-      }
-    } catch (e) {}
-
-    const courses = await this.getCourses();
-    return courses.find(c => c.slug === slug) || null;
+    const { data, error } = await supabase
+      .from('courses')
+      .select('*')
+      .eq('slug', slug)
+      .maybeSingle();
+    
+    if (error) {
+      console.error(`Error fetching course with slug ${slug}:`, error);
+      return null;
+    }
+    return data as SupabaseCourse | null;
   },
 
+  /**
+   * Retrieves all courses created by a specific teacher.
+   */
+  async getTeacherCourses(teacherId: string): Promise<SupabaseCourse[]> {
+    const { data, error } = await supabase
+      .from('courses')
+      .select('*')
+      .eq('teacher_id', teacherId);
+    
+    if (error) {
+      console.error(`Error fetching courses for teacher ${teacherId}:`, error);
+      return [];
+    }
+    return (data || []) as SupabaseCourse[];
+  },
+
+  /**
+   * Creates a new course under the authenticated teacher.
+   */
   async createCourse(course: Partial<SupabaseCourse>): Promise<SupabaseCourse> {
-    try {
-      const { data, error } = await supabase
-        .from('courses')
-        .insert(course)
-        .select()
-        .single();
-      
-      if (!error && data) return data as SupabaseCourse;
-      if (error) throw error;
-    } catch (e) {
-      console.warn('Bypassing Supabase course creation in mockmode.');
-    }
-    return {
-      id: course.id || 'course-' + Math.random().toString(36).substr(2, 9),
-      titulo: course.titulo || '',
-      slug: course.slug || '',
-      descricao: course.descricao || '',
-      imagem: course.imagem || '',
-      categoria: course.categoria || '',
-      duracao: course.duracao || '',
-      status: 'ACTIVE'
+    const titleVal = course.title || 'Novo Curso';
+    const slugVal = course.slug || titleVal.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
+
+    const payload = {
+      title: titleVal,
+      slug: slugVal,
+      description: course.description || '',
+      thumbnail: course.thumbnail || 'https://images.unsplash.com/photo-1518152006812-edab29b069ac?auto=format&fit=crop&q=80&w=300',
+      category: course.category || 'Geral',
+      level: course.level || 'Intermédio',
+      duration: course.duration || '12 Semanas',
+      teacher_id: course.teacher_id,
+      status: course.status || 'DRAFT',
+      updated_at: new Date().toISOString()
     };
+
+    const { data, error } = await supabase
+      .from('courses')
+      .insert(payload)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error creating course in Supabase:', error);
+      throw error;
+    }
+    return data as SupabaseCourse;
   },
 
+  /**
+   * Updates an existing course.
+   */
   async updateCourse(id: string, updates: Partial<SupabaseCourse>): Promise<SupabaseCourse> {
-    try {
-      const { data, error } = await supabase
-        .from('courses')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (!error && data) return data as SupabaseCourse;
-      if (error) throw error;
-    } catch (e) {}
-    return { id, ...updates } as SupabaseCourse;
+    const payload = {
+      ...updates,
+      updated_at: new Date().toISOString()
+    };
+
+    // Remove immutable fields if present
+    delete (payload as any).id;
+    delete (payload as any).created_at;
+
+    const { data, error } = await supabase
+      .from('courses')
+      .update(payload)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error(`Error updating course ${id}:`, error);
+      throw error;
+    }
+    return data as SupabaseCourse;
   },
 
+  /**
+   * Deletes a course.
+   */
   async deleteCourse(id: string): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from('courses')
-        .delete()
-        .eq('id', id);
-      return !error;
-    } catch (e) {
-      return true;
+    const { error } = await supabase
+      .from('courses')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error(`Error deleting course ${id}:`, error);
+      throw error;
     }
+    return true;
   },
 
+  /**
+   * Enrolls a student in a course.
+   */
   async enrollStudent(studentId: string, courseId: string): Promise<any> {
-    try {
-      const { data, error } = await supabase
-        .from('enrollments')
-        .insert({
-          student_id: studentId,
-          course_id: courseId,
-          status: 'ACTIVE'
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    } catch (e) {
-      console.warn('Simulated local enrollment active.');
-      return { success: true, enrolled: true };
+    const { data, error } = await supabase
+      .from('enrollments')
+      .insert({
+        student_id: studentId,
+        course_id: courseId,
+        status: 'ACTIVE'
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error(`Error enrolling student ${studentId} in course ${courseId}:`, error);
+      throw error;
     }
+    return data;
   },
 
+  /**
+   * Retrieves enrollments for a student.
+   */
   async getStudentEnrollments(studentId: string): Promise<any[]> {
-    try {
-      const { data, error } = await supabase
-        .from('enrollments')
-        .select('*, courses(*)')
-        .eq('student_id', studentId);
-      
-      if (!error && data) return data;
-    } catch (e) {}
-    return [
-      {
-        course_id: 'eng-legal-angola',
-        student_id: studentId,
-        status: 'ACTIVE',
-        progress_percent: 66,
-        data_inicio: new Date().toISOString()
-      }
-    ];
+    const { data, error } = await supabase
+      .from('enrollments')
+      .select('*, course:courses(*)')
+      .eq('student_id', studentId)
+      .eq('status', 'ACTIVE');
+    
+    if (error) {
+      console.error(`Error fetching enrollments for student ${studentId}:`, error);
+      return [];
+    }
+    return data || [];
   }
 };

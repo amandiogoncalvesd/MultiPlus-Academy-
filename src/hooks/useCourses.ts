@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { courseService, SupabaseCourse } from '../services/supabase/courseService';
+import { academicService } from '../services/supabase/academicService';
 
-export function useCourses() {
-  const [courses, setCourses] = useState<SupabaseCourse[]>([]);
+export function useCourses(onlyActive = true) {
+  const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -10,7 +10,7 @@ export function useCourses() {
     setLoading(true);
     setError(null);
     try {
-      const data = await courseService.getCourses();
+      const data = await academicService.getCourses(onlyActive);
       setCourses(data);
     } catch (err: any) {
       setError(err.message || 'Erro ao carregar cursos');
@@ -21,11 +21,11 @@ export function useCourses() {
 
   useEffect(() => {
     fetchCourses();
-  }, []);
+  }, [onlyActive]);
 
-  const createCourse = async (course: Partial<SupabaseCourse>) => {
+  const createCourse = async (course: any) => {
     try {
-      const newCourse = await courseService.createCourse(course);
+      const newCourse = await academicService.createCourse(course);
       setCourses(prev => [...prev, newCourse]);
       return newCourse;
     } catch (err: any) {
@@ -34,9 +34,31 @@ export function useCourses() {
     }
   };
 
+  const updateCourse = async (id: string, updates: any) => {
+    try {
+      const updated = await academicService.updateCourse(id, updates);
+      setCourses(prev => prev.map(c => c.id === id ? updated : c));
+      return updated;
+    } catch (err: any) {
+      setError(err.message || 'Erro ao atualizar curso');
+      throw err;
+    }
+  };
+
+  const deleteCourse = async (id: string) => {
+    try {
+      await academicService.deleteCourse(id);
+      setCourses(prev => prev.filter(c => c.id !== id));
+      return true;
+    } catch (err: any) {
+      setError(err.message || 'Erro ao excluir curso');
+      throw err;
+    }
+  };
+
   const enrollStudent = async (studentId: string, courseId: string) => {
     try {
-      return await courseService.enrollStudent(studentId, courseId);
+      return await academicService.enrollStudent(studentId, courseId);
     } catch (err: any) {
       setError(err.message || 'Erro ao matricular no curso');
       throw err;
@@ -49,6 +71,9 @@ export function useCourses() {
     error,
     fetchCourses,
     createCourse,
+    updateCourse,
+    deleteCourse,
     enrollStudent
   };
 }
+

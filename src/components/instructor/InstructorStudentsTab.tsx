@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from '../../lib/supabase/client';
 import { 
   Users, 
   Search, 
@@ -62,20 +63,20 @@ export default function InstructorStudentsTab({
     return enroll || { progressPercent: 66, status: 'ACTIVE', courseId: 'eng-legal-angola' };
   };
 
-  const updateStudentProgress = (studentId: string, newProgress: number) => {
-    // Notify local database
-    const localGrads = localStorage.getItem('multiplus_academic_db');
-    if (!localGrads) return;
+  const updateStudentProgress = async (studentId: string, newProgress: number) => {
     try {
-      const db = JSON.parse(localGrads);
-      const encIdx = db.enrollments?.findIndex((e: any) => e.userId === studentId);
-      if (encIdx > -1) {
-        db.enrollments[encIdx].progressPercent = newProgress;
-        localStorage.setItem('multiplus_academic_db', JSON.stringify(db));
-        alert(`O progresso de estudos foi reajustado em tempo real para ${newProgress}%!`);
-        window.location.reload(); 
-      }
-    } catch (e) {}
+      const { error } = await supabase
+        .from('enrollments')
+        .update({ progress_percent: newProgress })
+        .eq('student_id', studentId);
+
+      if (error) throw error;
+      alert(`O progresso de estudos foi reajustado no Supabase para ${newProgress}%!`);
+      window.location.reload(); 
+    } catch (err: any) {
+      console.error(err);
+      alert(`Erro ao reajustar progresso: ${err.message || err}`);
+    }
   };
 
   const handleSendInstantAlert = (id: string, name: string) => {
@@ -220,7 +221,7 @@ export default function InstructorStudentsTab({
       {/* Dynamic Results Grid/Table list */}
       <div className="bg-white rounded-3xl overflow-hidden border border-gray-150 shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="hidden md:table w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-[#0A2E5D]/5 border-b border-gray-150 text-gray-500 font-mono uppercase text-[9px] tracking-widest">
                 <th className="p-4 sm:p-5">Jurista Regulado</th>
@@ -374,6 +375,105 @@ export default function InstructorStudentsTab({
               )}
             </tbody>
           </table>
+
+          {/* Mobile view of stacked student cards */}
+          <div className="block md:hidden space-y-4 p-4">
+            {filteredList.length === 0 ? (
+              <div className="p-8 text-center border border-dashed border-gray-200 rounded-2xl font-mono text-gray-450 text-xs">
+                Nenhum formando correspondente aos filtros de matrícula.
+              </div>
+            ) : (
+              filteredList.map((student) => {
+                const enroll = getEnrollment(student.id);
+                const isBlocked = student.status === 'SUSPENDED';
+                const activeMetric = metricsDB[student.id] || metricsDB['default'];
+
+                return (
+                  <div key={student.id} className="bg-white p-4 rounded-2xl border border-gray-150 space-y-3 shadow-sm text-left">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={student.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150&h=150'}
+                        alt={student.firstName}
+                        className="w-10 h-10 rounded-full object-cover border border-gray-100"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <span className="font-serif font-black text-xs text-[#0A2E5D] block">
+                          Dr(a). {student.firstName} {student.lastName}
+                        </span>
+                        <span className="text-[10px] text-gray-400 block truncate">{student.email}</span>
+                        <span className="text-[9px] font-mono text-[#C89B3C] font-semibold block">{student.phone || '+244 9xx-xxx-xxx'}</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-gray-100 space-y-2 text-xs">
+                      <div>
+                        <span className="text-[8px] font-mono text-gray-400 block uppercase">Curso</span>
+                        <span className="font-semibold text-gray-700 block text-[11px] truncate">
+                          {courses.find(c => c.id === enroll.courseId)?.title || 'English for the Legal Field'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono bg-gray-50 p-2 rounded-xl">
+                        <div>
+                          <span className="block text-[8px] text-gray-400 uppercase">Progresso</span>
+                          <span className="font-bold text-slate-700">{enroll.progressPercent}%</span>
+                        </div>
+                        <div>
+                          <span className="block text-[8px] text-gray-400 uppercase">Rendimento</span>
+                          <span className="font-bold text-[#0A2E5D]">{activeMetric.grade}/100</span>
+                        </div>
+                        <div>
+                          <span className="block text-[8px] text-gray-400 uppercase">Presença</span>
+                          <span className="font-bold text-slate-700">{activeMetric.presence}%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-gray-100 flex flex-wrap justify-between items-center gap-2">
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => {
+                            setAlertingStudentId(alertingStudentId === student.id ? null : student.id);
+                            setCustomAlertText('');
+                          }}
+                          className="px-2.5 py-1.5 border border-gray-150 hover:bg-gray-50 text-gray-650 rounded-lg text-3xs font-mono font-semibold uppercase"
+                        >
+                          Chamar
+                        </button>
+                        
+                        <button
+                          onClick={() => onToggleStatus(student.id, student.status)}
+                          className={`p-1.5 rounded-lg border inline-flex items-center justify-center transition-all cursor-pointer ${
+                            isBlocked 
+                              ? 'bg-red-50 hover:bg-red-100/50 border-red-200 text-red-650' 
+                              : 'bg-emerald-50 hover:bg-emerald-100/50 border-emerald-200 text-emerald-650'
+                          }`}
+                          title={isBlocked ? 'Matrícula Bloqueada - Clique para libertar' : 'Matrícula Ativa - Clique para bloquear'}
+                        >
+                          {isBlocked ? <Lock size={12} /> : <Unlock size={12} />}
+                        </button>
+                      </div>
+
+                      <div>
+                        {enroll.status === 'COMPLETED' ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 text-emerald-800 text-[9px] font-mono font-bold uppercase rounded-xl border border-emerald-100">
+                            Certificado✓
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => onEmitCertificate(student.id)}
+                            className="px-3 py-1.5 bg-[#C89B3C] text-white hover:bg-slate-900 transition-all rounded-xl text-3xs font-mono font-bold uppercase whitespace-nowrap cursor-pointer"
+                          >
+                            Outorgar
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
 
