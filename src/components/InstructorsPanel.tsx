@@ -21,7 +21,6 @@ interface InstructorsPanelProps {
 }
 
 export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelProps) {
-  const [activeInstructor, setActiveInstructor] = useState<string>(MAIN_INSTRUCTOR.id);
   const [likeCount, setLikeCount] = useState(132);
   const [liked, setLiked] = useState(false);
 
@@ -38,28 +37,7 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
     window.open(`https://wa.me/244956449084?text=Ol%C3%A1%2C+gostaria+de+falar+com+a+diretoria+pedag%C3%B3gica+da+MultiPlus+Academy...`, '_blank');
   };
 
-  // Structured list represents the system capability of displaying multiple teachers
-  const instructorsList = [
-    MAIN_INSTRUCTOR,
-    {
-      id: 'associate-dr-silva',
-      name: 'Dr. Mateus Silva Leitão (Convidado)',
-      role: 'Consultor Legal & Especialista em Direito Petrolífero',
-      credentials: [
-        'Mestre em Direito Comercial Internacional (LL.M - Aberdeen)',
-        'Consultor Corporativo para a Indústria Reguladora em Angola',
-        'Ex-Assessor Jurídico no Ministério dos Recursos Minerais',
-        'Língua Materna Portuguesa e Fluência Nativa Inglesa'
-      ],
-      bio: 'O Dr. Mateus Silva Leitão coopera como formador adjunto para workshops imersivos focados em contratos governamentais e termos de Joint-Ownership. Com mais de uma década de aconselhamento ativo em Luanda, traz clareza jurídica prática extrema para as simulações profissionais da MultiPlus Academy.',
-      experienceYears: 12,
-      specializations: ['Oil & Gas Law', 'Concessions Drafting', 'Sovereign Compliance Regulatory Framework'],
-      institutions: ['University of Aberdeen', 'Ministério dos Recursos Minerais'],
-      photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=600&h=700' // Dark suit premium business portrait gentleman
-    }
-  ];
-
-  const currentTeacher = instructorsList.find(instructor => instructor.id === activeInstructor) || MAIN_INSTRUCTOR;
+  const currentTeacher = MAIN_INSTRUCTOR;
 
   return (
     <div id="instructors-panel-root" className="bg-[#F8F8F6] text-[#1C1C1C] pt-24 pb-16">
@@ -73,31 +51,6 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
           <p className="text-xs sm:text-sm text-white/70 max-w-xl mx-auto">
             Formadores selecionados sobre criteriosa avaliação pedagógica linguística e currículo corporativo no cenário angolano.
           </p>
-        </div>
-      </section>
-
-      {/* Main Core Selector for multiple teachers system */}
-      <section className="py-12 bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-gray-400">Diretório de Formadores Disponíveis:</span>
-            
-            <div className="flex gap-3">
-              {instructorsList.map((teacher) => (
-                <button
-                  key={teacher.id}
-                  onClick={() => setActiveInstructor(teacher.id)}
-                  className={`px-4 py-2.5 rounded-lg text-xs font-bold tracking-wide transition-all uppercase border ${
-                    activeInstructor === teacher.id
-                      ? 'bg-[#0A2E5D] text-white border-[#0A2E5D] shadow-sm'
-                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border-gray-200'
-                  }`}
-                >
-                  {teacher.name.split(' (')[0] /* Strip guest tags */}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 

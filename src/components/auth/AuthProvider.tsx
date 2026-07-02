@@ -72,7 +72,6 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
             totalHoursLearned: 4
           };
           setCurrentUser(localUser);
-          localStorage.setItem('multiplus_current_session', JSON.stringify(localUser));
 
           // Load extra profile
           const profileData = await userService.getUserProfile(userData.id);
@@ -94,13 +93,11 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
             totalHoursLearned: 4
           };
           setCurrentUser(localUser);
-          localStorage.setItem('multiplus_current_session', JSON.stringify(localUser));
         }
       } else {
         // No active Supabase session
         setCurrentUser(null);
         setUserProfile(null);
-        localStorage.removeItem('multiplus_current_session');
       }
     } catch (e) {
       console.warn('Failed to sync auth session:', e);
@@ -123,7 +120,6 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
         setCurrentUser(null);
         setUserProfile(null);
         setSession(null);
-        localStorage.removeItem('multiplus_current_session');
       }
     });
 
@@ -152,7 +148,6 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
           totalHoursLearned: 24
         };
         setCurrentUser(mappedUser);
-        localStorage.setItem('multiplus_current_session', JSON.stringify(mappedUser));
 
         const prof = await userService.getUserProfile(result.user.id);
         setUserProfile(prof);
@@ -186,7 +181,6 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
       setCurrentUser(null);
       setUserProfile(null);
       setSession(null);
-      localStorage.removeItem('multiplus_current_session');
     } finally {
       setLoading(false);
     }

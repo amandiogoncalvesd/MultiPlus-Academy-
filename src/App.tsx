@@ -83,24 +83,6 @@ export default function App() {
     setTimeout(() => {
       setLoading(false);
       setSignUpSuccess(true);
-      
-      // Store dynamic signup interest in local storage DB
-      const localGrads = localStorage.getItem('multiplus_academic_db');
-      if (localGrads) {
-        try {
-          const db = JSON.parse(localGrads);
-          if (!db.leads) db.leads = [];
-          db.leads.push({
-            name: signUpName,
-            email: signUpEmail,
-            phone: signUpPhone,
-            courseId: signUpCourse,
-            modality: signUpModality,
-            date: new Date().toISOString().replace('T', ' ').slice(0, 16)
-          });
-          localStorage.setItem('multiplus_academic_db', JSON.stringify(db));
-        } catch (err) {}
-      }
     }, 1000);
   };
 

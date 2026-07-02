@@ -193,15 +193,6 @@ export default function AdminPortal({
   const syncToLocalStorage = async (newUsers: User[], newCerts?: any[]) => {
     setDbUsers(newUsers);
     if (newCerts) setCertificates(newCerts);
-    
-    // Also save in local storage for legacy code safety
-    const raw = localStorage.getItem('multiplus_academic_db') || "{}";
-    try {
-      const db = JSON.parse(raw);
-      db.users = newUsers;
-      if (newCerts) db.certificates = newCerts;
-      localStorage.setItem('multiplus_academic_db', JSON.stringify(db));
-    } catch (e) {}
   };
 
   // User Management

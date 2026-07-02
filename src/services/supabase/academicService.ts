@@ -266,11 +266,7 @@ export const academicService = {
       .eq('completed', true);
 
     if (error) {
-      // In case 'lesson_progress' table doesn't exist, we fallback to tracking completions in memory/local
-      const localProgress = localStorage.getItem(`completed_lessons_${studentId}_${courseId}`);
-      if (localProgress) {
-        try { return JSON.parse(localProgress); } catch (e) {}
-      }
+      console.error('Error fetching completed lessons:', error);
       return [];
     }
     return (data || []).map((row: any) => row.lesson_id);
@@ -285,21 +281,9 @@ export const academicService = {
         completed
       }, { onConflict: 'student_id,lesson_id' });
 
-    // Sync in memory / local storage as redundancy and fallback
-    const localProgress = localStorage.getItem(`completed_lessons_${studentId}_${courseId}`);
-    let list: string[] = [];
-    if (localProgress) {
-      try { list = JSON.parse(localProgress); } catch (e) {}
-    }
-    if (completed) {
-      if (!list.includes(lessonId)) list.push(lessonId);
-    } else {
-      list = list.filter(id => id !== lessonId);
-    }
-    localStorage.setItem(`completed_lessons_${studentId}_${courseId}`, JSON.stringify(list));
-
     if (error) {
-      console.warn('Upsert on lesson_progress failed, fallback to memory active.', error);
+      console.error('Upsert on lesson_progress failed:', error);
+      throw error;
     }
     return true;
   },

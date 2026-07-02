@@ -240,7 +240,6 @@ export default function StudentPortal({
       });
 
       setCurrentUser(updatedUser);
-      localStorage.setItem('multiplus_current_session', JSON.stringify(updatedUser));
       alert('As coordenadas do seu perfil académico foram sincronizadas e salvas com integridade no Supabase.');
     } catch (err: any) {
       console.error('Erro ao atualizar perfil no Supabase:', err);
