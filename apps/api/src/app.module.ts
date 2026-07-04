@@ -1,6 +1,9 @@
 import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
 import { AuthModule } from "./modules/auth/auth.module";
 import { UsersModule } from "./modules/users/users.module";
+import { AuthGuard } from "./security/auth/auth.guard";
+import { SecurityExamplesModule } from "./security/examples/security-examples.module";
 
 // Mock NestJS controller definitions for visual representation of core routes
 class BaseController {
@@ -83,6 +86,7 @@ class ChatsModule {}
   imports: [
     AuthModule,
     UsersModule,
+    SecurityExamplesModule,
     CoursesModule,
     CourseModulesModule,
     LessonsModule,
@@ -104,6 +108,11 @@ class ChatsModule {}
     ChatsModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
 })
 export class AppModule {}

@@ -1,26 +1,20 @@
 # Step 1: Base builder environment
-FROM node:20-alpine AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
-
-FROM base AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 COPY . .
-RUN pnpm install --frozen-lockfile
-RUN pnpm --filter multiplus-web build
+RUN npm install
+RUN npm run build
 
 # Step 2: Runtime image configuration
-FROM base AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app /app
-USER nextjs
+# Copy built assets and required tools
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 3000
 ENV PORT=3000
 
-CMD ["pnpm", "--filter", "multiplus-web", "start"]
+CMD ["npx", "sirv-cli", "dist", "--port", "3000", "--host", "0.0.0.0"]

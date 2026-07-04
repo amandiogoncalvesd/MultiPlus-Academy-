@@ -1,8 +1,0 @@
-/* Reset and standard design tokens for the Next.js multiplus web portal */
-@import "tailwindcss";
-
-body {
-  font-family: 'Inter', system-ui, sans-serif;
-  background-color: #F8F8F6;
-  color: #1C1C1C;
-}
