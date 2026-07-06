@@ -278,7 +278,7 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
                     {
                       label: 'Administrador',
                       email: 'admin@multiplusacademy.com',
-                      pass: 'Admin@12345',
+                      pass: 'Admin@123',
                       name: 'Administrador Geral',
                       role: 'ADMIN' as const,
                       color: 'border-red-100 bg-red-50/10 text-red-700'
@@ -286,7 +286,7 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
                     {
                       label: 'Formador (Professor)',
                       email: 'professor@multiplusacademy.com',
-                      pass: 'Professor@12345',
+                      pass: 'Professor@123',
                       name: 'Professor MultiPlus',
                       role: 'PROFESSOR' as const,
                       color: 'border-blue-100 bg-blue-50/10 text-blue-700'
@@ -294,7 +294,7 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
                     {
                       label: 'Formando (Aluno)',
                       email: 'aluno@multiplusacademy.com',
-                      pass: 'Aluno@12345',
+                      pass: 'Aluno@123',
                       name: 'Aluno de Elite',
                       role: 'ALUNO' as const,
                       color: 'border-emerald-100 bg-emerald-50/10 text-emerald-700'
