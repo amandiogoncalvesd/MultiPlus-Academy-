@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { PageId, User, UserRole, Course } from '../types';
 import { useAuth } from './auth/AuthProvider';
 import { supabase } from '../lib/supabase/client';
@@ -12,7 +13,7 @@ import {
   CheckCircle2, AlertTriangle, HelpCircle, User as UserIcon, Info, Wifi, 
   PlusCircle, CheckSquare, X, Bookmark, Image, ArrowRight, Shield, Download, 
   FileSpreadsheet, MessageSquare, Megaphone, Terminal, QrCode, FileDown,
-  LogOut, Award, Star, Clock, AlertCircle
+  LogOut, Award, Star, Clock, AlertCircle, Menu, Sun, Moon
 } from 'lucide-react';
 
 interface AdminPortalProps {
@@ -30,6 +31,10 @@ export default function AdminPortal({
   setCurrentUser,
 }: AdminPortalProps) {
   const { signOut } = useAuth();
+  
+  // Theme and accessibility states
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [highContrast, setHighContrast] = useState(false);
   
   // Tabs: 18 unique views required
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -359,8 +364,21 @@ export default function AdminPortal({
     globalSearch ? `${u.firstName} ${u.lastName} ${u.email}`.toLowerCase().includes(globalSearch.toLowerCase()) : true
   );
 
+  // Accessibility theme class selections
+  const containerThemeClass = highContrast 
+    ? 'bg-black text-yellow-300 font-extrabold border-yellow-500' 
+    : isDarkMode 
+      ? 'bg-[#0B1220] text-gray-200 border-slate-850' 
+      : 'bg-[#F8F8F6] text-[#1C1C1C] border-gray-150';
+
+  const cardThemeClass = highContrast
+    ? 'border-4 border-yellow-500 bg-black text-white'
+    : isDarkMode
+      ? 'bg-[#121E36] border border-slate-700/60 shadow text-white'
+      : 'bg-white border border-gray-150 shadow-sm text-[#1C1C1C]';
+
   return (
-    <div className="flex min-h-screen bg-[#FAF9F6] text-slate-800 antialiased font-sans select-none overflow-x-hidden max-w-full w-full">
+    <div id="multiplus-admin-portal" className={`min-h-screen flex items-stretch transition-colors duration-200 ${containerThemeClass}`}>
       
       {/* Backdrop overlay for mobile devices */}
       {mobileSidebarOpen && (
@@ -370,152 +388,174 @@ export default function AdminPortal({
         />
       )}
 
-      {/* 1. SIDEBAR (70% SaaS, 30% Neo-Skeuomorphism Luxury) */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#0A2E5D] text-white flex flex-col justify-between py-5 border-r border-[#C89B3C]/30 shadow-2xl transition-transform duration-300 transform lg:translate-x-0 ${
-        mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        <div className="px-5">
-          <div className="flex items-center justify-between border-b border-white/15 pb-4">
+      {/* 1. SIDEBAR (Collapsible on Mobile, Fixed on Desktop) */}
+      <aside 
+        className={`fixed inset-y-0 left-0 z-40 w-64 ${
+          highContrast ? 'bg-black border-r-4 border-yellow-500' : isDarkMode ? 'bg-[#0F192E] border-slate-800' : 'bg-[#0A2E5D] text-white'
+        } transition-transform duration-300 transform lg:translate-x-0 ${
+          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } flex flex-col justify-between`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Superior Header Logo Brand */}
+          <div className="p-6 border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
                 src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png"
-                alt="MultiPlus Admin Logo"
-                className="h-10 w-auto object-contain"
+                alt="MultiPlus Logo"
+                className="h-9 w-auto object-contain shrink-0"
               />
-              <div className="text-left select-none">
-                <h2 className="text-sm font-serif font-black tracking-wide text-white m-0">Consola Central</h2>
-                <span className="text-[8px] font-mono tracking-widest text-[#C89B3C] uppercase block font-bold">SUPER ADMINISTRADOR</span>
+              <div className="text-left">
+                <h1 className="text-sm font-serif font-black m-0 tracking-wide text-white">Consola</h1>
+                <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block">Super Admin</span>
               </div>
             </div>
             
-            <button
-              type="button"
+            {/* Mobile close button */}
+            <button 
               onClick={() => setMobileSidebarOpen(false)}
-              className="lg:hidden text-white/75 hover:text-white hover:bg-white/10 p-1 rounded-lg border-0 bg-transparent cursor-pointer transition-all"
-              title="Fechar menu"
+              className="lg:hidden p-1.5 text-white/70 hover:text-white rounded bg-transparent border-0 cursor-pointer"
+              aria-label="Fechar lateral"
             >
-              <X size={16} />
+              <X size={18} />
             </button>
           </div>
-        </div>
 
-        {/* Scrollable Nav Item Area */}
-        <nav className="flex-grow mt-4 px-2 space-y-1 overflow-y-auto max-h-[64vh] text-left custom-scrollbar">
-          {[
-            { id: 'dashboard', name: 'Dashboard', icon: <Activity className="w-3.5 h-3.5" /> },
-            { id: 'utilizadores', name: 'Utilizadores', icon: <UserIcon className="w-3.5 h-3.5" /> },
-            { id: 'alunos', name: 'Alunos', icon: <Users className="w-3.5 h-3.5" /> },
-            { id: 'professores', name: 'Professores', icon: <Award className="w-3.5 h-3.5" /> },
-            { id: 'cursos', name: 'Cursos', icon: <BookOpen className="w-3.5 h-3.5" /> },
-            { id: 'turmas', name: 'Turmas', icon: <Layers className="w-3.5 h-3.5" /> },
-            { id: 'certificados', name: 'Certificados', icon: <QrCode className="w-3.5 h-3.5" /> },
-            { id: 'financeiro', name: 'Financeiro', icon: <DollarSign className="w-3.5 h-3.5" /> },
-            { id: 'pagamentos', name: 'Pagamentos', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
-            { id: 'eventos', name: 'Eventos', icon: <Calendar className="w-3.5 h-3.5" /> },
-            { id: 'blog', name: 'Blog', icon: <FileText className="w-3.5 h-3.5" /> },
-            { id: 'mensagens', name: 'Mensagens', icon: <MessageSquare className="w-3.5 h-3.5" /> },
-            { id: 'notificacoes', name: 'Notificações', icon: <Bell className="w-3.5 h-3.5" /> },
-            { id: 'relatorios', name: 'Relatórios', icon: <FileDown className="w-3.5 h-3.5" /> },
-            { id: 'auditoria', name: 'Auditoria', icon: <Terminal className="w-3.5 h-3.5" /> },
-            { id: 'integracoes', name: 'Integrações', icon: <Network className="w-3.5 h-3.5" /> },
-            { id: 'configuracoes', name: 'Configurações', icon: <Settings className="w-3.5 h-3.5" /> },
-            { id: 'perfil', name: 'Perfil', icon: <UserIcon className="w-3.5 h-3.5" /> },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => { setActiveTab(item.id); setMobileSidebarOpen(false); }}
-              className={`w-full px-3.5 py-2.5 rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-between border-0 cursor-pointer ${
-                activeTab === item.id 
-                  ? 'bg-gradient-to-r from-[#C89B3C] to-[#E5C158] text-[#0A2E5D] font-extrabold shadow-lg shadow-[#000]/10 border-l-4 border-slate-900' 
-                  : 'text-white/80 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-3">
+          {/* Navigation Links List */}
+          <nav className="flex-grow p-4 space-y-1 overflow-y-auto max-h-[64vh]">
+            {[
+              { id: 'dashboard', name: 'Dashboard', icon: <Activity className="w-4 h-4" /> },
+              { id: 'utilizadores', name: 'Utilizadores', icon: <UserIcon className="w-4 h-4" /> },
+              { id: 'alunos', name: 'Alunos', icon: <Users className="w-4 h-4" /> },
+              { id: 'professores', name: 'Professores', icon: <Award className="w-4 h-4" /> },
+              { id: 'cursos', name: 'Cursos', icon: <BookOpen className="w-4 h-4" /> },
+              { id: 'turmas', name: 'Turmas', icon: <Layers className="w-4 h-4" /> },
+              { id: 'certificados', name: 'Certificados', icon: <QrCode className="w-4 h-4" /> },
+              { id: 'financeiro', name: 'Financeiro', icon: <DollarSign className="w-4 h-4" /> },
+              { id: 'pagamentos', name: 'Pagamentos', icon: <CheckCircle2 className="w-4 h-4" /> },
+              { id: 'eventos', name: 'Eventos', icon: <Calendar className="w-4 h-4" /> },
+              { id: 'blog', name: 'Blog', icon: <FileText className="w-4 h-4" /> },
+              { id: 'mensagens', name: 'Mensagens', icon: <MessageSquare className="w-4 h-4" /> },
+              { id: 'notificacoes', name: 'Notificações', icon: <Bell className="w-4 h-4" /> },
+              { id: 'relatorios', name: 'Relatórios', icon: <FileDown className="w-4 h-4" /> },
+              { id: 'auditoria', name: 'Auditoria', icon: <Terminal className="w-4 h-4" /> },
+              { id: 'integracoes', name: 'Integrações', icon: <Network className="w-4 h-4" /> },
+              { id: 'configuracoes', name: 'Configurações', icon: <Settings className="w-4 h-4" /> },
+              { id: 'perfil', name: 'Perfil', icon: <UserIcon className="w-4 h-4" /> },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  setMobileSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wider text-left transition-all cursor-pointer border-0 ${
+                  activeTab === item.id
+                    ? 'bg-[#C89B3C] text-slate-950 shadow-md font-bold'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
                 {item.icon}
                 <span>{item.name}</span>
+              </button>
+            ))}
+          </nav>
+
+          {/* Sidebar Footer */}
+          <div className="p-4 border-t border-white/10 space-y-3.5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-amber-500 rounded-full flex items-center justify-center font-bold text-slate-950 text-xs shadow-sm capitalize">
+                {currentUser?.firstName?.[0] || 'I'}
               </div>
-              <ChevronRight size={10} className="opacity-40" />
-            </button>
-          ))}
-        </nav>
-
-        {/* Sidebar Footer */}
-        <div className="px-4 pt-3 border-t border-white/10 space-y-3 pb-2 text-left">
-          <div className="flex items-center gap-3">
-            <img
-              src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg"
-              alt="Administradora Isabel"
-              className="w-8 h-8 rounded-full border border-[#C89B3C]"
-            />
-            <div>
-              <span className="text-[10px] font-serif font-black text-white block">Drª. Isabel Nascimento</span>
-              <span className="text-[7.5px] font-mono text-[#C89B3C] uppercase block tracking-wider">Super Direção Geral</span>
+              <div className="text-left truncate max-w-[130px]">
+                <h4 className="text-xs font-bold text-white m-0 tracking-wide truncate">
+                  {currentUser?.firstName || 'Isabel'} {currentUser?.lastName || 'Nascimento'}
+                </h4>
+                <span className="text-[10px] font-mono text-[#C89B3C] font-semibold uppercase">ADMINISTRADOR</span>
+              </div>
             </div>
-          </div>
 
-          <button
-            onClick={async () => {
-              try {
-                await signOut();
-              } catch (e) {}
-              setCurrentUser(null);
-              setCurrentPage('login');
-            }}
-            className="w-full py-2 bg-red-650/10 hover:bg-red-650/20 text-red-400 rounded-lg text-[9px] font-mono font-bold uppercase transition-all border border-red-500/20 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <LogOut size={12} />
-            <span>Encerrar Painel</span>
-          </button>
+            <button
+              onClick={async () => {
+                try {
+                  await signOut();
+                } catch (e) {}
+                setCurrentUser(null);
+                setCurrentPage('login');
+              }}
+              className="w-full py-2 bg-red-600 hover:bg-red-700 text-white text-[10px] font-mono font-bold uppercase rounded-lg border-0 cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+            >
+              <LogOut size={11} />
+              <span>Sair do Portal</span>
+            </button>
+          </div>
         </div>
       </aside>
 
-      {/* 2. MAIN LAYOUT SHELL */}
-      <div className="flex-grow lg:pl-64 flex flex-col min-h-screen min-w-0 w-full overflow-x-hidden">
+      {/* Main outer shell (adjusted for fixed sidebar space) */}
+      <div className="flex-grow flex flex-col overflow-hidden lg:pl-64">
         
-        {/* TOPBAR */}
-        <header className="sticky top-0 z-30 h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between shadow-sm">
-          
+        {/* 2. TOPBAR HEADER FIXA */}
+        <header className={`h-16 px-6 border-b flex items-center justify-between sticky top-0 z-30 transition-colors ${
+          highContrast ? 'bg-black border-yellow-500 text-yellow-300' : isDarkMode ? 'bg-[#0E172A] border-slate-800 text-white' : 'bg-white border-gray-150 text-[#1C1C1C]'
+        }`}>
+          {/* Left Side */}
           <div className="flex items-center gap-4">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="lg:hidden p-1.5 rounded-lg border border-gray-150 hover:bg-gray-100 cursor-pointer"
+              className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded transition-all bg-transparent border-0 cursor-pointer text-current"
+              aria-label="Abrir lateral"
             >
-              ☰
+              <Menu size={20} />
             </button>
-
-            {/* Global Search Filtering Dashboard Content */}
-            <div className="relative w-80">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Pesquisar utilizadores, faturas ou auditorias..."
-                value={globalSearch}
-                onChange={(e) => setGlobalSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-[#C89B3C]"
-              />
+            <div className="hidden sm:block text-left">
+              <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block">MultiPlus LMS</span>
+              <h2 className="text-sm font-serif font-black tracking-wide m-0 capitalize">{activeTab} • Portal de Administração</h2>
             </div>
           </div>
 
-          {/* Quick Stats Alerts Badge */}
-          <div className="flex items-center gap-4">
-            
+          {/* Center Search bar */}
+          <div className="hidden md:flex relative w-64">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <Search size={14} />
+            </span>
+            <input
+              type="text"
+              placeholder="Pesquisar registros..."
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-gray-50 border border-gray-200 placeholder:text-gray-400 text-[#1C1C1C] focus:outline-none focus:border-[#C89B3C]"
+            />
+          </div>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-4 text-xs">
             {/* Critical Alert Bar indicator */}
-            <div className="bg-red-50 text-red-700 px-2.5 py-1 rounded-full border border-red-150 text-[10px] font-mono font-bold uppercase tracking-wider hidden md:flex items-center gap-1.5 animate-pulse">
+            <div className="bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 px-2.5 py-1 rounded-full border border-red-150 dark:border-red-900/45 text-[10px] font-mono font-bold uppercase tracking-wider hidden md:flex items-center gap-1.5 animate-pulse">
               <span className="w-1.5 h-1.5 bg-red-600 rounded-full"></span>
-              ⚠️ {activeAlerts.length} ALERTA(S) CRÍTICO(S) ATIVOS
+              ⚠️ {activeAlerts.length} ALERTA(S) ATIVOS
             </div>
+
+            {/* Accessibility swift switch */}
+            <button 
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-[#C89B3C] border-0 cursor-pointer"
+              title="Mudar visual cor"
+            >
+              {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
 
             {/* Notification Bell toggle menu */}
             <button 
               onClick={() => { setActiveTab('notificacoes'); }}
-              className="p-2 border border-gray-100 rounded-xl hover:bg-gray-50 text-gray-450 relative cursor-pointer"
-              title="Acessar Todas"
+              className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-[#0A2E5D] dark:text-blue-400 border-0 cursor-pointer relative"
+              title="Aceder a Notificações"
             >
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full"></span>
+              <Bell size={14} />
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500" />
             </button>
 
-            {/* Avatar Profile Short panel */}
+            {/* Profile menu widget */}
             <div className="flex items-center gap-2.5 border-l pl-4">
               <img
                 src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg"
@@ -523,17 +563,24 @@ export default function AdminPortal({
                 className="w-8 h-8 rounded-full border border-gray-200 object-cover"
               />
               <div className="hidden sm:block text-left">
-                <span className="text-[10px] font-mono font-bold text-blue-900 block leading-tight">SUPER_ADMIN</span>
-                <span className="text-3xs text-slate-500 font-semibold uppercase block">isabel@empresas.ao</span>
+                <span className="text-[10px] font-mono font-bold text-blue-900 dark:text-blue-300 block leading-tight">ADMIN</span>
+                <span className="text-3xs text-slate-500 font-semibold uppercase block truncate max-w-[100px]">{currentUser?.email || "isabel@empresas.ao"}</span>
               </div>
             </div>
-
           </div>
-
         </header>
 
         {/* 3. DYNAMIC CENTER CONTROLLER AREA */}
-        <main className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-8 text-left">
+        <main className="flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6 sm:space-y-8"
+            >
           
           {/* Executive Top Banner */}
           <div className="bg-[#0A2E5D] text-white p-6 sm:p-8 rounded-3xl border border-[#C89B3C]/30 relative overflow-hidden shadow-xl">
@@ -548,11 +595,9 @@ export default function AdminPortal({
               </p>
             </div>
           </div>
-
-          <div className="transition-all duration-300">
-            
-            {/* VIEW 1: EXECUTIVE DASHBOARD TAB */}
-            {activeTab === 'dashboard' && (
+          
+          {/* VIEW 1: EXECUTIVE DASHBOARD TAB */}
+          {activeTab === 'dashboard' && (
               <div className="space-y-8 animate-fadeIn">
                 
                 {/* 8 Premium KPI Cards */}
@@ -1583,8 +1628,8 @@ export default function AdminPortal({
               </div>
             )}
 
-          </div>
-
+            </motion.div>
+          </AnimatePresence>
         </main>
 
       </div>

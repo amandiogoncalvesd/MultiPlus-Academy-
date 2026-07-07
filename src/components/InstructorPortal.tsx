@@ -1,4 +1,5 @@
 import React, { useState, useEffect, FormEvent } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { PageId, User, Course } from '../types';
 import { useAuth } from './auth/AuthProvider';
 import { supabase } from '../lib/supabase/client';
@@ -46,7 +47,10 @@ import {
   HelpCircle,
   Copy,
   FolderOpen,
-  Filter
+  Filter,
+  Menu,
+  ChevronDown,
+  X
 } from 'lucide-react';
 
 // Import modular panels
@@ -382,200 +386,253 @@ export default function InstructorPortal({
   };
 
   // Derived variables
-  const pendingGreads = 1; 
+  const pendingGreads = 3;
+
+  // Accessibility theme class selections
+  const containerThemeClass = highContrast 
+    ? 'bg-black text-yellow-300 font-extrabold border-yellow-500' 
+    : isDarkMode 
+      ? 'bg-[#0B1220] text-gray-200 border-slate-850' 
+      : 'bg-[#F8F8F6] text-[#1C1C1C] border-gray-150';
+
+  const cardThemeClass = highContrast
+    ? 'border-4 border-yellow-500 bg-black text-white'
+    : isDarkMode
+      ? 'bg-[#121E36] border border-slate-700/60 shadow text-white'
+      : 'bg-white border border-gray-150 shadow-sm text-[#1C1C1C]';
 
   return (
-    <div className={`flex min-h-screen text-[#1C1C1C] font-sans ${isDarkMode ? 'dark bg-slate-900 text-white-100' : 'bg-[#FAF9F6]'}`}>
+    <div id="multiplus-instructor-portal" className={`min-h-screen flex items-stretch transition-colors duration-200 ${containerThemeClass}`}>
       
-      {/* 1. SIDEBAR (70% Professional SaaS, 30% Neo-Skeuomorphism Premium) */}
-      <aside 
-        id="instructor-fixed-sidebar" 
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#0A2E5D] text-white border-r border-[#C89B3C]/20 flex flex-col justify-between py-6 transition-transform lg:translate-x-0 ${
-          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        
-        {/* Superior Header Logo Brand */}
-        <div className="px-6 flex items-center justify-between border-b border-white/10 pb-5">
-          <div className="flex items-center gap-3">
-            <img
-              src="https://res.cloudinary.com/deeki0eou/image/upload/v1780728240/logotipo-dourado-sem-fundo_abouxm.png"
-              alt="MultiPlus Logo"
-              className="h-10 w-auto object-contain"
-            />
-            <div className="text-left select-none">
-              <h1 className="text-sm font-serif font-black tracking-wide text-white m-0">MultiPlus</h1>
-              <span className="text-[8px] font-mono tracking-widest text-[#C89B3C] uppercase block">ACADEMY INSTRUCTOR</span>
-            </div>
-          </div>
-          
-          <button 
-            onClick={() => setMobileSidebarOpen(false)}
-            className="lg:hidden text-white/70 hover:text-white border-0 bg-transparent cursor-pointer"
-          >
-            ✕
-          </button>
-        </div>
+      {/* Backdrop overlay for mobile devices */}
+      {mobileSidebarOpen && (
+        <div 
+          className="fixed inset-0 z-30 bg-slate-900/60 backdrop-blur-xs lg:hidden transition-opacity"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
 
-        {/* 15 Sidebar Tab Navigation list */}
-        <nav className="flex-grow mt-5 px-3 space-y-1 overflow-y-auto max-h-[60vh] text-left">
-          {[
-            { id: 'dashboard', name: 'Dashboard', icon: <Activity size={14} /> },
-            { id: 'cursos', name: 'Meus Cursos', icon: <BookOpen size={14} /> },
-            { id: 'criar-curso', name: 'Criar Curso', icon: <Plus size={14} /> },
-            { id: 'aulas', name: 'Gerir Aulas', icon: <Video size={14} /> },
-            { id: 'modulos', name: 'Estruturação/Syllabus', icon: <Layers size={14} /> },
-            { id: 'alunos', name: 'Diretório Alunos', icon: <Users size={14} /> },
-            { id: 'biblioteca', name: 'Biblioteca Digital', icon: <FolderOpen size={14} /> },
-            { id: 'avaliacoes', name: 'Correção & Provas', icon: <ClipboardList size={14} /> },
-            { id: 'certificados', name: 'Emissão Diplomas', icon: <Award size={14} /> },
-            { id: 'calendario', name: 'Agenda Letiva', icon: <Calendar size={14} /> },
-            { id: 'mensagens', name: 'Chat & Mural', icon: <MessageSquare size={14} /> },
-            { id: 'relatorios', name: 'Métricas & SVGs', icon: <BarChart2 size={14} /> },
-            { id: 'perfil', name: 'Curriculum Vitae', icon: <UserIcon size={14} /> },
-            { id: 'configuracoes', name: 'Configurações', icon: <Settings size={14} /> },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setActiveTab(item.id);
-                setMobileSidebarOpen(false);
-              }}
-              className={`w-full px-4 py-2.5 rounded-xl text-2xs font-mono font-bold uppercase transition-all flex items-center justify-between border-0 cursor-pointer ${
-                activeTab === item.id 
-                  ? 'bg-[#C89B3C] text-slate-950 font-black shadow-inner border-l-4 border-slate-900' 
-                  : 'text-white/80 hover:bg-white/10 hover:text-white'
-              }`}
+      {/* 1. SIDEBAR (Collapsible on Mobile, Fixed on Desktop) */}
+      <aside 
+        className={`fixed inset-y-0 left-0 z-40 w-64 ${
+          highContrast ? 'bg-black border-r-4 border-yellow-500' : isDarkMode ? 'bg-[#0F192E] border-slate-800' : 'bg-[#0A2E5D] text-white'
+        } transition-transform duration-300 transform lg:translate-x-0 ${
+          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } flex flex-col justify-between`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Superior Header Logo Brand */}
+          <div className="p-6 border-b border-white/10 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img
+                src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png"
+                alt="MultiPlus Logo"
+                className="h-9 w-auto object-contain shrink-0"
+              />
+              <div className="text-left">
+                <h1 className="text-sm font-serif font-black m-0 tracking-wide text-white">MultiPlus</h1>
+                <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block">Teacher Portal</span>
+              </div>
+            </div>
+            
+            {/* Mobile close button */}
+            <button 
+              onClick={() => setMobileSidebarOpen(false)}
+              className="lg:hidden p-1.5 text-white/70 hover:text-white rounded bg-transparent border-0 cursor-pointer"
+              aria-label="Fechar lateral"
             >
-              <div className="flex items-center gap-3">
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Navigation Links List */}
+          <nav className="flex-grow p-4 space-y-1 overflow-y-auto max-h-[64vh]">
+            {[
+              { id: 'dashboard', name: 'Dashboard', icon: <Activity size={15} /> },
+              { id: 'cursos', name: 'Meus Cursos', icon: <BookOpen size={15} /> },
+              { id: 'criar-curso', name: 'Criar Curso', icon: <Plus size={15} /> },
+              { id: 'aulas', name: 'Gerir Aulas', icon: <Video size={15} /> },
+              { id: 'modulos', name: 'Estruturação/Syllabus', icon: <Layers size={15} /> },
+              { id: 'alunos', name: 'Diretório Alunos', icon: <Users size={15} /> },
+              { id: 'biblioteca', name: 'Biblioteca Digital', icon: <FolderOpen size={15} /> },
+              { id: 'avaliacoes', name: 'Correção & Provas', icon: <ClipboardList size={15} /> },
+              { id: 'certificados', name: 'Emissão Diplomas', icon: <Award size={15} /> },
+              { id: 'calendario', name: 'Agenda Letiva', icon: <Calendar size={15} /> },
+              { id: 'mensagens', name: 'Chat & Mural', icon: <MessageSquare size={15} /> },
+              { id: 'relatorios', name: 'Métricas & SVGs', icon: <BarChart2 size={15} /> },
+              { id: 'perfil', name: 'Curriculum Vitae', icon: <UserIcon size={15} /> },
+              { id: 'configuracoes', name: 'Configurações', icon: <Settings size={15} /> },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  setMobileSidebarOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wider text-left transition-all cursor-pointer border-0 ${
+                  activeTab === item.id
+                    ? 'bg-[#C89B3C] text-slate-950 shadow-md font-bold'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
                 {item.icon}
                 <span>{item.name}</span>
+              </button>
+            ))}
+          </nav>
+
+          {/* Sidebar Footer */}
+          <div className="p-4 border-t border-white/10 space-y-3.5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-amber-500 rounded-full flex items-center justify-center font-bold text-slate-950 text-xs shadow-sm capitalize">
+                {currentUser?.firstName?.[0] || 'E'}
               </div>
-              <ChevronRight size={10} className="opacity-40" />
-            </button>
-          ))}
-        </nav>
-
-        {/* Footer actions of Sidebar */}
-        <div className="px-5 pt-4 border-t border-white/10 space-y-3.5 text-left">
-          <div className="flex items-center gap-3">
-            <img
-              src={currentUser?.avatarUrl || "https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg"}
-              alt="Avatar Esmeralda"
-              className="w-9 h-9 rounded-full object-cover border border-[#C89B3C]/50"
-            />
-            <div>
-              <span className="text-2xs font-serif font-black text-white block">Drª. Esmeralda</span>
-              <span className="text-[8px] font-mono text-[#C89B3C] uppercase block">Oradora Associada</span>
+              <div className="text-left truncate max-w-[130px]">
+                <h4 className="text-xs font-bold text-white m-0 tracking-wide truncate">
+                  {currentUser?.firstName || 'Esmeralda'} {currentUser?.lastName || 'Sumbelelo'}
+                </h4>
+                <span className="text-[10px] font-mono text-[#C89B3C] font-semibold uppercase">Professor</span>
+              </div>
             </div>
+
+            <button
+              onClick={async () => {
+                try {
+                  await signOut();
+                } catch (e) {}
+                setCurrentUser(null);
+                setCurrentPage('login');
+              }}
+              className="w-full py-2 bg-red-600 hover:bg-red-700 text-white text-[10px] font-mono font-bold uppercase rounded-lg border-0 cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+            >
+              <LogOut size={11} />
+              <span>Sair do Portal</span>
+            </button>
           </div>
-
-          <button
-            onClick={async () => {
-              try {
-                await signOut();
-              } catch (e) {}
-              setCurrentUser(null);
-              setCurrentPage('login');
-            }}
-            className="w-full py-2.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 rounded-xl text-3xs font-mono font-black uppercase tracking-wider transition-all border border-red-500/20 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <LogOut size={13} />
-            <span>Encerrar Sessão</span>
-          </button>
         </div>
-
       </aside>
 
       {/* Main outer shell (adjusted for fixed sidebar space) */}
-      <div className="flex-grow lg:pl-64 flex flex-col min-h-screen">
+      <div className="flex-grow flex flex-col overflow-hidden lg:pl-64">
         
         {/* 2. TOPBAR HEADER FIXA */}
-        <header className="sticky top-0 z-30 h-16 bg-white border-b border-gray-150 px-4 sm:px-6 flex items-center justify-between select-none">
-          
+        <header className={`h-16 px-6 border-b flex items-center justify-between sticky top-0 z-30 transition-colors ${
+          highContrast ? 'bg-black border-yellow-500 text-yellow-300' : isDarkMode ? 'bg-[#0E172A] border-slate-800 text-white' : 'bg-white border-gray-150 text-[#1C1C1C]'
+        }`}>
+          {/* Left Side */}
           <div className="flex items-center gap-4">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="lg:hidden p-1.5 rounded-lg border border-gray-150 hover:bg-gray-100 cursor-pointer"
+              className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded transition-all bg-transparent border-0 cursor-pointer text-current"
+              aria-label="Abrir lateral"
             >
-              ☰
+              <Menu size={20} />
             </button>
-
-            {/* Global Search box in academic archives */}
-            <div className="relative hidden sm:block w-72">
-              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Pesquisar nos arquivos da MultiPlus..."
-                value={globalSearchTerm}
-                onChange={(e) => setGlobalSearchTerm(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-2xs focus:outline-none focus:border-[#C89B3C]"
-              />
+            <div className="hidden sm:block text-left">
+              <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block">MultiPlus LMS</span>
+              <h2 className="text-sm font-serif font-black tracking-wide m-0 capitalize">{activeTab} • Portal do Professor</h2>
             </div>
           </div>
 
-          {/* Indicators Shortcuts Right Side */}
-          <div className="flex items-center gap-3.5">
-            
-            {/* Dark Mode toggle trigger */}
-            <button
+          {/* Center Search bar */}
+          <div className="hidden md:flex relative w-64">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <Search size={14} />
+            </span>
+            <input
+              type="text"
+              placeholder="Pesquisar arquivos..."
+              value={globalSearchTerm}
+              onChange={(e) => setGlobalSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-gray-50 border border-gray-200 placeholder:text-gray-400 text-[#1C1C1C] focus:outline-none focus:border-[#C89B3C]"
+            />
+          </div>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-4 text-xs">
+            {/* Accessibility swift switch */}
+            <button 
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className="p-2 border border-gray-150 rounded-xl hover:bg-gray-50 text-gray-400 cursor-pointer"
-              title="Alternar Tema Escuro de Leitura"
+              className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-[#C89B3C] border-0 cursor-pointer"
+              title="Mudar visual cor"
             >
-              {isDarkMode ? <Sun size={13} /> : <Moon size={13} />}
+              {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
             </button>
 
-            {/* Quick Notify bells dropdown */}
+            {/* Notification Bell toggle menu */}
             <div className="relative">
-              <button
+              <button 
                 onClick={() => setShowNotificationsMenu(!showNotificationsMenu)}
-                className="p-2 border border-gray-150 rounded-xl hover:bg-gray-50 text-gray-400 relative cursor-pointer"
-                title="Centro de Alertas Síncronos"
+                className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-[#0A2E5D] dark:text-blue-400 border-0 cursor-pointer relative"
               >
-                <Bell size={13} />
-                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                <Bell size={14} />
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500" />
               </button>
 
-              {showNotificationsMenu && (
-                <div className="absolute right-0 mt-2.5 w-64 bg-white border border-gray-200 p-3 rounded-2xl shadow-xl text-left z-50">
-                  <span className="text-[8px] font-mono font-bold text-gray-450 uppercase block border-b pb-1.5 mb-2">NOTIFICAÇÕES DA TURMA</span>
-                  <div className="space-y-2">
-                    {notifications.map(n => (
-                      <p key={n.id} className="text-4xs text-[#0a2e5d] leading-normal m-0">{n.text}</p>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <AnimatePresence>
+                {showNotificationsMenu && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className={`absolute right-0 mt-2 w-72 rounded-2xl p-4 shadow-xl text-left ${cardThemeClass} z-50`}
+                  >
+                    <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+                      <span className="font-mono text-2xs font-bold text-gray-500">NOTIFICAÇÕES DA TURMA</span>
+                    </div>
+                    <div className="space-y-2 mt-2 divide-y divide-gray-100">
+                      {notifications.length === 0 ? (
+                        <p className="text-2xs text-gray-400 m-0 py-2">Sem novas notificações.</p>
+                      ) : (
+                        notifications.map(n => (
+                          <div key={n.id} className="pt-2 text-2xs text-gray-600 dark:text-gray-300">
+                            <p className="m-0 leading-snug">{n.text}</p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            {/* Public Help Desk Trigger Link */}
+            {/* Tutor Assistant info help icon */}
             <button
               onClick={() => {
                 alert('Tutor assistente MultiPlus: Por favor envie um e-mail para: suporte@multiplus.ao com a sua credencial Huambo.');
               }}
-              className="p-2 border border-gray-150 rounded-xl hover:bg-gray-50 text-gray-400 cursor-pointer"
+              className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-gray-400 border-0 cursor-pointer"
               title="Ajuda ao Docente"
             >
-              <HelpCircle size={13} />
+              <HelpCircle size={14} />
             </button>
 
-            {/* Short Profiler */}
-            <div className="flex items-center gap-2 border-l pl-3.5">
+            {/* Profile menu widget */}
+            <div className="flex items-center gap-2.5 border-l pl-4">
               <img
                 src={currentUser?.avatarUrl || "https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg"}
                 alt="Formadora Avatar"
-                className="w-8 h-8 rounded-full border border-gray-200"
+                className="w-8 h-8 rounded-full border border-gray-200 object-cover"
               />
-              <span className="text-[10px] font-mono tracking-wider font-extrabold text-blue-900 uppercase">Esmeralda Sumbelelo</span>
+              <div className="hidden sm:block text-left">
+                <span className="text-[10px] font-mono font-bold text-blue-900 dark:text-blue-300 block leading-tight">PROFESSOR</span>
+                <span className="text-3xs text-slate-500 font-semibold uppercase block truncate max-w-[100px]">{currentUser?.email}</span>
+              </div>
             </div>
-
           </div>
-
         </header>
 
         {/* 3. DYNAMIC CONTENT AREA BLOCK */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6 sm:space-y-8"
+            >
           
           {/* RENDER MODULAR SUB-COMPONENTS & DIRECT CUSTOM SECTIONS */}
           
@@ -738,17 +795,17 @@ export default function InstructorPortal({
 
           {/* TAB 5: ESTRUTURAÇÃO / SYLLABUS */}
           {activeTab === 'modulos' && (
-            <div className="bg-white p-6 rounded-3xl border border-gray-150 text-left space-y-6">
+            <div className={`p-6 rounded-3xl ${cardThemeClass} text-left space-y-6`}>
               <div>
                 <span className="text-[9px] font-mono text-[#C89B3C] font-black uppercase tracking-widest block">Course Structure Tree / Planner</span>
-                <h3 className="font-serif font-black text-[#0A2E5D] text-lg mt-1 m-0">Planeador Modular de Ementas</h3>
+                <h3 className="font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C] text-lg mt-1 m-0">Planeador Modular de Ementas</h3>
                 <p className="text-xs text-gray-400">Arraste temas, crie novos pilares e estipule cronogramas em tempo real antes do lançamento letivo.</p>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                 
                 {/* Form to insert module */}
-                <div className="lg:col-span-5 bg-gray-50 p-5 rounded-2xl border border-gray-200">
+                <div className={`lg:col-span-5 p-5 rounded-2xl border ${isDarkMode ? 'bg-[#152542] border-slate-750' : 'bg-gray-50 border-gray-200'}`}>
                   <h4 className="text-2xs font-mono font-bold text-gray-500 uppercase block mb-3 border-b pb-1.5">ANEXAR CATEGORIA DE CONTEÚDO</h4>
                   <form onSubmit={handleAddPlannerModule} className="space-y-4">
                     <div>
@@ -759,12 +816,12 @@ export default function InstructorPortal({
                         placeholder="Ex: Módulo IV - Fusões Internacionais e Joint Ventures"
                         value={newPlannerModuleTitle}
                         onChange={(e) => setNewPlannerModuleTitle(e.target.value)}
-                        className="w-full p-2 bg-white border rounded text-xs text-slate-809"
+                        className="w-full p-2 bg-white dark:bg-[#1E293B] border rounded text-xs text-slate-809 dark:text-white"
                       />
                     </div>
                     <button
                       type="submit"
-                      className="px-3.5 py-2 bg-[#0A2E5D] text-white rounded text-3xs font-mono font-extrabold uppercase cursor-pointer"
+                      className="px-3.5 py-2 bg-[#0A2E5D] hover:bg-[#C89B3C] text-white hover:text-slate-900 rounded text-3xs font-mono font-extrabold uppercase cursor-pointer"
                     >
                       Acrescentar Eixo Letivo
                     </button>
@@ -775,10 +832,10 @@ export default function InstructorPortal({
                 <div className="lg:col-span-7 space-y-3">
                   <span className="text-[9px] font-mono text-gray-400 font-extrabold uppercase block text-left">PILARES DA GRADE DE PORTFOLIO JURÍDICO</span>
                   {plannerModules.map((pm, pmIdx) => (
-                    <div key={pmIdx} className="p-3 bg-white border border-gray-150 rounded-xl flex justify-between items-center text-left">
+                    <div key={pmIdx} className={`p-3 border rounded-xl flex justify-between items-center text-left ${isDarkMode ? 'bg-[#0E172A] border-slate-700/50' : 'bg-white border-gray-150'}`}>
                       <div>
                         <span className="text-[8px] font-mono text-[#C89B3C] font-bold block">{pm.number}</span>
-                        <h5 className="font-serif font-black text-slate-700 text-xs m-0">{pm.title}</h5>
+                        <h5 className="font-serif font-black text-slate-700 dark:text-gray-300 text-xs m-0">{pm.title}</h5>
                       </div>
                       <span className="text-[9px] font-mono text-gray-400 font-semibold">{pm.lessonsCount} Tópicos Indexados</span>
                     </div>
@@ -1201,6 +1258,8 @@ export default function InstructorPortal({
             </div>
           )}
 
+            </motion.div>
+          </AnimatePresence>
         </main>
 
       </div>
