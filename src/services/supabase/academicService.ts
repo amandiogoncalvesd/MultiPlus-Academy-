@@ -127,7 +127,6 @@ export const academicService = {
   // 2. MODULES SYSTEM
   // =========================================================================
   async getCourseModules(courseId: string): Promise<DBModule[]> {
-    // If modules table doesn't exist, we fallback to custom categories or fake modules list
     const { data, error } = await supabase
       .from('modules')
       .select('*')
@@ -135,12 +134,8 @@ export const academicService = {
       .order('ordem', { ascending: true });
 
     if (error) {
-      // In case table 'modules' doesn't exist, we gracefully return hardcoded mock modules to keep app working
-      return [
-        { id: 'm1', course_id: courseId, titulo: 'Fundamentos e Sistema Legal', ordem: 1 },
-        { id: 'm2', course_id: courseId, titulo: 'Direito Civil e Contratos', ordem: 2 },
-        { id: 'm3', course_id: courseId, titulo: 'Crime, Empresa e Resolução de Conflitos', ordem: 3 }
-      ];
+      console.error(`Error fetching modules for course ${courseId}:`, error);
+      throw error;
     }
     return data || [];
   },
@@ -154,8 +149,7 @@ export const academicService = {
 
     if (error) {
       console.error('Error creating module:', error);
-      // Mock fallback:
-      return { id: `m_${Date.now()}`, course_id: courseId, titulo, ordem };
+      throw error;
     }
     return data;
   },
@@ -334,5 +328,140 @@ export const academicService = {
       throw error;
     }
     return data;
+  },
+
+  async getQuizByLesson(lessonId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('lessons')
+      .select('quiz')
+      .eq('id', lessonId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching quiz by lesson:', error);
+      throw error;
+    }
+    
+    return data?.quiz || [];
+  },
+
+  async submitQuizResponse(userId: string, lessonId: string, score: number, answers: any): Promise<any> {
+    const { data, error } = await supabase
+      .from('quiz_submissions')
+      .upsert({
+        student_id: userId,
+        lesson_id: lessonId,
+        answers: answers,
+        score: score,
+        submitted_at: new Date().toISOString()
+      }, { onConflict: 'student_id,lesson_id' })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error submitting quiz response:', error);
+      throw error;
+    }
+    return data;
+  },
+
+  async getQuizSubmissions(userId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('quiz_submissions')
+      .select('*')
+      .eq('student_id', userId);
+
+    if (error) {
+      console.error('Error fetching quiz submissions:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  async scheduleLesson(lessonId: string, studentId: string, courseId: string, scheduledAt: string): Promise<any> {
+    const { data: targetData, error: targetError } = await supabase
+      .from('lesson_targets')
+      .upsert({
+        lesson_id: lessonId,
+        student_id: studentId,
+        course_id: courseId
+      }, { onConflict: 'lesson_id,student_id' })
+      .select()
+      .single();
+
+    if (targetError) {
+      console.error('Error inserting into lesson_targets:', targetError);
+      throw targetError;
+    }
+
+    const { error: lessonError } = await supabase
+      .from('lessons')
+      .update({
+        scheduled_at: scheduledAt,
+        status: 'PUBLISHED'
+      })
+      .eq('id', lessonId);
+
+    if (lessonError) {
+      console.warn('Error updating scheduled_at on lessons:', lessonError);
+    }
+
+    return targetData;
+  },
+
+  async getScheduledLessonsForStudent(studentId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('lesson_targets')
+      .select('*, lesson:lessons(*, course:courses(*))')
+      .eq('student_id', studentId);
+
+    if (error) {
+      console.error('Error fetching scheduled lessons for student:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  async getScheduledLessonsForProfessor(): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('lesson_targets')
+      .select('*, lesson:lessons(*, course:courses(*)), student:users(*)');
+
+    if (error) {
+      console.error('Error fetching scheduled lessons for professor:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  async getStudentProgressMetrics(userId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('vw_student_progress')
+      .select('*')
+      .eq('student_id', userId);
+
+    if (error) {
+      console.warn('Error fetching student progress metrics from view, running direct calculation fallback:', error);
+      try {
+        const completed = await this.getCompletedLessons(userId, '');
+        const submissions = await this.getQuizSubmissions(userId);
+        const avgScore = submissions.length > 0 
+          ? Math.round(submissions.reduce((acc, curr) => acc + (Number(curr.score) || 0), 0) / submissions.length)
+          : 0;
+
+        return [{
+          student_id: userId,
+          total_lessons: 3,
+          completed_lessons: completed.length,
+          progress_percent: Math.min(100, Math.round((completed.length / 3) * 100)),
+          avg_quiz_score: avgScore || 0,
+          last_activity: new Date().toISOString()
+        }];
+      } catch (fallbackErr) {
+        console.error('Fallback calculation also failed:', fallbackErr);
+        return [];
+      }
+    }
+    return data || [];
   }
 };

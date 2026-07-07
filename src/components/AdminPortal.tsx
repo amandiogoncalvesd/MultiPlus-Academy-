@@ -4,6 +4,7 @@ import { PageId, User, UserRole, Course } from '../types';
 import { useAuth } from './auth/AuthProvider';
 import { supabase } from '../lib/supabase/client';
 import { academicService } from '../services/supabase/academicService';
+import ChatShell from './messaging/ChatShell';
 
 import { 
   Users, Settings, Activity, TrendingUp, DollarSign, MapPin, ShieldCheck, 
@@ -207,43 +208,51 @@ export default function AdminPortal({
     const split = newUserName.split(' ');
     const first = split[0];
     const last = split.slice(1).join(' ') || 'User';
-    const customId = `user_${Date.now()}`;
-    const newUser: User = {
-      id: customId,
-      email: newUserEmail,
-      firstName: first,
-      lastName: last,
-      role: newUserRole,
-      status: newUserStatus,
-      avatarUrl: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150`,
-      phone: '+244 912 000 000',
-      streak: 0,
-      longestStreak: 0,
-      totalHoursLearned: 0
-    };
 
     try {
-      // Write directly to Supabase users table
-      const { error } = await supabase.from('users').insert({
-        id: customId,
-        email: newUserEmail,
-        nome_completo: newUserName,
-        role: newUserRole === 'STUDENT' ? 'ALUNO' : newUserRole === 'INSTRUCTOR' ? 'PROFESSOR' : 'ADMIN',
-        status: newUserStatus
+      const { data, error } = await supabase.functions.invoke('admin-users', {
+        body: {
+          action: 'create',
+          email: newUserEmail,
+          password: 'Password@123', // Default temporary password
+          nome_completo: newUserName,
+          role: newUserRole === 'STUDENT' ? 'ALUNO' : newUserRole === 'INSTRUCTOR' ? 'PROFESSOR' : 'ADMIN'
+        }
       });
 
-      if (error) throw error;
+      if (error || data?.error) {
+        throw new Error(error?.message || data?.error || 'Erro ao criar usuário');
+      }
+
+      const createdAuthUser = data?.data?.user;
+      if (!createdAuthUser) {
+        throw new Error('Retorno inválido da Edge Function (nenhum user id retornado)');
+      }
+
+      const newUser: User = {
+        id: createdAuthUser.id,
+        email: newUserEmail,
+        firstName: first,
+        lastName: last,
+        role: newUserRole,
+        status: newUserStatus,
+        avatarUrl: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150`,
+        phone: '+244 912 000 000',
+        streak: 0,
+        longestStreak: 0,
+        totalHoursLearned: 0
+      };
 
       const updated = [...dbUsers, newUser];
       await syncToLocalStorage(updated);
-      addAuditLog("CRIAÇÃO UTILIZADOR", `Nova conta criada: ${newUserEmail} (${newUserRole})`);
+      addAuditLog("CRIAÇÃO UTILIZADOR", `Nova conta criada via Edge Function: ${newUserEmail} (${newUserRole})`);
       
       setNewUserName('');
       setNewUserEmail('');
-      alert(`Conta de ${first} criada com perfil ${newUserRole} no Supabase!`);
+      alert(`Conta de ${first} criada com sucesso via Edge Function com a senha temporária Password@123!`);
     } catch (err: any) {
       console.error(err);
-      alert(`Erro ao salvar no Supabase: ${err.message || err}`);
+      alert(`Erro ao salvar no Supabase via Edge Function: ${err.message || err}`);
     }
   };
 
@@ -276,16 +285,21 @@ export default function AdminPortal({
   const handleDeleteUser = async (userId: string) => {
     if (!confirm('Deseja realmente remover permanentemente este registo do Supabase?')) return;
     try {
-      const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', userId);
+      const { data, error } = await supabase.functions.invoke('admin-users', {
+        body: {
+          action: 'delete',
+          id: userId
+        }
+      });
 
-      if (error) throw error;
+      if (error || data?.error) {
+        throw new Error(error?.message || data?.error || 'Erro ao remover usuário');
+      }
 
       const updated = dbUsers.filter(u => u.id !== userId);
       await syncToLocalStorage(updated);
       addAuditLog("REMOCÃO UTILIZADOR", `Removida conta ID: ${userId}`);
+      alert('Utilizador removido com sucesso!');
     } catch (err: any) {
       console.error(err);
       alert(`Erro ao remover utilizador: ${err.message || err}`);
@@ -1395,53 +1409,12 @@ export default function AdminPortal({
 
             {/* VIEW 12: MENSAGENS PANEL */}
             {activeTab === 'mensagens' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
-                <div>
-                  <h3 className="font-serif font-black text-[#0A2E5D] text-base">Central de Mensagens e Avisos Administrativos</h3>
-                  <p className="text-xs text-gray-400 mt-1">Dispare notícias de recalibração de guias, datas de exames de oratória ou de tribunais simulados.</p>
+              <div className="space-y-4">
+                <div className="bg-white p-6 rounded-3xl border border-gray-150">
+                  <h3 className="font-serif font-black text-[#0A2E5D] text-base">Central de Mensagens e Comunicações em Tempo Real</h3>
+                  <p className="text-xs text-gray-400 mt-1">Converse individualmente com formandos e formadores ou envie mensagens em massa.</p>
                 </div>
-
-                <form onSubmit={handleSendBroadcast} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                    <div>
-                      <label className="block text-[8px] font-mono text-gray-400 uppercase font-black mb-1">Público-Alvo do Disparo</label>
-                      <select value={messageTarget} onChange={(e) => setMessageTarget(e.target.value)} className="w-full p-2 border bg-white rounded-xl">
-                        <option value="ALL_STUDENTS">Todos os Alunos Matriculados</option>
-                        <option value="ALL_INSTRUCTORS">Todos os Professores Titulares</option>
-                        <option value="TURMA_ALPHA">Apenas Alunos Cohort Alpha</option>
-                        <option value="INDIVIDUAL">Usuário Individual Espectador</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[8px] font-mono text-gray-400 uppercase font-black mb-1">Mensagem do Comunicado</label>
-                    <textarea
-                      placeholder="Queridos formandos, a nossa tutora comunica que o simulacro de oratória de Sábado no Huambo..."
-                      value={messageContent}
-                      onChange={(e) => setMessageContent(e.target.value)}
-                      required
-                      className="w-full p-3 border rounded-xl text-xs h-24"
-                    />
-                  </div>
-
-                  <button type="submit" className="px-4 py-2 bg-[#0A2E5D] text-white rounded-xl text-3xs font-mono font-bold uppercase transition-colors">
-                    Enviar Notificação em Lote
-                  </button>
-                </form>
-
-                {/* Broadcast Log */}
-                <div className="space-y-2 pt-4 border-t">
-                  <span className="text-[9px] font-mono text-gray-450 uppercase block">Log de Envio Recente</span>
-                  <div className="bg-slate-900 text-[#C89B3C] font-mono text-[10px] p-4 rounded-xl space-y-2 max-h-40 overflow-y-auto">
-                    {broadcastLog.length === 0 ? (
-                      <p className="m-0 text-slate-500">Nenhum aviso transmitido nesta sessão letiva.</p>
-                    ) : (
-                      broadcastLog.map((log, i) => <p key={i} className="m-0 leading-normal">{log}</p>)
-                    )}
-                  </div>
-                </div>
-
+                <ChatShell role="ADMIN" />
               </div>
             )}
 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase, isSupabaseMock } from '../../lib/supabase/client';
+import { supabase } from '../../lib/supabase/client';
 import { authService, SupabaseAuthUser } from '../../services/supabase/authService';
 import { userService, SupabaseUserProfile } from '../../services/supabase/userService';
 import { User, UserRole } from '../../types';
@@ -45,39 +45,6 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
 
   const syncAuthSession = async () => {
     try {
-      if (isSupabaseMock) {
-        const mockSessionStr = typeof window !== 'undefined' ? localStorage.getItem('multiplus_mock_session') : null;
-        if (mockSessionStr) {
-          const mSession = JSON.parse(mockSessionStr);
-          setSession(mSession);
-          if (mSession?.user) {
-            const uMeta = mSession.user.user_metadata;
-            const mappedRole = mapSupabaseRole(uMeta?.role || 'ALUNO');
-            const localUser: User = {
-              id: mSession.user.id,
-              email: mSession.user.email || '',
-              firstName: uMeta?.nome_completo?.split(' ')[0] || '',
-              lastName: uMeta?.nome_completo?.split(' ').slice(1).join(' ') || '',
-              role: mappedRole,
-              avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150&h=150',
-              status: 'ACTIVE',
-              streak: 3,
-              longestStreak: 5,
-              totalHoursLearned: 4
-            };
-            setCurrentUser(localUser);
-            
-            const profileData = await userService.getUserProfile(mSession.user.id);
-            setUserProfile(profileData);
-          }
-        } else {
-          setCurrentUser(null);
-          setUserProfile(null);
-          setSession(null);
-        }
-        return;
-      }
-
       const { data: { session: sbSession } } = await supabase.auth.getSession();
       setSession(sbSession);
       
@@ -143,8 +110,6 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
 
   useEffect(() => {
     syncAuthSession();
-
-    if (isSupabaseMock) return;
 
     // Listen to Auth State Changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, sbSession) => {

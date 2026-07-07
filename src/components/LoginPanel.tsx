@@ -136,6 +136,18 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
                 </div>
               )}
 
+              {typeof window !== 'undefined' && localStorage.getItem('supabase_offline_mode') === 'true' && (
+                <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-900 text-xs flex flex-col gap-1.5 shadow-sm">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                    Portal em Modo de Demonstração
+                  </div>
+                  <p className="text-[11px] text-amber-700 font-sans leading-relaxed">
+                    Ligação ao Supabase indisponível ou chaves inválidas. Para sua comodidade, o sistema ativou a simulação local automática para que possa testar todas as funcionalidades (Dashboard do Aluno, Professor, e Administrador) com persistência em cache.
+                  </p>
+                </div>
+              )}
+
               <form onSubmit={handleAuth} className="space-y-4">
                 {isRegister && (
                   <div className="grid grid-cols-2 gap-4">

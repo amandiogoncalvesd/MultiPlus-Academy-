@@ -47,13 +47,13 @@ export interface LessonNote {
 
 export interface Message {
   id: string;
-  senderName: string;
-  recipientName: string;
-  subject: string;
-  content: string;
-  createdAt: string;
-  isRead: boolean;
-  isReply?: boolean;
+  sender_id: string;
+  receiver_id: string;
+  texto: string;
+  lido: boolean;
+  created_at: string;
+  sender_nome?: string;
+  sender_avatar?: string;
 }
 
 export interface Course {

@@ -91,5 +91,76 @@ export const messageService = {
       throw error;
     }
     return data as SupabaseAnnouncement;
+  },
+
+  async getConversationPartners(userId: string): Promise<any[]> {
+    // 1. Get all messages for the user
+    const messages = await this.getMessages(userId);
+    
+    // 2. Group by partner
+    const partnerMap = new Map<string, { lastMessage: SupabaseMessage; unreadCount: number }>();
+    
+    messages.forEach((msg) => {
+      const partnerId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
+      if (!partnerId) return;
+      
+      const isUnread = msg.receiver_id === userId && !msg.lido;
+      
+      const existing = partnerMap.get(partnerId);
+      if (!existing) {
+        partnerMap.set(partnerId, {
+          lastMessage: msg,
+          unreadCount: isUnread ? 1 : 0
+        });
+      } else {
+        existing.unreadCount += isUnread ? 1 : 0;
+      }
+    });
+    
+    if (partnerMap.size === 0) return [];
+    
+    // 3. Fetch partners profiles
+    const partnerIds = Array.from(partnerMap.keys());
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('id, email, nome_completo, role, foto_perfil')
+      .in('id', partnerIds);
+      
+    if (error) {
+      console.error('Error fetching partner profiles:', error);
+      throw error;
+    }
+    
+    return users.map((u) => {
+      const entry = partnerMap.get(u.id)!;
+      return {
+        id: u.id,
+        email: u.email,
+        nome_completo: u.nome_completo,
+        role: u.role,
+        foto_perfil: u.foto_perfil,
+        lastMessage: entry.lastMessage,
+        unreadCount: entry.unreadCount
+      };
+    });
+  },
+
+  async getAllowedContacts(userId: string, role: string): Promise<any[]> {
+    let query = supabase.from('users').select('id, email, nome_completo, role, foto_perfil');
+    
+    if (role === 'ALUNO') {
+      // Aluno can only start conversation with Professors
+      query = query.eq('role', 'PROFESSOR');
+    } else {
+      // Admin and Professor can see all other users, except themselves
+      query = query.neq('id', userId);
+    }
+    
+    const { data, error } = await query;
+    if (error) {
+      console.error('Error fetching allowed contacts:', error);
+      throw error;
+    }
+    return data || [];
   }
 };

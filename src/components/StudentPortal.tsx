@@ -6,6 +6,7 @@ import { useAuth } from './auth/AuthProvider';
 import { supabase } from '../lib/supabase/client';
 import { userService } from '../services/supabase/userService';
 import { academicService } from '../services/supabase/academicService';
+import QuizArea from './portal/QuizArea';
 
 
 import { 
@@ -114,6 +115,7 @@ export default function StudentPortal({
   const [certificates, setCertificates] = useState<any[]>([]);
   const [realLessons, setRealLessons] = useState<any[]>([]);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+  const [scheduledLessons, setScheduledLessons] = useState<any[]>([]);
   const [academicLoading, setAcademicLoading] = useState<boolean>(true);
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
 
@@ -144,6 +146,10 @@ export default function StudentPortal({
       // 2. Fetch certificates
       const certs = await academicService.getStudentCertificates(currentUser.id);
       setCertificates(certs || []);
+
+      // 3. Fetch scheduled lessons
+      const schedules = await academicService.getScheduledLessonsForStudent(currentUser.id);
+      setScheduledLessons(schedules || []);
     } catch (err) {
       console.warn('Silent fallback on dynamic user profiles and enrollments:', err);
     } finally {
@@ -566,25 +572,33 @@ export default function StudentPortal({
   };
 
   // Lecture list definitions (Flagship Legal course)
-  const activeSyllabus = [
+  const activeSyllabus = realLessons.length > 0 ? realLessons.map(l => ({
+    id: l.id,
+    title: l.titulo || l.title || 'Sem título',
+    duration: l.duracao || '15:00',
+    description: l.descricao || ''
+  })) : [
     {
+      id: 'lesson_1_fallback',
       title: 'Aula 1: Introdução ao Common Law vs. Civil Law no Contexto de Luanda e Huambo',
       duration: '15:20',
       description: 'Análise estrutural da doutrina dos casos precedentes vigentes nas transações petrolíferas sob a égide das regras de conteúdo local.'
     },
     {
+      id: 'lesson_2_fallback',
       title: 'Aula 2: Vocabulário Crítico para Correspondência Jurídica Formal e Advisories',
       duration: '18:45',
       description: 'Aplicação de terminologias de etiqueta avançadas no drafting de correio profissional internacional.'
     },
     {
+      id: 'lesson_3_fallback',
       title: 'Aula 3: Elaboração de Contratos Comerciais (Drafting) e Cláusulas Indemnity',
       duration: '22:10',
       description: 'Estruturação conceitual passo a passo de isenção mútua de perdas comerciais de acordo com as leis do mercado angolano.'
     }
   ];
 
-  const currentLecture = activeSyllabus[activeLessonIdx];
+  const currentLecture = activeSyllabus[activeLessonIdx] || activeSyllabus[0];
 
   // Notebook handling
   const handleSaveNote = () => {
@@ -1142,6 +1156,26 @@ export default function StudentPortal({
                         </p>
                       </div>
 
+                      {/* Interactive Quiz Segment */}
+                      {currentLecture && currentLecture.id && (
+                        <QuizArea
+                          lessonId={currentLecture.id}
+                          userId={currentUser?.id || ''}
+                          onQuizPassed={async () => {
+                            if (currentUser?.id && selectedCourseId && currentLecture.id) {
+                              try {
+                                await academicService.markLessonComplete(currentUser.id, selectedCourseId, currentLecture.id, true);
+                                // Refresh completed lessons
+                                const completions = await academicService.getCompletedLessons(currentUser.id, selectedCourseId);
+                                setCompletedLessons(completions || []);
+                              } catch (err) {
+                                console.error('Error marking lesson complete from quiz success:', err);
+                              }
+                            }
+                          }}
+                        />
+                      )}
+
                       {/* Interactive legal notes tied to play seconds */}
                       <div className={`p-5 rounded-2xl space-y-4 ${cardThemeClass}`}>
                         <h4 className="text-xs font-serif font-black m-0">Caderno de Apontamentos do Aluno</h4>
@@ -1202,9 +1236,17 @@ export default function StudentPortal({
                                   : 'border-gray-100 dark:border-slate-800 hover:border-gray-200'
                               }`}
                             >
-                              <div className="space-y-1 text-left">
-                                <h5 className="font-serif font-black m-0 leading-snug">{syll.title}</h5>
-                                <p className="text-[10px] text-gray-400 m-0">Segmento explicativo</p>
+                              <div className="space-y-1 text-left flex-1 min-w-0">
+                                <h5 className="font-serif font-black m-0 leading-snug truncate">{syll.title}</h5>
+                                <p className="text-[10px] text-gray-400 m-0 flex items-center gap-1.5">
+                                  {completedLessons.includes(syll.id) ? (
+                                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono text-[9px] flex items-center gap-0.5">
+                                      ✓ Concluída
+                                    </span>
+                                  ) : (
+                                    <span>Segmento explicativo</span>
+                                  )}
+                                </p>
                               </div>
                               <span className="text-[#C89B3C] font-mono text-4xs shrink-0 self-center font-bold">
                                 {syll.duration}
@@ -1266,58 +1308,95 @@ export default function StudentPortal({
                     {/* Schedule item grids mapped out */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       
-                      {/* Session 1 card */}
-                      <div className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 dark:bg-slate-800/20 space-y-3">
-                        <div className="flex justify-between items-center text-2xs font-mono font-bold">
-                          <span className="text-[#C89B3C]">TERÇA-FEIRA</span>
-                          <span className="bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded">18h30 - 20h30</span>
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C]">Análise Linguística: Common Law vs. Civil Law</h4>
-                          <p className="text-[10px] text-gray-500 mt-1">Sessão em videoconferência síncrona com avaliação e debates.</p>
-                        </div>
-                        <a 
-                          href="https://meet.google.com/lookup/mock-multiplus"
-                          target="_blank"
-                          className="py-2.5 bg-[#0A2E5D] text-white text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-[#123C73] transition-colors"
-                        >
-                          Entrar na Aula Meet
-                        </a>
-                      </div>
+                      {scheduledLessons.length > 0 ? (
+                        scheduledLessons.map((session, index) => {
+                          const title = session.lesson?.titulo || session.lesson?.title || 'Aula Síncrona';
+                          const dateVal = session.lesson?.scheduled_at?.split('T')[0] || '2026-06-15';
+                          const timeVal = session.lesson?.scheduled_at?.split('T')[1]?.substring(0, 5) || '18:30';
+                          const courseTitle = session.lesson?.course?.title || session.lesson?.course?.titulo || 'English for the Legal Field';
+                          const meetUrl = 'https://meet.google.com/lookup/mock-multiplus';
 
-                      {/* Session 2 card */}
-                      <div className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 dark:bg-slate-800/20 space-y-3">
-                        <div className="flex justify-between items-center text-2xs font-mono font-bold">
-                          <span className="text-[#C89B3C]">QUINTA-FEIRA</span>
-                          <span className="bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded">18h30 - 20h30</span>
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C]">Drafting: Cláusulas de Exclusão e Dolo</h4>
-                          <p className="text-[10px] text-gray-500 mt-1">Aplicação prática do Artigo 230 do Regulamento Angolano na redação internacional.</p>
-                        </div>
-                        <a 
-                          href="https://meet.google.com/lookup/mock-multiplus"
-                          target="_blank"
-                          className="py-2.5 bg-[#0A2E5D] text-white text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-[#123C73] transition-colors"
-                        >
-                          Entrar na Aula Meet
-                        </a>
-                      </div>
+                          return (
+                            <div key={session.id || index} className="p-4 rounded-xl border border-gray-150 bg-white dark:bg-slate-900 shadow-3xs space-y-3 relative overflow-hidden">
+                              <div className="absolute top-0 left-0 right-0 h-1 bg-[#C89B3C]" />
+                              <div className="flex justify-between items-center text-2xs font-mono font-bold">
+                                <span className="text-[#C89B3C] uppercase truncate max-w-[150px]">{courseTitle}</span>
+                                <span className="bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400 px-1.5 py-0.5 rounded">{timeVal}</span>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C] leading-snug">{title}</h4>
+                                <p className="text-[10px] text-gray-500 mt-1">
+                                  Aula agendada pelo seu professor titular para o dia {dateVal}.
+                                </p>
+                              </div>
+                              <a 
+                                href={meetUrl}
+                                target="_blank"
+                                referrerPolicy="no-referrer"
+                                className="py-2.5 bg-[#0A2E5D] text-white text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-[#123C73] transition-colors"
+                              >
+                                Entrar na Aula Meet
+                              </a>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <>
+                          {/* Fallback mock items if no real meetings are scheduled */}
+                          {/* Session 1 card */}
+                          <div className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 dark:bg-slate-800/20 space-y-3">
+                            <div className="flex justify-between items-center text-2xs font-mono font-bold">
+                              <span className="text-[#C89B3C]">TERÇA-FEIRA</span>
+                              <span className="bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded">18h30 - 20h30</span>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C]">Análise Linguística: Common Law vs. Civil Law</h4>
+                              <p className="text-[10px] text-gray-500 mt-1">Sessão em videoconferência síncrona com avaliação e debates.</p>
+                            </div>
+                            <a 
+                              href="https://meet.google.com/lookup/mock-multiplus"
+                              target="_blank"
+                              className="py-2.5 bg-[#0A2E5D] text-white text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-[#123C73] transition-colors"
+                            >
+                              Entrar na Aula Meet
+                            </a>
+                          </div>
 
-                      {/* Session 3 card */}
-                      <div className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 dark:bg-slate-800/20 space-y-3">
-                        <div className="flex justify-between items-center text-2xs font-mono font-bold">
-                          <span className="text-[#C89B3C]">SÁBADO LETIVO</span>
-                          <span className="bg-amber-50 text-[#C89B3C] px-1.5 py-0.5 rounded">09h00 - 12h00</span>
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C]">Simulação de Corte Arbitral (Mock Arbitration)</h4>
-                          <p className="text-[10px] text-gray-500 mt-1">Encontro laboratorial presencial programado no campus regional do Huambo.</p>
-                        </div>
-                        <span className="py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-500 text-center rounded-lg text-3xs font-mono font-bold uppercase block">
-                          Encontro Presencial
-                        </span>
-                      </div>
+                          {/* Session 2 card */}
+                          <div className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 dark:bg-slate-800/20 space-y-3">
+                            <div className="flex justify-between items-center text-2xs font-mono font-bold">
+                              <span className="text-[#C89B3C]">QUINTA-FEIRA</span>
+                              <span className="bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded">18h30 - 20h30</span>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C]">Drafting: Cláusulas de Exclusão e Dolo</h4>
+                              <p className="text-[10px] text-gray-500 mt-1">Aplicação prática do Artigo 230 do Regulamento Angolano na redação internacional.</p>
+                            </div>
+                            <a 
+                              href="https://meet.google.com/lookup/mock-multiplus"
+                              target="_blank"
+                              className="py-2.5 bg-[#0A2E5D] text-white text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-[#123C73] transition-colors"
+                            >
+                              Entrar na Aula Meet
+                            </a>
+                          </div>
+
+                          {/* Session 3 card */}
+                          <div className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 dark:bg-slate-800/20 space-y-3">
+                            <div className="flex justify-between items-center text-2xs font-mono font-bold">
+                              <span className="text-[#C89B3C]">SÁBADO LETIVO</span>
+                              <span className="bg-amber-50 text-[#C89B3C] px-1.5 py-0.5 rounded">09h00 - 12h00</span>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C]">Simulação de Corte Arbitral (Mock Arbitration)</h4>
+                              <p className="text-[10px] text-gray-500 mt-1">Encontro laboratorial presencial programado no campus regional do Huambo.</p>
+                            </div>
+                            <span className="py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-500 text-center rounded-lg text-3xs font-mono font-bold uppercase block">
+                              Encontro Presencial
+                            </span>
+                          </div>
+                        </>
+                      )}
 
                     </div>
 

@@ -1,144 +1,96 @@
-import { supabase, isSupabaseMock } from '../../lib/supabase/client';
-import {
-  SupabaseAuthUser,
-  mockLogin,
-  mockRegister,
-  mockLogout,
-  mockGetCurrentUser,
-} from './mockAuth';
+import { supabase } from '../../lib/supabase/client';
 
-export type { SupabaseAuthUser };
-
-// Overridable flag if a query fails at runtime with "Invalid API key"
-let runtimeMockFallback = false;
+export interface SupabaseAuthUser {
+  id: string;
+  email: string;
+  nome_completo: string;
+  role: 'ADMIN' | 'PROFESSOR' | 'ALUNO';
+  telefone?: string;
+  foto_perfil?: string;
+}
 
 export const authService = {
   /**
-   * Performs authentication using Supabase Auth with Mock Fallback
+   * Performs authentication using Supabase Auth
    */
   async login(email: string, password: string): Promise<{ user: SupabaseAuthUser | null; session: any }> {
-    if (isSupabaseMock || runtimeMockFallback) {
-      console.log('Using Mock Auth Login fallback...');
-      return await mockLogin(email, password);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error('Supabase signInWithPassword error:', error);
+      throw error;
     }
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    if (data?.user) {
+      // Fetch detailed profile mapping from public.users
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
 
-      if (error) {
-        // Automatically switch to mock fallback if credentials are invalid or database is unconfigured
-        if (error.message?.includes('API key') || error.message?.includes('Invalid API key') || error.message?.includes('JWT')) {
-          console.warn('Supabase returned API key error. Activating mock login fallback...');
-          runtimeMockFallback = true;
-          return await mockLogin(email, password);
-        }
-        console.error('Supabase signInWithPassword error:', error);
-        throw error;
-      }
-
-      if (data?.user) {
-        // Fetch detailed profile mapping from public.users
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-
-        if (!userError && userData) {
-          return {
-            user: {
-              id: userData.id,
-              email: userData.email,
-              nome_completo: userData.nome_completo || '',
-              role: userData.role as 'ADMIN' | 'PROFESSOR' | 'ALUNO',
-              telefone: userData.telefone,
-              foto_perfil: userData.foto_perfil
-            },
-            session: data.session
-          };
-        }
-
-        // If public.users is not populated yet, build from user metadata
+      if (!userError && userData) {
         return {
           user: {
-            id: data.user.id,
-            email: data.user.email || '',
-            nome_completo: data.user.user_metadata?.nome_completo || '',
-            role: (data.user.user_metadata?.role || 'ALUNO') as 'ADMIN' | 'PROFESSOR' | 'ALUNO',
+            id: userData.id,
+            email: userData.email,
+            nome_completo: userData.nome_completo || '',
+            role: userData.role as 'ADMIN' | 'PROFESSOR' | 'ALUNO',
+            telefone: userData.telefone,
+            foto_perfil: userData.foto_perfil
           },
           session: data.session
         };
       }
-      
-      throw new Error('Usuário não encontrado após autenticação.');
-    } catch (err: any) {
-      if (err.message?.includes('API key') || err.message?.includes('Invalid API key')) {
-        runtimeMockFallback = true;
-        return await mockLogin(email, password);
-      }
-      throw err;
+
+      // If public.users is not populated yet, build from user metadata
+      return {
+        user: {
+          id: data.user.id,
+          email: data.user.email || '',
+          nome_completo: data.user.user_metadata?.nome_completo || '',
+          role: (data.user.user_metadata?.role || 'ALUNO') as 'ADMIN' | 'PROFESSOR' | 'ALUNO',
+        },
+        session: data.session
+      };
     }
+    
+    throw new Error('Usuário não encontrado após autenticação.');
   },
 
   /**
-   * Registers a new user with Supabase Auth or Mock Fallback
+   * Registers a new user with Supabase Auth
    */
   async register(email: string, password: string, nomeCompleto: string, role: 'ADMIN' | 'PROFESSOR' | 'ALUNO' = 'ALUNO'): Promise<any> {
-    if (isSupabaseMock || runtimeMockFallback) {
-      console.log('Using Mock Auth Register fallback...');
-      return await mockRegister(email, password, nomeCompleto, role);
-    }
-
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            nome_completo: nomeCompleto,
-            role: role
-          }
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          nome_completo: nomeCompleto,
+          role: role
         }
-      });
+      }
+    });
 
-      if (error) {
-        if (error.message?.includes('API key') || error.message?.includes('Invalid API key') || error.message?.includes('JWT')) {
-          console.warn('Supabase returned API key error during sign up. Activating mock fallback...');
-          runtimeMockFallback = true;
-          return await mockRegister(email, password, nomeCompleto, role);
-        }
-        console.error('Supabase signUp error:', error);
-        throw error;
-      }
-      return data;
-    } catch (err: any) {
-      if (err.message?.includes('API key') || err.message?.includes('Invalid API key')) {
-        runtimeMockFallback = true;
-        return await mockRegister(email, password, nomeCompleto, role);
-      }
-      throw err;
+    if (error) {
+      console.error('Supabase signUp error:', error);
+      throw error;
     }
+    return data;
   },
 
   /**
    * Terminate active user session
    */
   async logout(): Promise<void> {
-    if (isSupabaseMock || runtimeMockFallback) {
-      await mockLogout();
-      return;
-    }
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Error logging out from Supabase Auth:', error);
-        throw error;
-      }
-    } catch (err) {
-      await mockLogout();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error logging out from Supabase Auth:', error);
+      throw error;
     }
   },
 
@@ -146,14 +98,10 @@ export const authService = {
    * Recover current Session descriptors
    */
   async getCurrentUser(): Promise<SupabaseAuthUser | null> {
-    if (isSupabaseMock || runtimeMockFallback) {
-      return await mockGetCurrentUser();
-    }
-
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
-        return await mockGetCurrentUser();
+        return null;
       }
 
       const { data: userData, error: userError } = await supabase
@@ -180,7 +128,8 @@ export const authService = {
         role: (user.user_metadata?.role || 'ALUNO') as 'ADMIN' | 'PROFESSOR' | 'ALUNO',
       };
     } catch (err) {
-      return await mockGetCurrentUser();
+      console.error('getCurrentUser error:', err);
+      return null;
     }
   },
 
@@ -188,18 +137,12 @@ export const authService = {
    * Request password recovery mail
    */
   async recoverPassword(email: string): Promise<any> {
-    if (isSupabaseMock || runtimeMockFallback) {
-      return { success: true, message: 'Recovery email simulated.' };
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) {
+      console.error('Supabase resetPasswordForEmail error:', error);
+      throw error;
     }
-    try {
-      const { data, error } = await supabase.auth.resetPasswordForEmail(email);
-      if (error) {
-        console.error('Supabase resetPasswordForEmail error:', error);
-        throw error;
-      }
-      return data;
-    } catch (err) {
-      return { success: true, message: 'Recovery email simulated after error.' };
-    }
+    return data;
   }
 };
+
