@@ -24,26 +24,12 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
   const [saving, setSaving] = useState(false);
   const [alreadyPassed, setAlreadyPassed] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-
-  // Fallback default questions based on lessonId to ensure no blank screens
-  const getDefaultFallbackQuestions = (): QuizQuestion[] => {
-    return [
-      {
-        question: 'Sob o ordenamento jurídico de Angola, qual é a principal distinção entre o Civil Law e o Common Law?',
-        options: [
-          'O Civil Law baseia-se fundamentalmente na lei escrita e codificada, enquanto o Common Law apoia-se em precedentes judiciais.',
-          'O Civil Law vigora apenas no Huambo e o Common Law apenas em Luanda.',
-          'O Common Law não possui juízes nem tribunais organizados.',
-          'Não há diferença prática, pois ambos derivam da mesma constituição angolana.'
-        ],
-        correctAnswer: 0
-      }
-    ];
-  };
+  const [hasError, setHasError] = useState(false);
 
   const loadQuizAndSubmission = async () => {
     if (!lessonId || !userId) return;
     setLoading(true);
+    setHasError(false);
     setHasSubmitted(false);
     setSelectedOption(null);
     setAlreadyPassed(false);
@@ -61,15 +47,14 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
       const dbQuiz = await academicService.getQuizByLesson(lessonId);
       
       if (dbQuiz && dbQuiz.length > 0) {
-        // Parse database structure if needed, or set directly
         setQuestions(dbQuiz as QuizQuestion[]);
       } else {
-        // Use high-quality default question if no quiz in DB
-        setQuestions(getDefaultFallbackQuestions());
+        setQuestions([]);
       }
     } catch (err) {
       console.error('Error loading quiz area data:', err);
-      setQuestions(getDefaultFallbackQuestions());
+      setHasError(true);
+      setQuestions([]);
     } finally {
       setLoading(false);
     }
@@ -80,7 +65,7 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
   }, [lessonId, userId]);
 
   const handleSubmit = async () => {
-    if (selectedOption === null || !userId || !lessonId) return;
+    if (selectedOption === null || !userId || !lessonId || questions.length === 0) return;
 
     setSaving(true);
     const currentQ = questions[currentQuestionIdx];
@@ -136,8 +121,34 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
     );
   }
 
+  if (hasError) {
+    return (
+      <div id="quiz-error" className="p-6 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-2xl flex flex-col items-center justify-center py-8 gap-3 text-center">
+        <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
+        <div className="space-y-1">
+          <h4 className="text-sm font-serif font-bold text-red-900 dark:text-red-300">Falha ao carregar o questionário</h4>
+          <p className="text-xs text-red-700/80 dark:text-red-400/80 max-w-sm">
+            Não foi possível obter o quiz desta aula. Por favor, tente novamente.
+          </p>
+        </div>
+        <button
+          onClick={loadQuizAndSubmission}
+          className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-mono font-bold uppercase transition-colors cursor-pointer flex items-center gap-1.5"
+        >
+          <RefreshCw className="w-3.5 h-3.5" /> Tentar Novamente
+        </button>
+      </div>
+    );
+  }
+
   if (questions.length === 0) {
-    return null;
+    return (
+      <div id="quiz-empty" className="p-5 rounded-2xl border border-dashed border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/40 text-center py-6">
+        <span className="text-xs text-gray-500 dark:text-gray-400 font-sans">
+          Esta aula não possui quiz de avaliação contínua.
+        </span>
+      </div>
+    );
   }
 
   const currentQuestion = questions[currentQuestionIdx];
