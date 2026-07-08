@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase/client';
 import { userService } from '../services/supabase/userService';
 import { academicService } from '../services/supabase/academicService';
 import QuizArea from './portal/QuizArea';
+import { useTheme } from '../contexts/ThemeContext';
 
 
 import { 
@@ -71,7 +72,8 @@ export default function StudentPortal({
   const [searchFeedback, setSearchFeedback] = useState<string | null>(null);
 
   // Accessibility setups
-  const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
+  const { isDarkMode, toggleTheme, setThemeMode } = useTheme();
+  const themeMode = isDarkMode ? 'dark' : 'light';
   const [isHighContrast, setIsHighContrast] = useState(false);
 
   // Clock state
@@ -771,7 +773,7 @@ export default function StudentPortal({
 
             {/* Accessibility swift switch */}
             <button 
-              onClick={() => setThemeMode(themeMode === 'light' ? 'dark' : 'light')}
+              onClick={toggleTheme}
               className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-[#C89B3C] border-0 cursor-pointer"
               title="Mudar visual cor"
             >
@@ -1414,7 +1416,7 @@ export default function StudentPortal({
                 <StudentTasksTab />
               )}
 
-              {/* 6. MESSAGE CENTER WITH AUTO TECHNICAL ADVISER REPLIES */}
+              {/* 6. MESSAGE CENTER */}
               {activeTab === 'messages' && (
                 <StudentMessagesTab currentUser={currentUser} />
               )}

@@ -4,6 +4,7 @@ import { PageId, User, Course } from '../types';
 import { useAuth } from './auth/AuthProvider';
 import { supabase } from '../lib/supabase/client';
 import { academicService } from '../services/supabase/academicService';
+import { useTheme } from '../contexts/ThemeContext';
 
 import { 
   Award, 
@@ -95,7 +96,7 @@ export default function InstructorPortal({
   const [globalSearchTerm, setGlobalSearchTerm] = useState('');
 
   // 1. Accessibility State Settings
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDarkMode, toggleTheme } = useTheme();
   const [highContrast, setHighContrast] = useState(false);
 
   // 2. Custom CV Bio Profile Form States
@@ -552,7 +553,7 @@ export default function InstructorPortal({
           <div className="flex items-center gap-4 text-xs">
             {/* Accessibility swift switch */}
             <button 
-              onClick={() => setIsDarkMode(!isDarkMode)}
+              onClick={toggleTheme}
               className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-[#C89B3C] border-0 cursor-pointer"
               title="Mudar visual cor"
             >
@@ -1210,7 +1211,7 @@ export default function InstructorPortal({
                   <input
                     type="checkbox"
                     checked={isDarkMode}
-                    onChange={(e) => setIsDarkMode(e.target.checked)}
+                    onChange={toggleTheme}
                     className="w-4 h-4 accent-[#C89B3C] cursor-pointer"
                   />
                 </div>
@@ -1244,7 +1245,7 @@ export default function InstructorPortal({
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      <span>Firebase (Auth): ATIVO</span>
+                      <span>Supabase (Auth): ATIVO</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>

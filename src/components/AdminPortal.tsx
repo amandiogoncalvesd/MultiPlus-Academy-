@@ -5,6 +5,7 @@ import { useAuth } from './auth/AuthProvider';
 import { supabase } from '../lib/supabase/client';
 import { academicService } from '../services/supabase/academicService';
 import ChatShell from './messaging/ChatShell';
+import { useTheme } from '../contexts/ThemeContext';
 
 import { 
   Users, Settings, Activity, TrendingUp, DollarSign, MapPin, ShieldCheck, 
@@ -32,9 +33,9 @@ export default function AdminPortal({
   setCurrentUser,
 }: AdminPortalProps) {
   const { signOut } = useAuth();
+  const { isDarkMode, toggleTheme } = useTheme();
   
   // Theme and accessibility states
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
   
   // Tabs: 18 unique views required
@@ -56,6 +57,7 @@ export default function AdminPortal({
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserRole, setNewUserRole] = useState<UserRole>('STUDENT');
   const [newUserStatus, setNewUserStatus] = useState<'ACTIVE' | 'SUSPENDED'>('ACTIVE');
+  const [roleFilter, setRoleFilter] = useState<'ALL' | 'STUDENT' | 'INSTRUCTOR' | 'ADMIN'>('ALL');
   
   // Course form states
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
@@ -67,7 +69,7 @@ export default function AdminPortal({
 
   // Integrations states
   const [integrationStatuses, setIntegrationStatuses] = useState<Record<string, boolean>>({
-    Firebase: true,
+    Supabase: true,
     Cloudinary: true,
     GoogleCalendar: true,
     GoogleMeet: true,
@@ -191,8 +193,33 @@ export default function AdminPortal({
       if (enrollData) {
         setEnrollments(enrollData);
       }
+
+      // 5. Fetch Notifications (real notifications from public.notifications)
+      const { data: notifData } = await supabase
+        .from('notifications')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (notifData) {
+        setActiveAlerts(notifData.map((n: any) => ({
+          id: n.id,
+          type: n.read ? 'REVISADO' : 'NOTIFICACAO',
+          msg: n.text,
+          created_at: n.created_at
+        })));
+      }
     } catch (err) {
       console.warn('Silent local fallback for loading admin portal:', err);
+    }
+  };
+
+  const handleClearAlerts = async () => {
+    try {
+      const { error } = await supabase.from('notifications').update({ read: true }).eq('read', false);
+      if (error) throw error;
+      setActiveAlerts(prev => prev.map(a => ({ ...a, type: 'REVISADO' })));
+      alert('Todas as notificações foram marcadas como lidas.');
+    } catch (err) {
+      console.error('Erro ao limpar alertas:', err);
     }
   };
 
@@ -440,19 +467,10 @@ export default function AdminPortal({
             {[
               { id: 'dashboard', name: 'Dashboard', icon: <Activity className="w-4 h-4" /> },
               { id: 'utilizadores', name: 'Utilizadores', icon: <UserIcon className="w-4 h-4" /> },
-              { id: 'alunos', name: 'Alunos', icon: <Users className="w-4 h-4" /> },
-              { id: 'professores', name: 'Professores', icon: <Award className="w-4 h-4" /> },
               { id: 'cursos', name: 'Cursos', icon: <BookOpen className="w-4 h-4" /> },
-              { id: 'turmas', name: 'Turmas', icon: <Layers className="w-4 h-4" /> },
               { id: 'certificados', name: 'Certificados', icon: <QrCode className="w-4 h-4" /> },
-              { id: 'financeiro', name: 'Financeiro', icon: <DollarSign className="w-4 h-4" /> },
-              { id: 'pagamentos', name: 'Pagamentos', icon: <CheckCircle2 className="w-4 h-4" /> },
-              { id: 'eventos', name: 'Eventos', icon: <Calendar className="w-4 h-4" /> },
-              { id: 'blog', name: 'Blog', icon: <FileText className="w-4 h-4" /> },
               { id: 'mensagens', name: 'Mensagens', icon: <MessageSquare className="w-4 h-4" /> },
               { id: 'notificacoes', name: 'Notificações', icon: <Bell className="w-4 h-4" /> },
-              { id: 'relatorios', name: 'Relatórios', icon: <FileDown className="w-4 h-4" /> },
-              { id: 'auditoria', name: 'Auditoria', icon: <Terminal className="w-4 h-4" /> },
               { id: 'integracoes', name: 'Integrações', icon: <Network className="w-4 h-4" /> },
               { id: 'configuracoes', name: 'Configurações', icon: <Settings className="w-4 h-4" /> },
               { id: 'perfil', name: 'Perfil', icon: <UserIcon className="w-4 h-4" /> },
@@ -552,7 +570,7 @@ export default function AdminPortal({
 
             {/* Accessibility swift switch */}
             <button 
-              onClick={() => setIsDarkMode(!isDarkMode)}
+              onClick={toggleTheme}
               className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-[#C89B3C] border-0 cursor-pointer"
               title="Mudar visual cor"
             >
@@ -742,13 +760,28 @@ export default function AdminPortal({
             {/* VIEW 2: UTILIZADORES TAB (Full administration panel) */}
             {activeTab === 'utilizadores' && (
               <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
-                <div>
-                  <h3 className="font-serif font-black text-[#0A2E5D] text-base">Controle de Autenticação e Perfis (RBAC)</h3>
-                  <p className="text-xs text-gray-400 mt-1">Registe novas contas corporativas, desative credenciais imediatamente e conceda autorizações granulares.</p>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Controle de Autenticação e Perfis (RBAC)</h3>
+                    <p className="text-xs text-gray-400 mt-1 font-sans">Registe novas contas corporativas, desative credenciais imediatamente e conceda autorizações granulares.</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400 font-mono">Filtrar Função:</span>
+                    <select
+                      value={roleFilter}
+                      onChange={(e) => setRoleFilter(e.target.value as any)}
+                      className="p-2 border rounded-xl text-xs bg-white text-slate-800"
+                    >
+                      <option value="ALL">Todos os Membros</option>
+                      <option value="STUDENT">Alunos (STUDENT)</option>
+                      <option value="INSTRUCTOR">Professores (INSTRUCTOR)</option>
+                      <option value="ADMIN">Administradores (ADMIN)</option>
+                    </select>
+                  </div>
                 </div>
 
                 {/* Form to insert new account */}
-                <form onSubmit={handleCreateUser} className="bg-gray-55 p-5 rounded-2xl border border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-4 items-end text-xs">
+                <form onSubmit={handleCreateUser} className="bg-gray-55 dark:bg-slate-900/50 p-5 rounded-2xl border border-gray-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-4 gap-4 items-end text-xs">
                   <div>
                     <label className="block text-[9px] font-mono text-gray-400 uppercase font-black mb-1">Nome Completo</label>
                     <input
@@ -793,15 +826,15 @@ export default function AdminPortal({
 
                 {/* Users List with impersonation keys */}
                 <div className="overflow-x-auto border-0 md:border rounded-2xl">
-                  {dbUsers.length === 0 ? (
+                  {dbUsers.filter(u => roleFilter === 'ALL' || u.role === roleFilter).length === 0 ? (
                     <div className="p-8 text-center border border-dashed border-gray-200 rounded-2xl font-mono text-gray-450 text-xs">
-                      Nenhum utilizador registrado no momento.
+                      Nenhum utilizador registrado com esta função.
                     </div>
                   ) : (
                     <>
                       <table className="hidden md:table w-full text-left text-xs">
                         <thead>
-                          <tr className="bg-gray-50 uppercase text-[9px] font-mono text-gray-400 border-b">
+                          <tr className="bg-gray-50 dark:bg-slate-900/30 uppercase text-[9px] font-mono text-gray-400 border-b">
                             <th className="p-3">Membro</th>
                             <th className="p-3">Função / RBAC</th>
                             <th className="p-3">Estado</th>
@@ -809,13 +842,13 @@ export default function AdminPortal({
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                          {dbUsers.map(user => (
+                          {dbUsers.filter(u => roleFilter === 'ALL' || u.role === roleFilter).map(user => (
                             <tr key={user.id} className="hover:bg-gray-50/60 transition-colors">
                               <td className="p-3 flex items-center gap-2.5">
                                 <img src={user.avatarUrl} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
                                 <div>
                                   <span className="font-semibold block">{user.firstName} {user.lastName}</span>
-                                  <span className="text-[10px] text-gray-400 block">{user.email}</span>
+                                  <span className="text-[10px] text-gray-400 block font-mono">{user.email}</span>
                                 </div>
                               </td>
                               <td className="p-3">
@@ -855,13 +888,13 @@ export default function AdminPortal({
 
                       {/* Mobile view of stacked cards */}
                       <div className="block md:hidden space-y-4">
-                        {dbUsers.map(user => (
+                        {dbUsers.filter(u => roleFilter === 'ALL' || u.role === roleFilter).map(user => (
                           <div key={user.id} className="bg-white p-4 rounded-2xl border border-gray-150 space-y-3 shadow-sm text-left">
                             <div className="flex items-center gap-3">
                               <img src={user.avatarUrl} alt="Avatar" className="w-9 h-9 rounded-full object-cover" />
                               <div className="min-w-0 flex-1">
                                 <span className="font-semibold block text-xs truncate">{user.firstName} {user.lastName}</span>
-                                <span className="text-[10px] text-gray-400 block truncate">{user.email}</span>
+                                <span className="text-[10px] text-gray-400 block truncate font-mono">{user.email}</span>
                               </div>
                               <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-black ${
                                 user.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
@@ -897,162 +930,6 @@ export default function AdminPortal({
                       </div>
                     </>
                   )}
-                </div>
-
-              </div>
-            )}
-
-            {/* VIEW 3: ALUNOS TAB */}
-            {activeTab === 'alunos' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
-                  <div>
-                    <h3 className="font-serif font-black text-[#0A2E5D] text-base">Histórico e Fichas de Alunos</h3>
-                    <p className="text-xs text-gray-400 mt-1">Conferência completa de progressos, histórico de mensalidades e selos académicos de cada jurista de elite matriculado.</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => generateReport('CSV')} className="p-2 border rounded-xl hover:bg-gray-50 flex items-center gap-1.5 text-3xs font-mono cursor-pointer">
-                      <Download size={12} /> Exportar Alunos CSV
-                    </button>
-                  </div>
-                </div>
-
-                {/* Interactive query output */}
-                <div className="overflow-x-auto border-0 md:border rounded-2xl">
-                  {filteredStudents.length === 0 ? (
-                    <div className="p-8 text-center border border-dashed border-gray-200 rounded-2xl font-mono text-gray-450 text-xs">
-                      Nenhum formando matriculado no momento.
-                    </div>
-                  ) : (
-                    <>
-                      <table className="hidden md:table w-full text-left text-xs">
-                        <thead>
-                          <tr className="bg-gray-50 uppercase text-[9px] font-mono text-gray-400 border-b">
-                            <th className="p-3">Formando</th>
-                            <th className="p-3">Matrícula</th>
-                            <th className="p-3 text-center">Progresso</th>
-                            <th className="p-3">Financeiro</th>
-                            <th className="p-3">Contacto</th>
-                            <th className="p-3 text-right">Diplomas</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                          {filteredStudents.map(student => {
-                            const enroll = enrollments.find(e => e.student_id === student.id);
-                            const progress = enroll?.progress_percent ?? (enroll?.status === 'COMPLETED' ? 100 : 75);
-                            const isPaid = enroll ? 'Pago' : 'Pendente';
-
-                            return (
-                              <tr key={student.id} className="hover:bg-gray-50/50">
-                                <td className="p-3 font-semibold text-[#0A2E5D]">{student.firstName} {student.lastName}</td>
-                                <td className="p-3 font-mono text-[10px] text-gray-500">English for Legal Field</td>
-                                <td className="p-3 text-center">
-                                  <span className="font-mono font-bold text-gray-700">{progress}%</span>
-                                  <div className="w-16 bg-gray-100 h-1 rounded-full mx-auto mt-1">
-                                    <div className="bg-[#C89B3C] h-1 rounded-full" style={{ width: `${progress}%` }}></div>
-                                  </div>
-                                </td>
-                                <td className="p-3">
-                                  <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-bold border uppercase ${
-                                    isPaid === 'Pago' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200'
-                                  }`}>{isPaid}</span>
-                                </td>
-                                <td className="p-3 font-mono text-3xs text-gray-500">{student.phone || "+244 923 000 000"}</td>
-                                <td className="p-3 text-right">
-                                  <button
-                                    onClick={() => handleEmitCertificate(`${student.firstName} ${student.lastName}`, "English for the Legal Field in Angola")}
-                                    className="px-2 py-1 bg-[#C89B3C] text-slate-900 hover:bg-[#0A2E5D] hover:text-white rounded font-mono text-[8px] uppercase font-bold"
-                                  >
-                                    Emitir Diploma
-                                  </button>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-
-                      {/* Mobile view of stacked student cards */}
-                      <div className="block md:hidden space-y-4">
-                        {filteredStudents.map(student => {
-                          const enroll = enrollments.find(e => e.student_id === student.id);
-                          const progress = enroll?.progress_percent ?? (enroll?.status === 'COMPLETED' ? 100 : 75);
-                          const isPaid = enroll ? 'Pago' : 'Pendente';
-
-                          return (
-                            <div key={student.id} className="bg-white p-4 rounded-2xl border border-gray-150 space-y-3 shadow-sm text-left">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <span className="font-semibold block text-xs text-[#0A2E5D]">{student.firstName} {student.lastName}</span>
-                                  <span className="text-[10px] text-gray-400 block font-mono">{student.phone || "+244 923 000 000"}</span>
-                                </div>
-                                <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-bold border uppercase ${
-                                  isPaid === 'Pago' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200'
-                                }`}>{isPaid}</span>
-                              </div>
-                              <div className="grid grid-cols-2 gap-2 text-[10px] pt-2 border-t border-gray-100 font-mono">
-                                <div>
-                                  <span className="text-[8px] text-gray-400 uppercase block">Matrícula</span>
-                                  <span className="text-gray-700 font-medium truncate block max-w-[150px]">English for Legal Field</span>
-                                </div>
-                                <div>
-                                  <span className="text-[8px] text-gray-400 uppercase block">Progresso</span>
-                                  <span className="text-gray-700 font-bold block">{progress}%</span>
-                                </div>
-                              </div>
-                              <div className="pt-2 border-t border-gray-100 flex justify-end">
-                                <button
-                                  onClick={() => handleEmitCertificate(`${student.firstName} ${student.lastName}`, "English for the Legal Field in Angola")}
-                                  className="w-full py-2 bg-[#C89B3C] text-slate-900 hover:bg-[#0A2E5D] hover:text-white rounded font-mono text-[9px] uppercase font-bold text-center"
-                                >
-                                  Emitir Diploma
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </>
-                  )}
-                </div>
-
-              </div>
-            )}
-
-            {/* VIEW 4: PROFESSORES TAB */}
-            {activeTab === 'professores' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
-                <div>
-                  <h3 className="font-serif font-black text-[#0A2E5D] text-base">Controle de Desempenho do Corpo de Oradores</h3>
-                  <p className="text-xs text-gray-400 mt-1">Gabinete de avaliação das docentes MultiPlus. Rastreabilidade de províncias oradoras do Huambo e métricas pedagógicas directas.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {filteredInstructors.map(teacher => (
-                    <div key={teacher.id} className="p-5 bg-gray-50 border rounded-2xl flex gap-4 text-left">
-                      <img src={teacher.avatarUrl} className="w-12 h-12 rounded-full object-cover border-2 border-[#C89B3C]/50" />
-                      <div className="space-y-2 flex-grow">
-                        <div>
-                          <span className="font-serif font-black text-[#0A2E5D] text-sm block">{teacher.firstName} {teacher.lastName}</span>
-                          <span className="text-[10px] text-gray-400 font-mono block">{teacher.email}</span>
-                        </div>
-                        <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono pt-2 border-t text-gray-500">
-                          <div>
-                            <span className="block text-[8px] uppercase">Alunos</span>
-                            <span className="font-bold text-slate-700">42</span>
-                          </div>
-                          <div>
-                            <span className="block text-[8px] uppercase">Avaliação</span>
-                            <span className="font-bold text-[#C89B3C]">4.9 ★</span>
-                          </div>
-                          <div>
-                            <span className="block text-[8px] uppercase">Ementas</span>
-                            <span className="font-bold text-slate-700">3 Ativos</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
                 </div>
 
               </div>
@@ -1140,40 +1017,6 @@ export default function AdminPortal({
               </div>
             )}
 
-            {/* VIEW 6: GESTÃO DE TURMAS */}
-            {activeTab === 'turmas' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
-                <div>
-                  <h3 className="font-serif font-black text-[#0A2E5D] text-base">Alocação de Turmas e Cohorts</h3>
-                  <p className="text-xs text-gray-400 mt-1">Organização de turmas letivas ativas de Luanda e Huambo, com horários semanais definidos.</p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {[
-                    { code: "TURMA-2026-MPA1", name: "Cohort Alpha - English Law", stdCount: 18, time: "Sábados 09:00 - 12:00", active: true },
-                    { code: "TURMA-2026-MPAY", name: "Cohort Energy Contracts", stdCount: 14, time: "Quartas 18:30 - 20:30", active: true },
-                    { code: "TURMA-2026-MPAB", name: "Tribunais Arbitrais Simulacro", stdCount: 10, time: "Flexível / Sob Demanda", active: false }
-                  ].map((cohort, i) => (
-                    <div key={i} className="p-4 bg-gray-50 border rounded-2xl space-y-3 relative text-left">
-                      <div className="flex justify-between items-start">
-                        <span className="text-[9px] font-mono px-2 py-0.5 bg-gray-200 rounded font-bold text-slate-700">{cohort.code}</span>
-                        <span className={`h-2 w-2 rounded-full ${cohort.active ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
-                      </div>
-                      <div>
-                        <h4 className="font-serif font-black text-xs text-[#0A2E5D] m-0">{cohort.name}</h4>
-                        <span className="text-3xs text-gray-500 font-mono block mt-1">{cohort.time}</span>
-                      </div>
-                      <div className="pt-2 border-t text-[11px] text-gray-650 flex justify-between items-center font-mono">
-                        <span>{cohort.stdCount} Juristas</span>
-                        <button onClick={() => alert('Turma vinculada com a agenda letiva do Microsoft Teams e Google Calendar.')} className="text-blue-650 hover:underline">Ver Tabela</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-              </div>
-            )}
-
             {/* VIEW 7: CERTIFICADOS */}
             {activeTab === 'certificados' && (
               <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
@@ -1214,199 +1057,6 @@ export default function AdminPortal({
               </div>
             )}
 
-            {/* VIEW 8: FINANCEIRO */}
-            {activeTab === 'financeiro' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
-                <div>
-                  <h3 className="font-serif font-black text-[#0A2E5D] text-base">Controle Financeiro e Faturamento Real</h3>
-                  <p className="text-xs text-gray-400 mt-1">Mapeamento em tempo real de mensalidades e previsões comerciais para as unidades de ensino.</p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
-                  <div className="p-4 bg-emerald-50 text-emerald-900 border border-emerald-150 rounded-2xl">
-                    <span className="text-[9px] font-mono uppercase block text-emerald-600 font-extrabold mb-1">Receita Concluída (Mês)</span>
-                    <span className="text-lg sm:text-xl font-serif font-black">9.620.000 Kz</span>
-                  </div>
-                  <div className="p-4 bg-amber-50 text-amber-900 border border-amber-100 rounded-2xl">
-                    <span className="text-[9px] font-mono uppercase block text-amber-600 font-extrabold mb-1">Pagamentos Pendentes</span>
-                    <span className="text-lg sm:text-xl font-serif font-black">1.840.000 Kz</span>
-                  </div>
-                  <div className="p-4 bg-blue-50 text-blue-900 border border-blue-150 rounded-2xl">
-                    <span className="text-[9px] font-mono uppercase block text-blue-600 font-extrabold mb-1">Previsão Anual de Cursos</span>
-                    <span className="text-lg sm:text-xl font-serif font-black">114.500.000 Kz</span>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-gray-50 border rounded-2xl space-y-3">
-                  <p className="font-serif font-bold text-xs m-0">Gráfico de Histórico de Faturamento (2026)</p>
-                  <div className="aspect-[16/5] w-full min-h-[140px] flex items-end">
-                    <svg viewBox="0 0 500 100" className="w-full h-full text-[#C89B3C]">
-                      <rect x="20" y="30" width="30" height="70" rx="3" fill="#0A2E5D" />
-                      <rect x="100" y="10" width="30" height="90" rx="3" fill="#C89B3C" />
-                      <rect x="180" y="40" width="30" height="60" rx="3" fill="#0A2E5D" />
-                      <rect x="260" y="20" width="30" height="80" rx="3" fill="#0A2E5D" />
-                      <text x="20" y="98" fontSize="8" fill="#aaa">FEV</text>
-                      <text x="100" y="98" fontSize="8" fill="#aaa">MAR</text>
-                      <text x="180" y="98" fontSize="8" fill="#aaa">ABR</text>
-                      <text x="260" y="98" fontSize="8" fill="#aaa">MAI</text>
-                    </svg>
-                  </div>
-                </div>
-
-              </div>
-            )}
-
-            {/* VIEW 9: PAGAMENTOS */}
-            {activeTab === 'pagamentos' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
-                <div>
-                  <h3 className="font-serif font-black text-[#0A2E5D] text-base">Historial e Logs de Transações</h3>
-                  <p className="text-xs text-gray-400 mt-1">Conferência de boletas, transferências bancárias manuais de Luanda e Huambo e estado das mensalidades.</p>
-                </div>
-
-                <div className="overflow-x-auto border-0 md:border rounded-xl">
-                  <table className="hidden md:table w-full text-left text-xs">
-                    <thead>
-                      <tr className="bg-gray-50 text-[9px] font-mono text-gray-400 border-b uppercase">
-                        <th className="p-3">ID Transação</th>
-                        <th className="p-3">Destinatário</th>
-                        <th className="p-3">Montante</th>
-                        <th className="p-3">Método</th>
-                        <th className="p-3">Data</th>
-                        <th className="p-3 text-right">Situação</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {[
-                        { tid: "TX-9023", name: "Dr. António Carvalho", sum: "450.000 Kz", method: "Trf Bancária BFA", date: "2026-06-01", status: "Confirmado" },
-                        { tid: "TX-9041", name: "Drª Isabel Nascimento", sum: "350.000 Kz", method: "Multicaixa Live", date: "2026-06-03", status: "Confirmado" },
-                        { tid: "TX-9099", name: "Estudante Externo", sum: "450.000 Kz", method: "Multicaixa Express", date: "2026-06-07", status: "Pendente" }
-                      ].map((tx, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50/50">
-                          <td className="p-3 font-mono text-[10px] text-gray-500">{tx.tid}</td>
-                          <td className="p-3 font-semibold text-[#0A2E5D]">{tx.name}</td>
-                          <td className="p-3 font-bold text-slate-700">{tx.sum}</td>
-                          <td className="p-3 text-gray-500">{tx.method}</td>
-                          <td className="p-3 text-gray-400">{tx.date}</td>
-                          <td className="p-3 text-right">
-                            <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-bold ${
-                              tx.status === 'Confirmado' ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'
-                            }`}>{tx.status}</span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-
-                  {/* Mobile stacked view of transactions */}
-                  <div className="block md:hidden space-y-4">
-                    {[
-                      { tid: "TX-9023", name: "Dr. António Carvalho", sum: "450.000 Kz", method: "Trf Bancária BFA", date: "2026-06-01", status: "Confirmado" },
-                      { tid: "TX-9041", name: "Drª Isabel Nascimento", sum: "350.000 Kz", method: "Multicaixa Live", date: "2026-06-03", status: "Confirmado" },
-                      { tid: "TX-9099", name: "Estudante Externo", sum: "450.000 Kz", method: "Multicaixa Express", date: "2026-06-07", status: "Pendente" }
-                    ].map((tx, idx) => (
-                      <div key={idx} className="bg-white p-4 rounded-xl border border-gray-150 space-y-2 text-xs text-left">
-                        <div className="flex justify-between items-center">
-                          <span className="font-mono text-[9px] text-gray-400">{tx.tid} • {tx.date}</span>
-                          <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-bold ${
-                            tx.status === 'Confirmado' ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'
-                          }`}>{tx.status}</span>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-[#0A2E5D] block">{tx.name}</span>
-                          <div className="flex justify-between items-center text-[10px] mt-1 text-gray-500 font-mono">
-                            <span>{tx.method}</span>
-                            <span className="font-bold text-slate-700">{tx.sum}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-            )}
-
-            {/* VIEW 10: EVENTOS */}
-            {activeTab === 'eventos' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-serif font-black text-[#0A2E5D] text-base">Cronograma de Eventos Jurídicos</h3>
-                    <p className="text-xs text-gray-400 mt-1">Oficinas presenciais no Huambo, debates de tribunais simulados letivos híbridos e webinars corporativos.</p>
-                  </div>
-                  <button onClick={() => alert('Integração com Google Calendar: Sincronização em tempo real de webinars via Google Meet API.')} className="px-3.5 py-1.5 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] rounded-xl text-3xs font-mono font-bold uppercase transition-all flex items-center gap-1.5">
-                    Sincronizar Google Calendar
-                  </button>
-                </div>
-
-                {/* Event creator form */}
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!newEventTitle) return;
-                  setEvents(prev => [...prev, { id: Date.now(), title: newEventTitle, type: newEventType, date: "2026-06-25", attendees: 0 }]);
-                  setNewEventTitle('');
-                  alert('Novo workshop ou webinar anexado ao calendário letivo.');
-                }} className="bg-gray-50 p-4 rounded-xl flex gap-3 text-xs">
-                  <input type="text" placeholder="Nome do Evento..." value={newEventTitle} onChange={(e) => setNewEventTitle(e.target.value)} required className="flex-grow p-2 border rounded" />
-                  <select value={newEventType} onChange={(e) => setNewEventType(e.target.value)} className="p-2 border rounded bg-white">
-                    <option value="Online (Meet)">Online (Meet)</option>
-                    <option value="Presencial Huambo">Presencial Huambo</option>
-                  </select>
-                  <button type="submit" className="px-4 py-2 bg-[#0A2E5D] text-white rounded">Adicionar</button>
-                </form>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {events.map(ev => (
-                    <div key={ev.id} className="p-4 bg-gray-55 border rounded-xl flex justify-between items-center text-left">
-                      <div>
-                        <span className="text-[8px] font-mono text-[#C89B3C] font-extrabold uppercase">{ev.type}</span>
-                        <h4 className="font-serif font-bold text-slate-800 text-xs m-0">{ev.title}</h4>
-                        <span className="text-[10px] text-gray-400 font-mono">Agendado: {ev.date}</span>
-                      </div>
-                      <span className="font-mono text-3xs font-bold text-[#0A2E5D] bg-white border px-2.5 py-1 rounded-lg">{ev.attendees} inscritos</span>
-                    </div>
-                  ))}
-                </div>
-
-              </div>
-            )}
-
-            {/* VIEW 11: BLOG */}
-            {activeTab === 'blog' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
-                <div>
-                  <h3 className="font-serif font-black text-[#0A2E5D] text-base">Publicador de Artigos e Opinião Geral (CMS)</h3>
-                  <p className="text-xs text-gray-400 mt-1">Criação de artigos didáticos doutrinários para atração e indexação de leads na MultiPlus.</p>
-                </div>
-
-                {/* Post Creator Form */}
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!newPostTitle) return;
-                  setBlogPosts(prev => [{ id: Date.now(), title: newPostTitle, author: "Drª Isabel Nascimento", status: "Publicado", date: new Date().toISOString().slice(0, 10) }, ...prev]);
-                  setNewPostTitle('');
-                  alert('Artigo publicado no blog e disparado no mural comum!');
-                }} className="bg-gray-50 p-4 rounded-xl flex gap-2 text-xs">
-                  <input type="text" placeholder="Escreva o título do novo artigo..." value={newPostTitle} onChange={(e) => setNewPostTitle(e.target.value)} required className="flex-grow p-2 border rounded" />
-                  <button type="submit" className="px-4 py-2 bg-[#0A2E5D] text-white rounded font-mono text-3xs uppercase font-bold">Publicar Notícia</button>
-                </form>
-
-                <div className="space-y-3">
-                  {blogPosts.map((post) => (
-                    <div key={post.id} className="p-3 bg-[#FAF9F6] border rounded-xl flex justify-between items-center text-left">
-                      <div>
-                        <h4 className="font-serif font-bold text-slate-800 text-xs m-0">{post.title}</h4>
-                        <span className="text-[10px] font-mono text-gray-400">Por {post.author} • {post.date}</span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded text-[8px] font-mono uppercase bg-emerald-50 text-emerald-800">{post.status}</span>
-                    </div>
-                  ))}
-                </div>
-
-              </div>
-            )}
-
             {/* VIEW 12: MENSAGENS PANEL */}
             {activeTab === 'mensagens' && (
               <div className="space-y-4">
@@ -1426,7 +1076,7 @@ export default function AdminPortal({
                     <h3 className="font-serif font-black text-[#0A2E5D] text-base">Notificações e Alertas Urgentes</h3>
                     <p className="text-xs text-gray-400 mt-1">Centro de monitorização de falhas, reconciliação de guias e inscrições.</p>
                   </div>
-                  <button onClick={() => { setActiveAlerts([]); alert('Todas as faturas e conflitos marcados como revisados.'); }} className="text-3xs font-mono text-blue-900 uppercase">Limpar Alertas</button>
+                  <button onClick={handleClearAlerts} className="text-3xs font-mono text-blue-900 uppercase">Limpar Alertas</button>
                 </div>
 
                 <div className="space-y-3">
@@ -1447,66 +1097,6 @@ export default function AdminPortal({
               </div>
             )}
 
-            {/* VIEW 14: RELATÓRIOS EXPORTS */}
-            {activeTab === 'relatorios' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
-                <div>
-                  <h3 className="font-serif font-black text-[#0A2E5D] text-base">Exportador Académico Consolidado</h3>
-                  <p className="text-xs text-gray-400 mt-1">Compile relatórios para reuniões administrativas ou balancetes fiscais com as províncias parceiras.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-5 bg-gray-50 border rounded-2xl text-center space-y-3">
-                    <FileDown className="mx-auto text-[#C89B3C]" size={24} />
-                    <p className="font-serif font-bold text-xs m-0">Lançamentos Académicos</p>
-                    <p className="text-4xs text-gray-400 font-mono">Boletas, notas de exames orais, formandos concluintes.</p>
-                    <button onClick={() => generateReport('PDF')} className="w-full py-2 bg-[#0A2E5D] text-white rounded-xl text-3xs font-mono uppercase font-bold border-0 cursor-pointer">Baixar PDF Oficial</button>
-                  </div>
-
-                  <div className="p-5 bg-gray-50 border rounded-2xl text-center space-y-3">
-                    <FileSpreadsheet className="mx-auto text-[#C89B3C]" size={24} />
-                    <p className="font-serif font-bold text-xs m-0">Inscrições e Leads</p>
-                    <p className="text-4xs text-gray-400 font-mono">Listagem de e-mails, províncias oradoras, formulários directos.</p>
-                    <button onClick={() => generateReport('Excel')} className="w-full py-2 bg-[#0A2E5D] text-white rounded-xl text-3xs font-mono uppercase font-bold border-0 cursor-pointer">Exportar Excel</button>
-                  </div>
-
-                  <div className="p-5 bg-gray-50 border rounded-2xl text-center space-y-3">
-                    <TrendingUp className="mx-auto text-[#C89B3C]" size={24} />
-                    <p className="font-serif font-bold text-xs m-0">Logs de Faturação</p>
-                    <p className="text-4xs text-gray-400 font-mono">Demonstrações de transações pendentes e faturas BFA completas.</p>
-                    <button onClick={() => generateReport('CSV')} className="w-full py-2 bg-[#0A2E5D] text-white rounded-xl text-3xs font-mono uppercase font-bold border-0 cursor-pointer">Gerar CSV Geral</button>
-                  </div>
-                </div>
-
-              </div>
-            )}
-
-            {/* VIEW 15: AUDITORIA */}
-            {activeTab === 'auditoria' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
-                <div>
-                  <h3 className="font-serif font-black text-[#0A2E5D] text-base">Log de Segurança e Auditoria de Dados</h3>
-                  <p className="text-xs text-gray-400 mt-1">Mapeamento em tempo real de cada transação, criação de cursos, logins e certificados emitidos no LMS.</p>
-                </div>
-
-                <div className="space-y-3">
-                  {auditLogs.map((log) => (
-                    <div key={log.id} className="p-3 bg-gray-50 border border-gray-150 rounded-xl flex justify-between items-center text-[11px] font-mono text-left">
-                      <div>
-                        <span className="text-[#C89B3C] font-extrabold uppercase inline-block mr-2">[{log.action}]</span>
-                        <span className="text-slate-700">{log.details}</span>
-                        <p className="text-[10px] text-gray-400 m-0 mt-1">Autor: {log.user} • {log.stamp}</p>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${
-                        log.type === 'security' ? 'bg-red-50 text-red-800' : log.type === 'financial' ? 'bg-[#C89B3C]/10 text-slate-800' : 'bg-[#0A2E5D]/5 text-blue-900 border'
-                      }`}>{log.type}</span>
-                    </div>
-                  ))}
-                </div>
-
-              </div>
-            )}
-
             {/* VIEW 16: INTEGRAÇÕES */}
             {activeTab === 'integracoes' && (
               <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
@@ -1521,7 +1111,7 @@ export default function AdminPortal({
                       <div>
                         <h4 className="font-serif font-bold text-[#0A2E5D] text-xs m-0">{key} Integration</h4>
                         <span className="text-[9px] font-mono text-gray-450 block mt-1">
-                          {key === "Firebase" ? "Autenticação e DB" : key === "Cloudinary" ? "Média CDN" : "API Produtividade"}
+                          {key === "Supabase" ? "Autenticação e DB" : key === "Cloudinary" ? "Média CDN" : "API Produtividade"}
                         </span>
                       </div>
                       <button
