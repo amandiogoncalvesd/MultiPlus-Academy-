@@ -123,12 +123,20 @@ export default function AdminPortal({
   const [broadcastLog, setBroadcastLog] = useState<string[]>([]);
 
   // Config parameters
-  const [instName, setInstName] = useState(() => localStorage.getItem('multiplus_instName') || 'MultiPlus Academy');
-  const [instDomain, setInstDomain] = useState(() => localStorage.getItem('multiplus_instDomain') || 'multiplus.ao');
-  const [instPhone, setInstPhone] = useState(() => localStorage.getItem('multiplus_instPhone') || '+244 923 000 000');
+  const [instName, setInstName] = useState('MultiPlus Academy');
+  const [instDomain, setInstDomain] = useState('multiplus.ao');
+  const [instPhone, setInstPhone] = useState('+244 923 000 000');
 
   // General Notification center
   const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
+
+  // Sync profile details when currentUser changes
+  useEffect(() => {
+    if (currentUser) {
+      setAdminName((currentUser as any).nome_completo || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim());
+      setAdminPhone(currentUser.phone || (currentUser as any).telefone || '');
+    }
+  }, [currentUser]);
 
   // Load shared database
   useEffect(() => {
@@ -266,15 +274,15 @@ export default function AdminPortal({
         const { data: instData } = await supabase
           .from('institution_settings')
           .select('*')
-          .limit(1)
-          .maybeSingle();
+          .eq('id', 1)
+          .single();
         if (instData) {
           setInstName(instData.nome || 'MultiPlus Academy');
           setInstDomain(instData.dominio || 'multiplus.ao');
           setInstPhone(instData.contacto || '+244 923 000 000');
         }
       } catch (instErr) {
-        console.warn('Tabela institution_settings pode não existir ainda:', instErr);
+        console.warn('Erro ao ler a tabela institution_settings:', instErr);
       }
     } catch (err) {
       console.warn('Silent local fallback for loading admin portal:', err);
@@ -965,7 +973,7 @@ export default function AdminPortal({
                                   onClick={() => handleImpersonate(user)}
                                   className="px-2.5 py-1 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 rounded font-mono text-[9px] inline-flex items-center gap-1"
                                 >
-                                  <Eye size={10} /> Impersonar
+                                  <Eye size={10} /> Pre-visualizar
                                 </button>
                                 <button
                                   onClick={() => handleDeleteUser(user.id)}
@@ -1008,7 +1016,7 @@ export default function AdminPortal({
                                   onClick={() => handleImpersonate(user)}
                                   className="px-2 py-1 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 rounded font-mono text-[9px] inline-flex items-center gap-1"
                                 >
-                                  <Eye size={10} /> Entrar
+                                  <Eye size={10} /> Pre-visualizar
                                 </button>
                                 <button
                                   onClick={() => handleDeleteUser(user.id)}
@@ -1302,10 +1310,16 @@ export default function AdminPortal({
                 </div>
 
                 <div className="flex justify-end pt-3">
-                  <button onClick={() => {
-                    localStorage.setItem('multiplus_instName', instName);
-                    localStorage.setItem('multiplus_instDomain', instDomain);
-                    localStorage.setItem('multiplus_instPhone', instPhone);
+                  <button onClick={async () => {
+                    const { error } = await supabase
+                      .from('institution_settings')
+                      .upsert({ id: 1, nome: instName, dominio: instDomain, contacto: instPhone });
+                    if (error) {
+                      await supabase
+                        .from('institution_settings')
+                        .update({ nome: instName, dominio: instDomain, contacto: instPhone })
+                        .eq('id', 1);
+                    }
                     addAuditLog("CONFIG GERAL", "Atualizado informações da instituição pelo Admin");
                     alert('As alterações da instituição foram salvas!');
                   }} className="px-5 py-2.5 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer">
