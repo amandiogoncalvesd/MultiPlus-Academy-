@@ -27,6 +27,21 @@ interface AdminPortalProps {
 // Initial audit logs for security
 const INITIAL_AUDIT_LOGS: any[] = [];
 
+// Helper to generate a strong yet easy-to-read password (Portuguese words + number + symbol)
+function gerarSenhaForte(): string {
+  const palavras = [
+    'Justica', 'Direito', 'Lei', 'Tribunal', 'Causa', 'Defesa', 'Acordo', 'Norma',
+    'Voto', 'Poder', 'Saber', 'Estudo', 'Curso', 'Chave', 'Forte', 'Uniao',
+    'Luanda', 'Huambo', 'Angola', 'Elite', 'Foco', 'Mente', 'Valor', 'Etica'
+  ];
+  const p1 = palavras[Math.floor(Math.random() * palavras.length)];
+  const p2 = palavras[Math.floor(Math.random() * palavras.length)];
+  const num = Math.floor(Math.random() * 90) + 10; // 10-99
+  const simbolos = ['!', '@', '#', '$', '%', '&', '*'];
+  const symb = simbolos[Math.floor(Math.random() * simbolos.length)];
+  return `${p1}${p2}${num}${symb}`;
+}
+
 export default function AdminPortal({
   setCurrentPage,
   currentUser,
@@ -57,6 +72,19 @@ export default function AdminPortal({
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserRole, setNewUserRole] = useState<UserRole>('STUDENT');
   const [newUserStatus, setNewUserStatus] = useState<'ACTIVE' | 'SUSPENDED'>('ACTIVE');
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; pass: string } | null>(null);
+  
+  // Profile inputs & biography
+  const [adminBio, setAdminBio] = useState('');
+  const [adminPhone, setAdminPhone] = useState(currentUser?.phone || '');
+  const [adminName, setAdminName] = useState('');
+
+  // Preference Settings
+  const [notifEmailCertificados, setNotifEmailCertificados] = useState(false);
+  const [preferredTheme, setPreferredTheme] = useState<'light' | 'dark'>('light');
+
   const [roleFilter, setRoleFilter] = useState<'ALL' | 'STUDENT' | 'INSTRUCTOR' | 'ADMIN'>('ALL');
   
   // Course form states
@@ -95,9 +123,9 @@ export default function AdminPortal({
   const [broadcastLog, setBroadcastLog] = useState<string[]>([]);
 
   // Config parameters
-  const [instName, setInstName] = useState('MultiPlus Academy');
-  const [instDomain, setInstDomain] = useState('multiplus.ao');
-  const [instPhone, setInstPhone] = useState('+244 923 000 000');
+  const [instName, setInstName] = useState(() => localStorage.getItem('multiplus_instName') || 'MultiPlus Academy');
+  const [instDomain, setInstDomain] = useState(() => localStorage.getItem('multiplus_instDomain') || 'multiplus.ao');
+  const [instPhone, setInstPhone] = useState(() => localStorage.getItem('multiplus_instPhone') || '+244 923 000 000');
 
   // General Notification center
   const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
@@ -195,17 +223,58 @@ export default function AdminPortal({
       }
 
       // 5. Fetch Notifications (real notifications from public.notifications)
-      const { data: notifData } = await supabase
-        .from('notifications')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (notifData) {
-        setActiveAlerts(notifData.map((n: any) => ({
-          id: n.id,
-          type: n.read ? 'REVISADO' : 'NOTIFICACAO',
-          msg: n.text,
-          created_at: n.created_at
-        })));
+      if (currentUser?.id) {
+        const { data: notifData } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false });
+        if (notifData) {
+          setActiveAlerts(notifData.map((n: any) => ({
+            id: n.id,
+            type: n.read ? 'REVISADO' : 'NOTIFICACAO',
+            msg: n.text,
+            created_at: n.created_at,
+            read: n.read
+          })));
+        }
+
+        // Fetch biography & preferences for current user
+        const { data: profData } = await supabase
+          .from('profiles')
+          .select('biografia')
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
+        if (profData) {
+          setAdminBio(profData.biografia || '');
+        }
+
+        const { data: userData } = await supabase
+          .from('users')
+          .select('nome_completo, telefone, notif_email_certificados')
+          .eq('id', currentUser.id)
+          .maybeSingle();
+        if (userData) {
+          setAdminName(userData.nome_completo || '');
+          setAdminPhone(userData.telefone || '');
+          setNotifEmailCertificados(!!userData.notif_email_certificados);
+        }
+      }
+
+      // 6. Fetch institution settings
+      try {
+        const { data: instData } = await supabase
+          .from('institution_settings')
+          .select('*')
+          .limit(1)
+          .maybeSingle();
+        if (instData) {
+          setInstName(instData.nome || 'MultiPlus Academy');
+          setInstDomain(instData.dominio || 'multiplus.ao');
+          setInstPhone(instData.contacto || '+244 923 000 000');
+        }
+      } catch (instErr) {
+        console.warn('Tabela institution_settings pode não existir ainda:', instErr);
       }
     } catch (err) {
       console.warn('Silent local fallback for loading admin portal:', err);
@@ -213,10 +282,15 @@ export default function AdminPortal({
   };
 
   const handleClearAlerts = async () => {
+    if (!currentUser?.id) return;
     try {
-      const { error } = await supabase.from('notifications').update({ read: true }).eq('read', false);
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('user_id', currentUser.id)
+        .eq('read', false);
       if (error) throw error;
-      setActiveAlerts(prev => prev.map(a => ({ ...a, type: 'REVISADO' })));
+      setActiveAlerts(prev => prev.map(a => ({ ...a, type: 'REVISADO', read: true })));
       alert('Todas as notificações foram marcadas como lidas.');
     } catch (err) {
       console.error('Erro ao limpar alertas:', err);
@@ -232,6 +306,11 @@ export default function AdminPortal({
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newUserName || !newUserEmail) return;
+    if (!newUserPassword || newUserPassword.length < 8) {
+      alert('Defina uma senha de pelo menos 8 caracteres antes de criar a conta.');
+      return;
+    }
+
     const split = newUserName.split(' ');
     const first = split[0];
     const last = split.slice(1).join(' ') || 'User';
@@ -241,7 +320,7 @@ export default function AdminPortal({
         body: {
           action: 'create',
           email: newUserEmail,
-          password: 'Password@123', // Default temporary password
+          password: newUserPassword,
           nome_completo: newUserName,
           role: newUserRole === 'STUDENT' ? 'ALUNO' : newUserRole === 'INSTRUCTOR' ? 'PROFESSOR' : 'ADMIN'
         }
@@ -263,8 +342,8 @@ export default function AdminPortal({
         lastName: last,
         role: newUserRole,
         status: newUserStatus,
-        avatarUrl: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150`,
-        phone: '+244 912 000 000',
+        avatarUrl: '', // Deixar vazio por padrão, sistema usará iniciais
+        phone: '', // Deixar vazio por padrão
         streak: 0,
         longestStreak: 0,
         totalHoursLearned: 0
@@ -274,9 +353,15 @@ export default function AdminPortal({
       await syncToLocalStorage(updated);
       addAuditLog("CRIAÇÃO UTILIZADOR", `Nova conta criada via Edge Function: ${newUserEmail} (${newUserRole})`);
       
+      // Save created credentials so the admin can copy them
+      setCreatedCredentials({
+        email: newUserEmail,
+        pass: newUserPassword
+      });
+
       setNewUserName('');
       setNewUserEmail('');
-      alert(`Conta de ${first} criada com sucesso via Edge Function com a senha temporária Password@123!`);
+      setNewUserPassword('');
     } catch (err: any) {
       console.error(err);
       alert(`Erro ao salvar no Supabase via Edge Function: ${err.message || err}`);
@@ -336,11 +421,11 @@ export default function AdminPortal({
   // Profile impersonation to switch roles
   const handleImpersonate = (user: User) => {
     setCurrentUser(user);
-    addAuditLog("IMPERSONAÇÃO SECURE", `Isabel simulou perfil: ${user.firstName} (${user.role})`);
+    addAuditLog("PRE-VISUALIZAÇÃO DE PORTAL", `${currentUser?.firstName || 'Administrador'} simulou perfil: ${user.firstName} (${user.role})`);
     if (user.role === 'STUDENT') setCurrentPage('student-dashboard');
     else if (user.role === 'INSTRUCTOR') setCurrentPage('instructor-dashboard');
     else setCurrentPage('admin-dashboard');
-    alert(`Modo simulado ativo para: ${user.firstName} ${user.lastName}`);
+    alert(`Modo de pré-visualização activo para: ${user.firstName} ${user.lastName}`);
   };
 
   // Secure audits
@@ -348,7 +433,7 @@ export default function AdminPortal({
     const freshLog = {
       id: Date.now(),
       action,
-      user: currentUser?.email || "isabel@empresas.ao",
+      user: currentUser?.email || "sistema",
       stamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
       details,
       type: action.includes("FINANCE") ? 'financial' : action.includes("UTILIZADOR") ? 'security' : 'system'
@@ -404,6 +489,29 @@ export default function AdminPortal({
   const filteredInstructors = dbUsers.filter(u => u.role === 'INSTRUCTOR').filter(u => 
     globalSearch ? `${u.firstName} ${u.lastName} ${u.email}`.toLowerCase().includes(globalSearch.toLowerCase()) : true
   );
+
+  // Popular courses calculated dynamically from real enrollments and courses arrays
+  const getPopularCourses = () => {
+    const counts: Record<string, number> = {};
+    enrollments.forEach((enr: any) => {
+      const cid = enr.course_id || enr.courseId;
+      if (cid) {
+        counts[cid] = (counts[cid] || 0) + 1;
+      }
+    });
+
+    const sorted = [...courses].map(c => {
+      const count = counts[c.id] || 0;
+      return {
+        ...c,
+        enrollmentCount: count
+      };
+    }).sort((a, b) => b.enrollmentCount - a.enrollmentCount);
+
+    return sorted.slice(0, 5);
+  };
+
+  const popularCoursesList = getPopularCourses();
 
   // Accessibility theme class selections
   const containerThemeClass = highContrast 
@@ -497,11 +605,11 @@ export default function AdminPortal({
           <div className="p-4 border-t border-white/10 space-y-3.5">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-amber-500 rounded-full flex items-center justify-center font-bold text-slate-950 text-xs shadow-sm capitalize">
-                {currentUser?.firstName?.[0] || 'I'}
+                {currentUser?.firstName?.[0] || 'A'}
               </div>
               <div className="text-left truncate max-w-[130px]">
                 <h4 className="text-xs font-bold text-white m-0 tracking-wide truncate">
-                  {currentUser?.firstName || 'Isabel'} {currentUser?.lastName || 'Nascimento'}
+                  {currentUser?.firstName || 'Admin'} {currentUser?.lastName || 'MultiPlus'}
                 </h4>
                 <span className="text-[10px] font-mono text-[#C89B3C] font-semibold uppercase">ADMINISTRADOR</span>
               </div>
@@ -589,14 +697,12 @@ export default function AdminPortal({
 
             {/* Profile menu widget */}
             <div className="flex items-center gap-2.5 border-l pl-4">
-              <img
-                src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg"
-                alt="Isabel Avatar"
-                className="w-8 h-8 rounded-full border border-gray-200 object-cover"
-              />
+              <div className="w-8 h-8 rounded-full bg-[#C89B3C] text-slate-950 font-bold flex items-center justify-center text-xs shadow-sm">
+                {currentUser?.firstName?.[0] || 'A'}
+              </div>
               <div className="hidden sm:block text-left">
                 <span className="text-[10px] font-mono font-bold text-blue-900 dark:text-blue-300 block leading-tight">ADMIN</span>
-                <span className="text-3xs text-slate-500 font-semibold uppercase block truncate max-w-[100px]">{currentUser?.email || "isabel@empresas.ao"}</span>
+                <span className="text-3xs text-slate-500 font-semibold uppercase block truncate max-w-[100px]">{currentUser?.email || "admin@multiplus.ao"}</span>
               </div>
             </div>
           </div>
@@ -632,126 +738,62 @@ export default function AdminPortal({
           {activeTab === 'dashboard' && (
               <div className="space-y-8 animate-fadeIn">
                 
-                {/* 8 Premium KPI Cards */}
+                {/* 4 Dynamic Real KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
-                    { title: "Total de Alunos", val: filteredStudents.length, icon: <Users className="text-blue-500" />, desc: "Matrículas Ativas" },
-                    { title: "Total de Professores", val: filteredInstructors.length, icon: <Award className="text-amber-500" />, desc: "Doadores Titulares" },
-                    { title: "Cursos Ativos", val: courses.length, icon: <BookOpen className="text-indigo-500" />, desc: "Programas de Elite" },
-                    { title: "Receita do Mês", val: filteredStudents.length > 0 ? `${(filteredStudents.length * 450000).toLocaleString('pt-AO')} Kz` : "0 Kz", icon: <DollarSign className="text-emerald-500" />, desc: "Faturamento Real" },
-                    { title: "Certificados Emitidos", val: certificates.length, icon: <QrCode className="text-red-500" />, desc: "Assinaturas Gravadas" },
-                    { title: "Taxa de Conclusão", val: filteredStudents.length > 0 ? "94.2%" : "0%", icon: <Activity className="text-teal-500" />, desc: "Frequência Real" },
-                    { title: "Novas Inscrições", val: leads.length, icon: <PlusCircle className="text-purple-500" />, desc: "Leads na Fila" },
-                    { title: "Aulas Realizadas", val: `${courses.length * 12}/200`, icon: <Server className="text-sky-500" />, desc: "Aulas Criadas" }
+                    { title: "Total de Alunos", val: filteredStudents.length, icon: <Users className="text-blue-500" />, desc: "Matrículas Activas" },
+                    { title: "Total de Professores", val: filteredInstructors.length, icon: <Award className="text-amber-500" />, desc: "Docentes Titulares" },
+                    { title: "Cursos Ativos", val: courses.length, icon: <BookOpen className="text-indigo-500" />, desc: "Programas no Ar" },
+                    { title: "Certificados Emitidos", val: certificates.length, icon: <QrCode className="text-red-500" />, desc: "Assinaturas Gravadas" }
                   ].map((card, idx) => (
-                    <div key={idx} className="bg-white p-4 rounded-2xl border border-gray-150 flex flex-col justify-between shadow-sm hover:shadow-md transition-all">
+                    <div key={idx} className="bg-white dark:bg-[#121E36] p-4 rounded-2xl border border-gray-150 dark:border-slate-800 flex flex-col justify-between shadow-sm hover:shadow-md transition-all text-[#1C1C1C] dark:text-slate-100">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-mono text-gray-450 uppercase font-black">{card.title}</span>
+                        <span className="text-[10px] font-mono text-gray-450 dark:text-gray-400 uppercase font-black">{card.title}</span>
                         {card.icon}
                       </div>
                       <div className="mt-2.5">
-                        <span className="text-lg sm:text-xl font-serif font-black text-[#0A2E5D]">{card.val}</span>
-                        <span className="text-[9px] font-mono text-gray-400 block mt-0.5">{card.desc}</span>
+                        <span className="text-lg sm:text-xl font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C]">{card.val}</span>
+                        <span className="text-[9px] font-mono text-gray-450 dark:text-gray-400 block mt-0.5">{card.desc}</span>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Analytical charts & engagement vectors */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  
-                  {/* Custom SVG line representing customer conversions & students */}
-                  <div className="lg:col-span-8 bg-white p-5 rounded-3xl border border-gray-150 space-y-4">
-                    <div className="flex justify-between items-center border-b pb-3">
-                      <div>
-                        <h4 className="font-serif font-black text-[#0A2E5D] text-sm m-0">Gráfico de Crescimento de Alunos</h4>
-                        <p className="text-[10px] text-gray-400 font-mono uppercase">Histórico anual comparativo de formandos</p>
-                      </div>
-                      <span className="text-3xs font-mono bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border">98% Retenção</span>
+                {/* Analytical charts & popular courses */}
+                <div className="max-w-3xl">
+                  {/* Popular courses list */}
+                  <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-4 text-left text-slate-900 dark:text-slate-100 shadow-sm">
+                    <div className="border-b dark:border-slate-800 pb-3">
+                      <h4 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base m-0">Cursos mais populares</h4>
+                      <p className="text-[10px] text-gray-450 dark:text-gray-400 font-mono uppercase mt-1">Ranking de adesão baseado em matrículas reais no Supabase</p>
                     </div>
-
-                    <div className="aspect-[16/7] w-full min-h-[180px] flex items-end relative py-2">
-                      <svg viewBox="0 0 500 150" className="w-full h-full text-[#C89B3C]">
-                        {/* Grids */}
-                        <line x1="0" y1="40" x2="500" y2="40" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
-                        <line x1="0" y1="80" x2="500" y2="80" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
-                        <line x1="0" y1="120" x2="500" y2="120" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
-                        
-                        <path
-                          d="M10 130 Q120 110 220 70 T420 40 T480 15"
-                          fill="none"
-                          stroke="#C89B3C"
-                          strokeWidth="3.5"
-                          strokeLinecap="round"
-                        />
-                        <circle cx="10" cy="130" r="4.5" fill="#0A2E5D" stroke="#C89B3C" strokeWidth="1" />
-                        <circle cx="220" cy="70" r="4.5" fill="#0A2E5D" stroke="#C89B3C" strokeWidth="1" />
-                        <circle cx="480" cy="15" r="4.5" fill="#0A2E5D" stroke="#C89B3C" strokeWidth="1" />
-                        
-                        <text x="5" y="145" fontSize="8" fontFamily="monospace" fill="#94A3B8">Q1 (Luanda)</text>
-                        <text x="210" y="145" fontSize="8" fontFamily="monospace" fill="#94A3B8">Q3 (Huambo)</text>
-                        <text x="440" y="145" fontSize="8" fontFamily="monospace" fill="#94A3B8">Q4 (Atual)</text>
-                      </svg>
+                    <div className="space-y-4">
+                      {popularCoursesList.length === 0 ? (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-mono py-4 text-center">Nenhuma matrícula registrada para os cursos ativos.</p>
+                      ) : (
+                        popularCoursesList.map((item, idx) => {
+                          const maxCount = Math.max(...popularCoursesList.map(c => c.enrollmentCount), 1);
+                          const percentage = Math.round((item.enrollmentCount / maxCount) * 100);
+                          return (
+                            <div key={idx} className="space-y-2">
+                              <div className="flex justify-between items-center text-xs font-semibold">
+                                <span className="font-serif">{item.title}</span>
+                                <span className="font-mono text-[#C89B3C] text-3xs font-extrabold uppercase">
+                                  {item.enrollmentCount} {item.enrollmentCount === 1 ? 'Matrícula' : 'Matrículas'}
+                                </span>
+                              </div>
+                              <div className="w-full h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-gradient-to-r from-[#0A2E5D] to-[#C89B3C] transition-all duration-500" 
+                                  style={{ width: `${percentage}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
                   </div>
-
-                  {/* Right side: popular courses list */}
-                  <div className="lg:col-span-4 bg-white p-5 rounded-3xl border border-gray-150 space-y-4">
-                    <h4 className="font-serif font-black text-[#0A2E5D] text-sm border-b pb-2 mb-2">Cursos mais populares</h4>
-                    <div className="space-y-3">
-                      {[
-                        { title: "English for the Legal Field", share: "76%", enrolled: "22 Juristas", fill: "w-[76%]" },
-                        { title: "Contract Negotiation Energy", share: "45%", enrolled: "16 Juristas", fill: "w-[45%]" },
-                        { title: "Arbitration & Litigation Draft", share: "32%", enrolled: "11 Juristas", fill: "w-[32%]" }
-                      ].map((item, idx) => (
-                        <div key={idx} className="space-y-1">
-                          <div className="flex justify-between items-center text-3xs font-semibold">
-                            <span>{item.title}</span>
-                            <span className="font-mono text-[#C89B3C]">{item.enrolled}</span>
-                          </div>
-                          <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                            <div className={`h-full bg-[#0A2E5D] ${item.fill}`}></div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Second row: Weekly activity, financial overview */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  
-                  <div className="bg-white p-5 rounded-3xl border border-gray-150 space-y-3">
-                    <h4 className="font-serif font-black text-[#0A2E5D] text-sm border-b pb-2">Atividade Semanal de Utilizadores</h4>
-                    <div className="flex justify-around py-3 font-mono text-center">
-                      {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day, i) => (
-                        <div key={i} className="flex flex-col items-center gap-1.5">
-                          <div className="w-3.5 bg-[#C89B3C] rounded-md transition-all hover:opacity-80" style={{ height: `${[40, 75, 95, 60, 85, 20][i]}px` }}></div>
-                          <span className="text-[9px] text-gray-400">{day}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Financial projections */}
-                  <div className="bg-white p-5 rounded-3xl border border-gray-150 flex flex-col justify-between">
-                    <div>
-                      <h4 className="font-serif font-black text-[#0A2E5D] text-sm border-b pb-2">Previsão e Desempenho Financeiro</h4>
-                      <p className="text-xs text-gray-500 mt-2">Volume histórico consolidado e estimativas acumuladas de orçamentos para o Q3 Angolano.</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 mt-4 text-center">
-                      <div className="p-2.5 bg-gray-50 border rounded-xl">
-                        <span className="text-3xs font-mono text-gray-400 block uppercase">Anual Projetado</span>
-                        <span className="text-sm font-serif font-black text-slate-700">114.500.000 Kz</span>
-                      </div>
-                      <div className="p-2.5 bg-[#C89B3C]/5 border border-[#C89B3C]/20 rounded-xl">
-                        <span className="text-3xs font-mono text-[#C89B3C] block uppercase">Ticket Médio</span>
-                        <span className="text-sm font-serif font-black text-[#0A2E5D]">450.000 Kz</span>
-                      </div>
-                    </div>
-                  </div>
-
                 </div>
 
               </div>
@@ -759,7 +801,7 @@ export default function AdminPortal({
 
             {/* VIEW 2: UTILIZADORES TAB (Full administration panel) */}
             {activeTab === 'utilizadores' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
+              <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-6 text-slate-900 dark:text-slate-100">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
                     <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Controle de Autenticação e Perfis (RBAC)</h3>
@@ -781,7 +823,7 @@ export default function AdminPortal({
                 </div>
 
                 {/* Form to insert new account */}
-                <form onSubmit={handleCreateUser} className="bg-gray-55 dark:bg-slate-900/50 p-5 rounded-2xl border border-gray-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-4 gap-4 items-end text-xs">
+                <form onSubmit={handleCreateUser} className="bg-gray-55 dark:bg-slate-900/50 p-5 rounded-2xl border border-gray-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-5 gap-4 items-end text-xs">
                   <div>
                     <label className="block text-[9px] font-mono text-gray-400 uppercase font-black mb-1">Nome Completo</label>
                     <input
@@ -790,7 +832,7 @@ export default function AdminPortal({
                       placeholder="Ex: Dra. Madalena Huambo"
                       value={newUserName}
                       onChange={(e) => setNewUserName(e.target.value)}
-                      className="w-full p-2.5 bg-white border rounded-xl"
+                      className="w-full p-2.5 bg-white dark:bg-slate-850 border dark:border-slate-850 rounded-xl text-current focus:outline-none focus:border-[#C89B3C]"
                     />
                   </div>
                   <div>
@@ -801,7 +843,7 @@ export default function AdminPortal({
                       placeholder="exemplo@advogados.ao"
                       value={newUserEmail}
                       onChange={(e) => setNewUserEmail(e.target.value)}
-                      className="w-full p-2.5 bg-white border rounded-xl"
+                      className="w-full p-2.5 bg-white dark:bg-slate-850 border dark:border-slate-850 rounded-xl text-current focus:outline-none focus:border-[#C89B3C]"
                     />
                   </div>
                   <div>
@@ -809,20 +851,71 @@ export default function AdminPortal({
                     <select
                       value={newUserRole}
                       onChange={(e) => setNewUserRole(e.target.value as UserRole)}
-                      className="w-full p-2.5 bg-white border rounded-xl text-xs"
+                      className="w-full p-2.5 bg-white dark:bg-slate-850 border dark:border-slate-850 rounded-xl text-xs text-current focus:outline-none focus:border-[#C89B3C]"
                     >
                       <option value="STUDENT">Aluno de Elite (STUDENT)</option>
                       <option value="INSTRUCTOR">Professor Titular (INSTRUCTOR)</option>
                       <option value="ADMIN">Administrador Geral (ADMIN)</option>
                     </select>
                   </div>
+                  <div>
+                    <label className="block text-[9px] font-mono text-gray-400 uppercase font-black mb-1">Senha de Acesso</label>
+                    <div className="flex gap-1.5">
+                      <input
+                        type="text"
+                        required
+                        placeholder="Mínimo 8 caracteres"
+                        value={newUserPassword}
+                        onChange={(e) => setNewUserPassword(e.target.value)}
+                        className="flex-grow p-2.5 bg-white dark:bg-slate-850 border dark:border-slate-850 rounded-xl text-current focus:outline-none focus:border-[#C89B3C]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setNewUserPassword(gerarSenhaForte())}
+                        className="px-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-mono font-bold text-3xs rounded-xl border-0 cursor-pointer h-[38px] flex items-center justify-center shrink-0"
+                        title="Gerar Senha Forte"
+                      >
+                        Gerar
+                      </button>
+                    </div>
+                  </div>
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer transition-colors"
+                    className="w-full py-2.5 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer transition-colors h-[38px] flex items-center justify-center"
                   >
                     Registrar Credencial
                   </button>
                 </form>
+
+                {createdCredentials && (
+                  <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-xs text-left animate-fadeIn">
+                    <div>
+                      <h4 className="font-serif font-black text-emerald-850 dark:text-emerald-400 m-0">Conta criada com sucesso!</h4>
+                      <p className="text-gray-600 dark:text-gray-300 mt-1">Copie as credenciais de acesso temporárias do utilizador para enviar a ele:</p>
+                      <div className="mt-2 font-mono text-xs space-y-1 bg-white dark:bg-slate-900 p-2.5 rounded-lg border dark:border-slate-800 select-all text-slate-800 dark:text-slate-100">
+                        <div><strong>E-mail:</strong> {createdCredentials.email}</div>
+                        <div><strong>Senha:</strong> {createdCredentials.pass}</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(`Email: ${createdCredentials.email}\nSenha: ${createdCredentials.pass}`);
+                          alert('Credenciais copiadas para a área de transferência!');
+                        }}
+                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-3xs font-bold uppercase rounded-lg border-0 cursor-pointer shrink-0"
+                      >
+                        Copiar Tudo
+                      </button>
+                      <button
+                        onClick={() => setCreatedCredentials(null)}
+                        className="px-2.5 py-1.5 bg-gray-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg border-0 cursor-pointer hover:bg-gray-300 shrink-0"
+                      >
+                        Fechar
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Users List with impersonation keys */}
                 <div className="overflow-x-auto border-0 md:border rounded-2xl">
@@ -937,10 +1030,10 @@ export default function AdminPortal({
 
             {/* VIEW 5: GESTÃO DE CURSOS */}
             {activeTab === 'cursos' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
+              <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-6 text-slate-900 dark:text-slate-100">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="font-serif font-black text-[#0A2E5D] text-base">Catálogo de Especializações Ativas</h3>
+                    <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Catálogo de Especializações Ativas</h3>
                     <p className="text-xs text-gray-400 mt-1">Gestão de currículos jurídicos, fixação de mensalidades e oradores associados.</p>
                   </div>
                   <button onClick={() => { setIsCreatingCourse(true); setCourseTitle(''); }} className="px-3.5 py-1.5 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] rounded-xl text-3xs font-mono font-bold uppercase transition-all flex items-center gap-1.5">
@@ -949,38 +1042,56 @@ export default function AdminPortal({
                 </div>
 
                 {isCreatingCourse && (
-                  <form onSubmit={(e) => {
+                  <form onSubmit={async (e) => {
                     e.preventDefault();
                     if (!courseTitle) return;
-                    const cObj: Course = {
-                      id: `course_${Date.now()}`,
-                      slug: courseTitle.toLowerCase().replace(/ /g, '-'),
+                    
+                    const newSlug = `${courseTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}-${Date.now()}`;
+                    const payload = {
                       title: courseTitle,
-                      subtitle: "Especialização programática de alto impacto.",
-                      price: coursePrice,
+                      slug: newSlug,
+                      description: "Especialização programática de alto impacto.",
                       duration: "10 Semanas",
-                      hours: "36 Horas Letivas",
-                      language: "Inglês técnico",
-                      modality: "Híbrido",
-                      summary: "Formação em debate oral e defesa de causas internacionais da MultiPlus.",
-                      schedule: "Sábados 09h00 - 12h00",
-                      startDate: "2026-09-01",
-                      targetAudience: ["Juristas", "Profissionais do Petróleo"],
-                      modules: []
+                      category: "Híbrido",
+                      status: 'PUBLISHED'
                     };
-                    setCourses(prev => [...prev, cObj]);
-                    setIsCreatingCourse(false);
-                    addAuditLog("CRIAÇÃO CURSO", `Criado novo curso: ${courseTitle}`);
-                    alert('Novo programa indexado com sucesso!');
-                  }} className="p-4 bg-gray-50 rounded-xl space-y-3">
-                    <p className="font-serif font-bold text-xs m-0 text-[#0A2E5D]">Formulário do Novo Curso</p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
-                      <input type="text" placeholder="Nome do Curso..." value={courseTitle} onChange={(e) => setCourseTitle(e.target.value)} required className="p-2 bg-white border rounded" />
-                      <input type="text" placeholder="Preço (Ex: €450)..." value={coursePrice} onChange={(e) => setCoursePrice(e.target.value)} className="p-2 bg-white border rounded" />
-                      <input type="text" placeholder="Oradora responsável..." value={courseInstructor} onChange={(e) => setCourseInstructor(e.target.value)} className="p-2 bg-white border rounded" />
+                    
+                    const { data, error } = await supabase.from('courses').insert(payload).select().single();
+                    if (error) {
+                      alert(`Erro ao criar curso no Supabase: ${error.message}`);
+                    } else if (data) {
+                      const cObj: Course = {
+                        id: data.id,
+                        slug: data.slug,
+                        title: data.title,
+                        subtitle: data.description || "Especialização programática de alto impacto.",
+                        price: coursePrice || "€450",
+                        duration: data.duration || "10 Semanas",
+                        hours: "36 Horas Letivas",
+                        language: "Inglês técnico",
+                        modality: "Híbrido",
+                        summary: data.description || "",
+                        schedule: "Sábados 09h00 - 12h00",
+                        startDate: "2026-09-01",
+                        targetAudience: ["Juristas", "Profissionais do Petróleo"],
+                        modules: [],
+                        status: data.status,
+                        teacher_id: data.teacher_id
+                      };
+                      setCourses(prev => [...prev, cObj]);
+                      setIsCreatingCourse(false);
+                      addAuditLog("CRIAÇÃO CURSO", `Criado novo curso: ${courseTitle}`);
+                      alert('Novo programa indexado com sucesso no Supabase!');
+                    }
+                  }} className="p-4 bg-gray-50 dark:bg-[#121E36] rounded-xl space-y-3">
+                    <p className="font-serif font-bold text-xs m-0 text-[#0A2E5D] dark:text-white">Formulário do Novo Curso</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-slate-800 dark:text-slate-100">
+                      <input type="text" placeholder="Nome do Curso..." value={courseTitle} onChange={(e) => setCourseTitle(e.target.value)} required className="p-2 bg-white dark:bg-slate-850 border dark:border-slate-800 rounded text-current" />
+                      <input type="text" placeholder="Preço (Ex: €450)..." value={coursePrice} onChange={(e) => setCoursePrice(e.target.value)} className="p-2 bg-white dark:bg-slate-850 border dark:border-slate-800 rounded text-current" />
+                      <input type="text" placeholder="Oradora responsável..." value={courseInstructor} onChange={(e) => setCourseInstructor(e.target.value)} className="p-2 bg-white dark:bg-slate-850 border dark:border-slate-800 rounded text-current" />
                     </div>
                     <div className="flex gap-2 justify-end">
-                      <button type="button" onClick={() => setIsCreatingCourse(false)} className="px-3 py-1 bg-gray-100 text-slate-650 rounded">Cancelar</button>
+                      <button type="button" onClick={() => setIsCreatingCourse(false)} className="px-3 py-1 bg-gray-100 dark:bg-slate-800 text-slate-650 dark:text-slate-300 rounded">Cancelar</button>
                       <button type="submit" className="px-3 py-1 bg-[#0A2E5D] text-white rounded">Salvar Curso</button>
                     </div>
                   </form>
@@ -988,25 +1099,57 @@ export default function AdminPortal({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {courses.map(course => (
-                    <div key={course.id} className="p-4 bg-[#FAF9F6] border rounded-2xl flex flex-col justify-between text-left hover:border-[#C89B3C]/55">
+                    <div key={course.id} className="p-4 bg-[#FAF9F6] dark:bg-[#121E36] border border-gray-150 dark:border-slate-800 rounded-2xl flex flex-col justify-between text-left hover:border-[#C89B3C]/55">
                       <div className="space-y-1">
                         <span className="text-[10px] font-mono text-[#C89B3C] font-bold block">{course.duration} • {course.price}</span>
-                        <h4 className="font-serif font-black text-sm text-[#0A2E5D] m-0">{course.title}</h4>
-                        <p className="text-[11px] text-gray-500 leading-normal">{course.subtitle}</p>
+                        <h4 className="font-serif font-black text-sm text-[#0A2E5D] dark:text-white m-0">{course.title}</h4>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-normal">{course.subtitle}</p>
                       </div>
 
-                      <div className="flex justify-between items-center pt-3 border-t mt-4 text-[10px] font-mono">
+                      <div className="flex justify-between items-center pt-3 border-t dark:border-slate-850 mt-4 text-[10px] font-mono">
                         <span className="text-gray-400">Responsável: {courseInstructor}</span>
                         <div className="flex gap-1.5">
-                          <button onClick={() => {
+                          <button onClick={async () => {
                             if (confirm('Deseja realmente duplicar este programa de estudos?')) {
-                              setCourses(prev => [...prev, { ...course, id: `course_${Date.now()}`, title: `${course.title} (Cópia)` }]);
-                              addAuditLog("DUPLICAR CURSO", `Duplicado o curso ID: ${course.id}`);
+                              const newSlug = `${course.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}-copy-${Date.now()}`;
+                              const payload = {
+                                title: `${course.title} (Cópia)`,
+                                slug: newSlug,
+                                description: course.summary || "Cópia de programa de estudos",
+                                duration: course.duration || "10 Semanas",
+                                category: course.modality || "Híbrido",
+                                status: course.status || 'PUBLISHED',
+                                teacher_id: course.teacher_id
+                              };
+                              const { data, error } = await supabase.from('courses').insert(payload).select().single();
+                              if (error) {
+                                alert(`Erro ao duplicar curso no Supabase: ${error.message}`);
+                              } else if (data) {
+                                const cObj: Course = {
+                                  ...course,
+                                  id: data.id,
+                                  slug: data.slug,
+                                  title: data.title,
+                                  status: data.status,
+                                  teacher_id: data.teacher_id
+                                };
+                                setCourses(prev => [...prev, cObj]);
+                                addAuditLog("DUPLICAR CURSO", `Duplicado o curso ID: ${course.id} para o novo ID: ${data.id}`);
+                                alert('Curso duplicado com sucesso no Supabase!');
+                              }
                             }
-                          }} className="p-1 text-slate-650 bg-white border hover:bg-gray-100 rounded">Duplicar</button>
-                          <button onClick={() => {
-                            setCourses(prev => prev.filter(c => c.id !== course.id));
-                            addAuditLog("REMOVER CURSO", `Removido curso ID: ${course.id}`);
+                          }} className="p-1 text-slate-650 bg-white dark:bg-slate-800 border dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700 rounded text-xs">Duplicar</button>
+                          <button onClick={async () => {
+                            if (confirm('Deseja realmente remover permanentemente este curso do Supabase?')) {
+                              const { error } = await supabase.from('courses').delete().eq('id', course.id);
+                              if (error) {
+                                alert(`Erro ao remover curso do Supabase: ${error.message}`);
+                              } else {
+                                setCourses(prev => prev.filter(c => c.id !== course.id));
+                                addAuditLog("REMOVER CURSO", `Removido curso ID: ${course.id}`);
+                                alert('Curso removido com sucesso!');
+                              }
+                            }
                           }} className="p-1 text-red-650 hover:bg-red-50 rounded"><Trash2 size={12} /></button>
                         </div>
                       </div>
@@ -1019,14 +1162,14 @@ export default function AdminPortal({
 
             {/* VIEW 7: CERTIFICADOS */}
             {activeTab === 'certificados' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
+              <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-6 text-slate-900 dark:text-slate-100">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
                   <div>
-                    <h3 className="font-serif font-black text-[#0A2E5D] text-base">Registro de Chaves de Diplomas Digitais</h3>
+                    <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Registro de Chaves de Diplomas Digitais</h3>
                     <p className="text-xs text-gray-400 mt-1">Emissão em lote de certificados com blockchain local e tecnologia QR-Code auditável publicamente.</p>
                   </div>
                   <div className="flex gap-2.5">
-                    <input type="text" id="cert-recipient" placeholder="Nome do Jurista..." className="p-2 text-xs border rounded-xl w-44" />
+                    <input type="text" id="cert-recipient" placeholder="Nome do Jurista..." className="p-2 text-xs bg-white dark:bg-slate-850 border dark:border-slate-800 rounded-xl w-44 text-current" />
                     <button onClick={() => {
                       const name = (document.getElementById('cert-recipient') as HTMLInputElement)?.value;
                       if (!name) return alert('Por favor insira um nome de outorgado.');
@@ -1060,8 +1203,8 @@ export default function AdminPortal({
             {/* VIEW 12: MENSAGENS PANEL */}
             {activeTab === 'mensagens' && (
               <div className="space-y-4">
-                <div className="bg-white p-6 rounded-3xl border border-gray-150">
-                  <h3 className="font-serif font-black text-[#0A2E5D] text-base">Central de Mensagens e Comunicações em Tempo Real</h3>
+                <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 text-slate-900 dark:text-slate-100">
+                  <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Central de Mensagens e Comunicações em Tempo Real</h3>
                   <p className="text-xs text-gray-400 mt-1">Converse individualmente com formandos e formadores ou envie mensagens em massa.</p>
                 </div>
                 <ChatShell role="ADMIN" />
@@ -1070,10 +1213,10 @@ export default function AdminPortal({
 
             {/* VIEW 13: NOTIFICAÇÕES */}
             {activeTab === 'notificacoes' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
-                <div className="flex justify-between items-center border-b pb-3">
+              <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-6 text-slate-900 dark:text-slate-100">
+                <div className="flex justify-between items-center border-b dark:border-slate-800 pb-3">
                   <div>
-                    <h3 className="font-serif font-black text-[#0A2E5D] text-base">Notificações e Alertas Urgentes</h3>
+                    <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Notificações e Alertas Urgentes</h3>
                     <p className="text-xs text-gray-400 mt-1">Centro de monitorização de falhas, reconciliação de guias e inscrições.</p>
                   </div>
                   <button onClick={handleClearAlerts} className="text-3xs font-mono text-blue-900 uppercase">Limpar Alertas</button>
@@ -1099,17 +1242,17 @@ export default function AdminPortal({
 
             {/* VIEW 16: INTEGRAÇÕES */}
             {activeTab === 'integracoes' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
+              <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-6 text-slate-900 dark:text-slate-100">
                 <div>
-                  <h3 className="font-serif font-black text-[#0A2E5D] text-base">Gateway de Ligações de API</h3>
+                  <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Gateway de Ligações de API</h3>
                   <p className="text-xs text-gray-400 mt-1">Relação e status de serviços Cloud externos integrados para automatizar a vida académica da MultiPlus.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {Object.entries(integrationStatuses).map(([key, value]) => (
-                    <div key={key} className="p-4 bg-gray-50 border rounded-2xl flex justify-between items-center text-left">
+                    <div key={key} className="p-4 bg-gray-50 dark:bg-slate-900/40 border dark:border-slate-800 rounded-2xl flex justify-between items-center text-left">
                       <div>
-                        <h4 className="font-serif font-bold text-[#0A2E5D] text-xs m-0">{key} Integration</h4>
+                        <h4 className="font-serif font-bold text-[#0A2E5D] dark:text-white text-xs m-0">{key} Integration</h4>
                         <span className="text-[9px] font-mono text-gray-450 block mt-1">
                           {key === "Supabase" ? "Autenticação e DB" : key === "Cloudinary" ? "Média CDN" : "API Produtividade"}
                         </span>
@@ -1123,7 +1266,7 @@ export default function AdminPortal({
                           });
                         }}
                         className={`px-2.5 py-1 rounded text-[9px] font-mono font-bold uppercase ${
-                          value ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+                          value ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-red-450'
                         }`}
                       >
                         {value ? 'Ativo' : 'Inativo'}
@@ -1137,9 +1280,9 @@ export default function AdminPortal({
 
             {/* VIEW 17: CONFIGURAÇÕES */}
             {activeTab === 'configuracoes' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6">
+              <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-6 text-slate-900 dark:text-slate-100">
                 <div>
-                  <h3 className="font-serif font-black text-[#0A2E5D] text-base">Configurações Gerais de Operação</h3>
+                  <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Configurações Gerais de Operação</h3>
                   <p className="text-xs text-gray-400 mt-1">Definição dos parâmetros institucionais base, emails de tesouraria de Luanda e Huambo e taxas de câmbio.</p>
                 </div>
 
@@ -1160,6 +1303,9 @@ export default function AdminPortal({
 
                 <div className="flex justify-end pt-3">
                   <button onClick={() => {
+                    localStorage.setItem('multiplus_instName', instName);
+                    localStorage.setItem('multiplus_instDomain', instDomain);
+                    localStorage.setItem('multiplus_instPhone', instPhone);
                     addAuditLog("CONFIG GERAL", "Atualizado informações da instituição pelo Admin");
                     alert('As alterações da instituição foram salvas!');
                   }} className="px-5 py-2.5 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer">
@@ -1169,23 +1315,132 @@ export default function AdminPortal({
 
               </div>
             )}
-
-            {/* VIEW 18: PERFIL */}
             {activeTab === 'perfil' && (
-              <div className="bg-white p-6 rounded-3xl border border-gray-150 space-y-6 text-left">
+              <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-6 text-left text-slate-900 dark:text-slate-100">
                 <div className="flex gap-4 items-center">
-                  <img src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg" alt="Avatar Isabel" className="w-16 h-16 rounded-full border-2 border-[#C89B3C]" />
+                  <div className="w-16 h-16 rounded-full bg-[#C89B3C] text-slate-950 font-black flex items-center justify-center text-xl border-2 border-[#C89B3C] shadow-md uppercase">
+                    {adminName?.[0] || currentUser?.firstName?.[0] || 'A'}
+                  </div>
                   <div>
-                    <h3 className="font-serif font-black text-[#0A2E5D] text-lg m-0">Drª Isabel Nascimento</h3>
-                    <p className="text-xs text-gray-400 font-mono">DRETORA EXECUTIVA EM LIÇÕES INTEGRANTES HUAMBO</p>
+                    <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-lg m-0">{adminName || 'Administrador'}</h3>
+                    <p className="text-xs text-[#C89B3C] font-mono tracking-wider uppercase">ADMINISTRADOR GERAL • MULTIPLUS ACADEMY</p>
                   </div>
                 </div>
 
-                <div className="p-4 bg-gray-50 border rounded-2xl text-xs space-y-3 leading-normal">
-                  <p><strong>Cargo Hierárquico:</strong> Super Administrador Geral</p>
-                  <p><strong>E-mail de Notificações:</strong> isabel@empresas.ao</p>
-                  <p><strong>Permissão RBAC:</strong> Todo-Poderoso (Acessos ilimitados para exclusão acadêmica, auditorias financeiras e re-emissão judicial de diplomas).</p>
-                  <p className="text-amber-700">⚠️ Proteja bem as suas chaves privadas. Qualquer alteração ou impersonação efetuada sob este acesso é automaticamente auditada.</p>
+                <div className="p-4 bg-gray-55 dark:bg-slate-900/50 border dark:border-slate-800 rounded-2xl text-xs space-y-3 leading-normal">
+                  <p><strong>Cargo Hierárquico:</strong> Super Administrador</p>
+                  <p><strong>E-mail de Login:</strong> {currentUser?.email || 'admin@multiplus.ao'}</p>
+                  <p><strong>Permissão RBAC:</strong> Acesso Pleno de Administração (Gestão de utilizadores, emissão de certificados e auditoria completa do sistema).</p>
+                  <p className="text-amber-600 dark:text-amber-400 font-semibold">⚠️ Proteja bem as suas credenciais. Qualquer acção efetuada sob esta conta é registada nos logs de auditoria.</p>
+                </div>
+
+                <div className="space-y-4 border-t dark:border-slate-800 pt-5">
+                  <h4 className="font-serif font-bold text-[#0A2E5D] dark:text-white text-sm">Editar Informações de Perfil</h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className="space-y-1">
+                      <label className="block text-[8px] font-mono text-gray-450 uppercase font-black">Nome Completo</label>
+                      <input 
+                        type="text" 
+                        value={adminName} 
+                        onChange={(e) => setAdminName(e.target.value)} 
+                        className="w-full p-2.5 bg-[#FAF9F6] dark:bg-slate-850 border dark:border-slate-800 rounded-xl text-current focus:outline-none focus:border-[#C89B3C]" 
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-[8px] font-mono text-gray-400 uppercase font-black">Contacto de Telefone</label>
+                      <input 
+                        type="text" 
+                        value={adminPhone} 
+                        onChange={(e) => setAdminPhone(e.target.value)} 
+                        className="w-full p-2.5 bg-[#FAF9F6] dark:bg-slate-850 border dark:border-slate-800 rounded-xl text-current focus:outline-none focus:border-[#C89B3C]" 
+                      />
+                    </div>
+                    <div className="space-y-1 md:col-span-2">
+                      <label className="block text-[8px] font-mono text-gray-450 uppercase font-black">Biografia Profissional</label>
+                      <textarea 
+                        value={adminBio} 
+                        onChange={(e) => setAdminBio(e.target.value)} 
+                        rows={3}
+                        className="w-full p-2.5 bg-[#FAF9F6] dark:bg-slate-850 border dark:border-slate-800 rounded-xl text-current focus:outline-none focus:border-[#C89B3C]"
+                        placeholder="Escreva uma breve biografia ou introdução para o perfil do portal..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2">
+                    <input 
+                      type="checkbox" 
+                      id="notif_certificados"
+                      checked={notifEmailCertificados}
+                      onChange={(e) => setNotifEmailCertificados(e.target.checked)}
+                      className="rounded border-gray-350 dark:border-slate-850 text-[#0A2E5D] focus:ring-[#C89B3C] cursor-pointer"
+                    />
+                    <label htmlFor="notif_certificados" className="text-xs font-semibold cursor-pointer">
+                      Receber notificações de novos certificados emitidos por e-mail
+                    </label>
+                  </div>
+
+                  <div className="flex justify-end pt-3">
+                    <button 
+                      onClick={async () => {
+                        if (!currentUser?.id) return;
+                        try {
+                          // Save to users table
+                          const { error: userErr } = await supabase
+                            .from('users')
+                            .update({
+                              nome_completo: adminName,
+                              telefone: adminPhone,
+                              notif_email_certificados: notifEmailCertificados
+                            })
+                            .eq('id', currentUser.id);
+                          if (userErr) throw userErr;
+
+                          // Save to profiles table (upsert based on user_id)
+                          // Check if profile exists first
+                          const { data: existingProf } = await supabase
+                            .from('profiles')
+                            .select('id')
+                            .eq('user_id', currentUser.id)
+                            .maybeSingle();
+
+                          if (existingProf) {
+                            const { error: profErr } = await supabase
+                              .from('profiles')
+                              .update({ biografia: adminBio })
+                              .eq('user_id', currentUser.id);
+                            if (profErr) throw profErr;
+                          } else {
+                            const { error: profErr } = await supabase
+                              .from('profiles')
+                              .insert({ user_id: currentUser.id, biografia: adminBio });
+                            if (profErr) throw profErr;
+                          }
+
+                          // Update dynamic current user state
+                          const split = adminName.split(' ');
+                          const first = split[0] || 'Admin';
+                          const last = split.slice(1).join(' ') || 'MultiPlus';
+                          setCurrentUser({
+                            ...currentUser,
+                            firstName: first,
+                            lastName: last,
+                            phone: adminPhone
+                          });
+
+                          addAuditLog("PERFIL UPDATE", `Perfil de ${adminName} atualizado com sucesso no Supabase.`);
+                          alert('As suas informações de perfil foram guardadas com sucesso no Supabase!');
+                        } catch (err: any) {
+                          console.error(err);
+                          alert(`Erro ao salvar perfil no Supabase: ${err.message || err}`);
+                        }
+                      }} 
+                      className="px-5 py-2.5 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer"
+                    >
+                      Guardar Alterações
+                    </button>
+                  </div>
                 </div>
 
               </div>
