@@ -81,8 +81,8 @@ export default function Navbar({
       id="navbar-root"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled
-          ? 'py-3 bg-[#0A2E5D]/90 backdrop-blur-xl border-b border-[#C89B3C]/20 shadow-lg'
-          : 'py-6 bg-transparent'
+          ? 'py-3 bg-ink-900/90 backdrop-blur-xl border-b border-gold-600/20 shadow-lg'
+          : 'py-6 bg-ink-900/40 backdrop-blur-sm'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -108,17 +108,17 @@ export default function Navbar({
                 onClick={() => navigateTo(item.id)}
                 className={`relative px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-all duration-300 ${
                   currentPage === item.id
-                    ? 'text-[#C89B3C]'
+                    ? 'text-gold-600'
                     : isScrolled 
-                      ? 'text-[#F8F8F6]/90 hover:text-white hover:bg-white/5' 
-                      : 'text-white/80 hover:text-white hover:bg-white/10'
+                      ? 'text-cream-100/90 hover:text-cream-100 hover:bg-cream-100/5' 
+                      : 'text-cream-100/80 hover:text-cream-100 hover:bg-cream-100/10'
                 }`}
               >
                 {item.label}
                 {currentPage === item.id && (
                   <motion.div
                     layoutId="activeIndicator"
-                    className="absolute bottom-1 left-4 right-4 h-0.5 bg-[#C89B3C]"
+                    className="absolute bottom-1 left-4 right-4 h-0.5 bg-gold-600"
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
@@ -130,15 +130,15 @@ export default function Navbar({
           <div className="hidden lg:flex items-center gap-2">
             <button
               onClick={handleWhatsApp}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold tracking-wider uppercase border border-white/20 text-white bg-white/5 hover:bg-white/10 hover:border-[#C89B3C]/40 transition-colors duration-200"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold tracking-wider uppercase border border-cream-100/20 text-cream-100 bg-cream-100/5 hover:bg-cream-100/10 hover:border-gold-600/40 transition-colors duration-200"
             >
-              <Phone size={13} className="text-[#C89B3C]" />
+              <Phone size={13} className="text-gold-600" />
               WhatsApp
             </button>
             
             <button
               onClick={onOpenSignUp}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold tracking-wider uppercase bg-gradient-to-r from-[#DFB155] to-[#C89B3C] text-white border border-[#DFB155]/20 hover:from-[#E2B755] hover:to-[#D1A442] shadow-[0_4px_16px_rgba(200,155,60,0.15)] transition-all duration-200"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold tracking-wider uppercase bg-gradient-to-r from-gold-600 to-gold-600/90 text-cream-100 border border-gold-600/20 hover:from-gold-600/90 hover:to-gold-600 shadow-[0_4px_16px_rgba(187,133,51,0.15)] transition-all duration-200"
             >
               <GraduationCap size={14} />
               Inscrição
@@ -149,11 +149,11 @@ export default function Navbar({
               onClick={handlePortalRedirect}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all duration-200 ${
                 currentUser 
-                  ? 'bg-emerald-600/80 hover:bg-emerald-600 text-white border border-emerald-500/30' 
-                  : 'bg-white/10 hover:bg-white/15 border border-[#C89B3C]/40 text-[#C89B3C]'
+                  ? 'bg-emerald-600/80 hover:bg-emerald-600 text-cream-100 border border-emerald-500/30' 
+                  : 'bg-cream-100/10 hover:bg-cream-100/15 border border-gold-600/40 text-gold-600'
               }`}
             >
-              {currentUser ? <LayoutDashboard size={14} className="text-[#F8F8F6]" /> : <LogIn size={14} />}
+              {currentUser ? <LayoutDashboard size={14} className="text-cream-100" /> : <LogIn size={14} />}
               {currentUser ? `Painel ${currentUser.firstName}` : 'Portal Académico'}
             </button>
 
@@ -162,7 +162,7 @@ export default function Navbar({
               <button
                 onClick={handleLogout}
                 title="Sair da Conta"
-                className="p-2 rounded-lg bg-white/5 hover:bg-red-950/40 border border-white/10 text-white hover:text-red-400 hover:border-red-900/50 transition-colors duration-200"
+                className="p-2 rounded-lg bg-cream-100/5 hover:bg-red-950/40 border border-cream-100/10 text-cream-100 hover:text-red-400 hover:border-red-900/50 transition-colors duration-200"
               >
                 <LogOut size={14} />
               </button>
@@ -173,14 +173,14 @@ export default function Navbar({
           <div className="lg:hidden flex items-center gap-2">
             <button
               onClick={handleWhatsApp}
-              className="p-2.5 rounded-lg border border-white/20 text-[#C89B3C] bg-white/5"
+              className="p-2.5 rounded-lg border border-cream-100/20 text-gold-600 bg-cream-100/5"
               aria-label="Falar no WhatsApp"
             >
               <Phone size={16} />
             </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2.5 rounded-lg text-[#F8F8F6] bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+              className="p-2.5 rounded-lg text-cream-100 bg-cream-100/5 border border-cream-100/10 hover:bg-cream-100/10 transition-colors"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -196,7 +196,7 @@ export default function Navbar({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-[#0A2E5D]/98 border-b border-[#C89B3C]/30 overflow-hidden"
+            className="lg:hidden bg-ink-900/98 border-b border-gold-600/30 overflow-hidden"
           >
             <div className="px-4 pt-3 pb-8 space-y-2">
               {navItems.map((item) => (
@@ -205,8 +205,8 @@ export default function Navbar({
                   onClick={() => navigateTo(item.id)}
                   className={`block w-full text-left px-4 py-3 rounded-xl text-base font-medium tracking-wide transition-colors ${
                     currentPage === item.id
-                      ? 'bg-[#C89B3C]/10 text-[#C89B3C] border-l-4 border-[#C89B3C]'
-                      : 'text-[#F8F8F6]/90 hover:bg-white/5 hover:text-white'
+                      ? 'bg-gold-600/10 text-gold-600 border-l-4 border-gold-600'
+                      : 'text-cream-100/90 hover:bg-cream-100/5 hover:text-cream-100'
                   }`}
                 >
                   {item.label}
@@ -217,9 +217,9 @@ export default function Navbar({
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={handleWhatsApp}
-                    className="flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-semibold uppercase tracking-wider border border-white/20 text-[#F8F8F6] bg-white/5"
+                    className="flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-semibold uppercase tracking-wider border border-cream-100/20 text-cream-100 bg-cream-100/5"
                   >
-                    <Phone size={14} className="text-[#C89B3C]" />
+                    <Phone size={14} className="text-gold-600" />
                     WhatsApp
                   </button>
 
@@ -228,7 +228,7 @@ export default function Navbar({
                       setMobileMenuOpen(false);
                       onOpenSignUp();
                     }}
-                    className="flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#C89B3C] text-white"
+                    className="flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-wider bg-gold-600 text-cream-100"
                   >
                     <GraduationCap size={15} />
                     Inscrição
@@ -243,8 +243,8 @@ export default function Navbar({
                   }}
                   className={`w-full py-3 rounded-xl text-xs font-mono font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 border ${
                     currentUser 
-                      ? 'bg-emerald-600 text-white border-emerald-500' 
-                      : 'bg-white/10 text-[#C89B3C] border-[#C89B3C]/50'
+                      ? 'bg-emerald-600 text-cream-100 border-emerald-500' 
+                      : 'bg-cream-100/10 text-gold-600 border-gold-600/50'
                   }`}
                 >
                   {currentUser ? <LayoutDashboard size={14} /> : <LogIn size={14} />}

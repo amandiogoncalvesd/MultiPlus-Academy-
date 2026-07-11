@@ -1,10 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-ink-900: #151D29;      /* Principal - fundo escuro base */
+  --color-ink-800: #1B222E;      /* Principal - fundo escuro secundario/cartoes */
+  --color-gold-600: #BB8533;     /* Principal - dourado de destaque (CTAs, acentos) */
+  --color-cream-100: #F2E5D7;    /* Principal - fundo claro base */
+  --color-cream-200: #E8DAC8;    /* Principal - fundo claro secundario/cartoes */
+  --color-danger-700: #AF251D;   /* Secundaria - erro, exclusao, alerta */
+  --color-espresso-900: #221F17; /* Secundaria - tom mais escuro alternativo */
+  --color-espresso-700: #573521; /* Secundaria - acento marrom secundario */
+  --color-neutral-400: #A1A4AC;  /* Secundaria - cinza neutro (texto/bordas discretas) */
 }
 
 /* Custom Neo-Skeuomorphic and Premium shadows/components */
