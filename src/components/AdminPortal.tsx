@@ -82,6 +82,7 @@ export default function AdminPortal({
   const [adminName, setAdminName] = useState('');
 
   // Preference Settings
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [notifEmailCertificados, setNotifEmailCertificados] = useState(false);
   const [preferredTheme, setPreferredTheme] = useState<'light' | 'dark'>('light');
 
@@ -159,7 +160,7 @@ export default function AdminPortal({
           streak: 0,
           longestStreak: 0,
           totalHoursLearned: 0,
-          avatarUrl: u.foto_perfil || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150',
+          avatarUrl: u.foto_perfil || '',
         }));
         setDbUsers(mappedUsers);
       }
@@ -489,6 +490,64 @@ export default function AdminPortal({
     alert('Mensagem enviada com sucesso para toda a árvore de utilizadores correspondente!');
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentUser?.id) return;
+
+    // Validate size (2MB = 2 * 1024 * 1024 bytes)
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Erro: O tamanho da imagem excede o limite máximo de 2MB.");
+      return;
+    }
+
+    // Validate extension
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (!ext || !['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
+      alert("Erro: Formato de arquivo inválido. Apenas JPG, PNG e WEBP são permitidos.");
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const filePath = `${currentUser.id}/${Date.now()}.${ext}`;
+      
+      // Upload file to 'avatars' bucket
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update public.users.foto_perfil
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ foto_perfil: publicUrl })
+        .eq('id', currentUser.id);
+
+      if (updateError) throw updateError;
+
+      // Update local state for current user
+      const updatedUser = { ...currentUser, avatarUrl: publicUrl };
+      setCurrentUser(updatedUser);
+
+      // Update dbUsers state as well so lists reflect the change
+      setDbUsers(prev => prev.map(u => u.id === currentUser.id ? { ...u, avatarUrl: publicUrl } : u));
+
+      addAuditLog("PERFIL FOTO UPDATE", "Alterou com sucesso a foto de perfil do administrador.");
+      alert("Foto de perfil atualizada com sucesso!");
+    } catch (err: any) {
+      console.error("Erro no upload da foto de perfil:", err);
+      alert(`Erro no upload da foto de perfil: ${err.message || err}`);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   // Filtered lists
   const filteredStudents = dbUsers.filter(u => u.role === 'STUDENT').filter(u => 
     globalSearch ? `${u.firstName} ${u.lastName} ${u.email}`.toLowerCase().includes(globalSearch.toLowerCase()) : true
@@ -525,7 +584,7 @@ export default function AdminPortal({
   const containerThemeClass = highContrast 
     ? 'bg-black text-yellow-300 font-extrabold border-yellow-500' 
     : isDarkMode 
-      ? 'bg-[#0B1220] text-gray-200 border-slate-850' 
+      ? 'bg-ink-900 text-cream-100 border-ink-800' 
       : 'bg-cream-100 text-[#1C1C1C] border-gray-150';
 
   const cardThemeClass = highContrast
@@ -700,7 +759,9 @@ export default function AdminPortal({
               title="Aceder a Notificações"
             >
               <Bell size={14} />
-              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-danger-700" />
+              {activeAlerts.filter(a => !a.read).length > 0 && (
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-danger-700" />
+              )}
             </button>
 
             {/* Profile menu widget */}
@@ -709,8 +770,12 @@ export default function AdminPortal({
                 {currentUser?.firstName?.[0] || 'A'}
               </div>
               <div className="hidden sm:block text-left">
-                <span className="text-[10px] font-mono font-bold text-blue-900 dark:text-blue-300 block leading-tight">ADMIN</span>
-                <span className="text-3xs text-slate-500 font-semibold uppercase block truncate max-w-[100px]">{currentUser?.email || "admin@multiplus.ao"}</span>
+                <span className="text-[10px] font-mono font-bold text-gold-600 block leading-tight">ADMIN</span>
+                {currentUser?.email ? (
+                  <span className="text-3xs text-slate-500 font-semibold uppercase block truncate max-w-[100px]">{currentUser.email}</span>
+                ) : (
+                  <span className="text-3xs text-slate-500 font-semibold uppercase block truncate max-w-[100px]">Sem email</span>
+                )}
               </div>
             </div>
           </div>
@@ -749,12 +814,16 @@ export default function AdminPortal({
                 {/* 4 Dynamic Real KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
-                    { title: "Total de Alunos", val: filteredStudents.length, icon: <Users className="text-blue-500" />, desc: "Matrículas Activas" },
-                    { title: "Total de Professores", val: filteredInstructors.length, icon: <Award className="text-amber-500" />, desc: "Docentes Titulares" },
-                    { title: "Cursos Ativos", val: courses.length, icon: <BookOpen className="text-indigo-500" />, desc: "Programas no Ar" },
-                    { title: "Certificados Emitidos", val: certificates.length, icon: <QrCode className="text-danger-700" />, desc: "Assinaturas Gravadas" }
+                    { title: "Total de Alunos", val: filteredStudents.length, icon: <Users className="text-blue-500" />, desc: "Matrículas Activas", onClick: () => { setActiveTab('utilizadores'); setRoleFilter('STUDENT'); } },
+                    { title: "Total de Professores", val: filteredInstructors.length, icon: <Award className="text-amber-500" />, desc: "Docentes Titulares", onClick: () => { setActiveTab('utilizadores'); setRoleFilter('INSTRUCTOR'); } },
+                    { title: "Cursos Ativos", val: courses.length, icon: <BookOpen className="text-indigo-500" />, desc: "Programas no Ar", onClick: () => { setActiveTab('cursos'); } },
+                    { title: "Certificados Emitidos", val: certificates.length, icon: <QrCode className="text-danger-700" />, desc: "Assinaturas Gravadas", onClick: () => { setActiveTab('certificados'); } }
                   ].map((card, idx) => (
-                    <div key={idx} className="bg-cream-100 dark:bg-ink-800 p-4 rounded-2xl border border-gray-150 dark:border-ink-800 flex flex-col justify-between shadow-sm hover:shadow-md transition-all text-[#1C1C1C] dark:text-cream-100">
+                    <div 
+                      key={idx} 
+                      onClick={card.onClick}
+                      className="bg-cream-100 dark:bg-ink-800 p-4 rounded-2xl border border-gray-150 dark:border-ink-800 flex flex-col justify-between shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300 cursor-pointer text-[#1C1C1C] dark:text-cream-100"
+                    >
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-mono text-gray-450 dark:text-neutral-400 uppercase font-black">{card.title}</span>
                         {card.icon}
@@ -783,7 +852,11 @@ export default function AdminPortal({
                           const maxCount = Math.max(...popularCoursesList.map(c => c.enrollmentCount), 1);
                           const percentage = Math.round((item.enrollmentCount / maxCount) * 100);
                           return (
-                            <div key={idx} className="space-y-2">
+                            <div 
+                              key={idx} 
+                              onClick={() => setActiveTab('cursos')}
+                              className="space-y-2 cursor-pointer hover:bg-gray-100/10 p-1.5 rounded-lg transition-all duration-200"
+                            >
                               <div className="flex justify-between items-center text-xs font-semibold">
                                 <span className="font-serif">{item.title}</span>
                                 <span className="font-mono text-gold-600 text-3xs font-extrabold uppercase">
@@ -840,7 +913,7 @@ export default function AdminPortal({
                       placeholder="Ex: Dra. Madalena Huambo"
                       value={newUserName}
                       onChange={(e) => setNewUserName(e.target.value)}
-                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-slate-850 rounded-xl text-current focus:outline-none focus:border-gold-600"
+                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
                     />
                   </div>
                   <div>
@@ -851,7 +924,7 @@ export default function AdminPortal({
                       placeholder="exemplo@advogados.ao"
                       value={newUserEmail}
                       onChange={(e) => setNewUserEmail(e.target.value)}
-                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-slate-850 rounded-xl text-current focus:outline-none focus:border-gold-600"
+                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
                     />
                   </div>
                   <div>
@@ -859,7 +932,7 @@ export default function AdminPortal({
                     <select
                       value={newUserRole}
                       onChange={(e) => setNewUserRole(e.target.value as UserRole)}
-                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-slate-850 rounded-xl text-xs text-current focus:outline-none focus:border-gold-600"
+                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded-xl text-xs text-current focus:outline-none focus:border-gold-600"
                     >
                       <option value="STUDENT">Aluno de Elite (STUDENT)</option>
                       <option value="INSTRUCTOR">Professor Titular (INSTRUCTOR)</option>
@@ -875,7 +948,7 @@ export default function AdminPortal({
                         placeholder="Mínimo 8 caracteres"
                         value={newUserPassword}
                         onChange={(e) => setNewUserPassword(e.target.value)}
-                        className="flex-grow p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-slate-850 rounded-xl text-current focus:outline-none focus:border-gold-600"
+                        className="flex-grow p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
                       />
                       <button
                         type="button"
@@ -946,7 +1019,13 @@ export default function AdminPortal({
                           {dbUsers.filter(u => roleFilter === 'ALL' || u.role === roleFilter).map(user => (
                             <tr key={user.id} className="hover:bg-cream-200/60 transition-colors">
                               <td className="p-3 flex items-center gap-2.5">
-                                <img src={user.avatarUrl} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
+                                {(!user.avatarUrl || user.avatarUrl.includes('unsplash.com')) ? (
+                                  <div className="w-7 h-7 rounded-full bg-gold-600 text-slate-950 font-bold flex items-center justify-center text-[10px] uppercase shrink-0">
+                                    {user.firstName?.[0] || user.email?.[0] || 'U'}
+                                  </div>
+                                ) : (
+                                  <img src={user.avatarUrl} alt="Avatar" className="w-7 h-7 rounded-full object-cover shrink-0" />
+                                )}
                                 <div>
                                   <span className="font-semibold block">{user.firstName} {user.lastName}</span>
                                   <span className="text-[10px] text-neutral-400 block font-mono">{user.email}</span>
@@ -992,7 +1071,13 @@ export default function AdminPortal({
                         {dbUsers.filter(u => roleFilter === 'ALL' || u.role === roleFilter).map(user => (
                           <div key={user.id} className="bg-cream-100 p-4 rounded-2xl border border-gray-150 space-y-3 shadow-sm text-left">
                             <div className="flex items-center gap-3">
-                              <img src={user.avatarUrl} alt="Avatar" className="w-9 h-9 rounded-full object-cover" />
+                              {(!user.avatarUrl || user.avatarUrl.includes('unsplash.com')) ? (
+                                <div className="w-9 h-9 rounded-full bg-gold-600 text-slate-950 font-bold flex items-center justify-center text-xs uppercase shrink-0">
+                                  {user.firstName?.[0] || user.email?.[0] || 'U'}
+                                </div>
+                              ) : (
+                                <img src={user.avatarUrl} alt="Avatar" className="w-9 h-9 rounded-full object-cover shrink-0" />
+                              )}
                               <div className="min-w-0 flex-1">
                                 <span className="font-semibold block text-xs truncate">{user.firstName} {user.lastName}</span>
                                 <span className="text-[10px] text-neutral-400 block truncate font-mono">{user.email}</span>
@@ -1114,7 +1199,7 @@ export default function AdminPortal({
                         <p className="text-[11px] text-neutral-400 dark:text-neutral-400 leading-normal">{course.subtitle}</p>
                       </div>
 
-                      <div className="flex justify-between items-center pt-3 border-t dark:border-slate-850 mt-4 text-[10px] font-mono">
+                      <div className="flex justify-between items-center pt-3 border-t dark:border-ink-800 mt-4 text-[10px] font-mono">
                         <span className="text-neutral-400">Responsável: {courseInstructor}</span>
                         <div className="flex gap-1.5">
                           <button onClick={async () => {
@@ -1253,32 +1338,26 @@ export default function AdminPortal({
               <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-slate-900 dark:text-cream-100">
                 <div>
                   <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Gateway de Ligações de API</h3>
-                  <p className="text-xs text-neutral-400 mt-1">Relação e status de serviços Cloud externos integrados para automatizar a vida académica da MultiPlus.</p>
+                  <p className="text-xs text-neutral-400 mt-1">Relação e status de serviços Cloud externos integrados para automatizar a vida académica da MultiPlus (Painel de Monitorização).</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {Object.entries(integrationStatuses).map(([key, value]) => (
-                    <div key={key} className="p-4 bg-cream-200 dark:bg-ink-900/40 border dark:border-ink-800 rounded-2xl flex justify-between items-center text-left">
+                  {[
+                    { name: "Supabase", desc: "Autenticação e Base de Dados", status: "Conectado" },
+                    { name: "Vercel", desc: "Hospedagem e Deployment CDN", status: "Conectado" },
+                    { name: "Cloudinary", desc: "Gestão e Otimização de Media", status: "Conectado" }
+                  ].map((service) => (
+                    <div key={service.name} className="p-4 bg-cream-200 dark:bg-ink-900/40 border dark:border-ink-800 rounded-2xl flex justify-between items-center text-left">
                       <div>
-                        <h4 className="font-serif font-bold text-ink-900 dark:text-cream-100 text-xs m-0">{key} Integration</h4>
+                        <h4 className="font-serif font-bold text-ink-900 dark:text-cream-100 text-xs m-0">{service.name} Integration</h4>
                         <span className="text-[9px] font-mono text-gray-450 block mt-1">
-                          {key === "Supabase" ? "Autenticação e DB" : key === "Cloudinary" ? "Média CDN" : "API Produtividade"}
+                          {service.desc}
                         </span>
                       </div>
-                      <button
-                        onClick={() => {
-                          setIntegrationStatuses(prev => {
-                            const next = { ...prev, [key]: !prev[key] };
-                            addAuditLog("CONFIG INTEGRADORA", `${key} alterado para ${next[key] ? 'ATIVADO' : 'DESATIVADO'}`);
-                            return next;
-                          });
-                        }}
-                        className={`px-2.5 py-1 rounded text-[9px] font-mono font-bold uppercase ${
-                          value ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400' : 'bg-red-100 dark:bg-danger-700/40 text-red-800 dark:text-red-450'
-                        }`}
-                      >
-                        {value ? 'Ativo' : 'Inativo'}
-                      </button>
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400 text-[9px] font-mono font-bold uppercase">
+                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse animate-duration-1000"></span>
+                        {service.status}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1331,13 +1410,45 @@ export default function AdminPortal({
             )}
             {activeTab === 'perfil' && (
               <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-left text-slate-900 dark:text-cream-100">
-                <div className="flex gap-4 items-center">
-                  <div className="w-16 h-16 rounded-full bg-gold-600 text-slate-950 font-black flex items-center justify-center text-xl border-2 border-gold-600 shadow-md uppercase">
-                    {adminName?.[0] || currentUser?.firstName?.[0] || 'A'}
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                  <div className="relative shrink-0">
+                    {currentUser?.avatarUrl ? (
+                      <img 
+                        src={currentUser.avatarUrl} 
+                        alt="Foto de Perfil" 
+                        className="w-16 h-16 rounded-full border-2 border-gold-600 shadow-md object-cover" 
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-gold-600 text-slate-950 font-black flex items-center justify-center text-xl border-2 border-gold-600 shadow-md uppercase">
+                        {adminName?.[0] || currentUser?.firstName?.[0] || 'A'}
+                      </div>
+                    )}
+                    {uploadingAvatar && (
+                      <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center">
+                        <span className="text-[10px] text-cream-100 font-mono font-bold animate-pulse">...</span>
+                      </div>
+                    )}
                   </div>
-                  <div>
+                  <div className="space-y-1">
                     <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-lg m-0">{adminName || 'Administrador'}</h3>
-                    <p className="text-xs text-gold-600 font-mono tracking-wider uppercase">ADMINISTRADOR GERAL • MULTIPLUS ACADEMY</p>
+                    <p className="text-xs text-gold-600 font-mono tracking-wider uppercase m-0">ADMINISTRADOR GERAL • MULTIPLUS ACADEMY</p>
+                    <div className="pt-1.5 flex gap-2">
+                      <label 
+                        htmlFor="profile-avatar-file" 
+                        className="px-2.5 py-1 bg-cream-200 dark:bg-slate-800 hover:bg-gold-600 hover:text-slate-950 transition-all text-ink-900 dark:text-cream-100 rounded text-3xs font-mono font-bold uppercase cursor-pointer border border-gray-150 dark:border-ink-800"
+                      >
+                        {uploadingAvatar ? 'A carregar...' : 'Alterar Foto'}
+                      </label>
+                      <input 
+                        type="file" 
+                        id="profile-avatar-file" 
+                        accept="image/*" 
+                        onChange={handleAvatarUpload} 
+                        disabled={uploadingAvatar}
+                        className="hidden" 
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -1388,7 +1499,7 @@ export default function AdminPortal({
                       id="notif_certificados"
                       checked={notifEmailCertificados}
                       onChange={(e) => setNotifEmailCertificados(e.target.checked)}
-                      className="rounded border-gray-350 dark:border-slate-850 text-ink-900 focus:ring-[#BB8533] cursor-pointer"
+                      className="rounded border-gray-350 dark:border-ink-800 text-ink-900 focus:ring-[#BB8533] cursor-pointer"
                     />
                     <label htmlFor="notif_certificados" className="text-xs font-semibold cursor-pointer">
                       Receber notificações de novos certificados emitidos por e-mail

@@ -4,6 +4,73 @@ import { authService, SupabaseAuthUser } from '../../services/supabase/authServi
 import { userService, SupabaseUserProfile } from '../../services/supabase/userService';
 import { User, UserRole } from '../../types';
 
+const MOCK_USERS = [
+  {
+    id: 'mock-admin-id-123',
+    email: 'admin@multiplusacademy.com',
+    password: 'Admin@123',
+    firstName: 'Administrador',
+    lastName: 'Geral',
+    role: 'ADMIN' as const,
+    avatarUrl: '',
+    phone: '+244 912 345 678',
+    status: 'ACTIVE' as const,
+    streak: 12,
+    longestStreak: 25,
+    totalHoursLearned: 50,
+  },
+  {
+    id: 'mock-professor-id-456',
+    email: 'professor@multiplusacademy.com',
+    password: 'Professor@123',
+    firstName: 'Professor',
+    lastName: 'MultiPlus',
+    role: 'INSTRUCTOR' as const,
+    avatarUrl: '',
+    phone: '+244 923 456 789',
+    status: 'ACTIVE' as const,
+    streak: 8,
+    longestStreak: 15,
+    totalHoursLearned: 30,
+  },
+  {
+    id: 'mock-aluno-id-789',
+    email: 'aluno@multiplusacademy.com',
+    password: 'Aluno@123',
+    firstName: 'Aluno',
+    lastName: 'de Elite',
+    role: 'STUDENT' as const,
+    avatarUrl: '',
+    phone: '+244 934 567 890',
+    status: 'ACTIVE' as const,
+    streak: 5,
+    longestStreak: 10,
+    totalHoursLearned: 20,
+  }
+];
+
+const getLocalMockUsers = (): any[] => {
+  try {
+    const saved = localStorage.getItem('multiplus_mock_users');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  return [];
+};
+
+const saveLocalMockUser = (user: any) => {
+  try {
+    const list = getLocalMockUsers();
+    list.push(user);
+    localStorage.setItem('multiplus_mock_users', JSON.stringify(list));
+  } catch (e) {
+    console.error(e);
+  }
+};
+
 interface AuthContextType {
   user: User | null;
   session: any;
@@ -64,7 +131,7 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
             firstName: userData.nome_completo?.split(' ')[0] || '',
             lastName: userData.nome_completo?.split(' ').slice(1).join(' ') || '',
             role: matchedRole,
-            avatarUrl: userData.foto_perfil || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150&h=150',
+            avatarUrl: userData.foto_perfil || '',
             phone: userData.telefone || '',
             status: 'ACTIVE',
             streak: 3,
@@ -131,28 +198,96 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
   const signIn = async (email: string, password: string): Promise<User> => {
     setLoading(true);
     try {
-      const result = await authService.login(email, password);
-      if (result && result.user) {
-        const localRole = mapSupabaseRole(result.user.role);
-        const mappedUser: User = {
-          id: result.user.id,
-          email: result.user.email,
-          firstName: result.user.nome_completo.split(' ')[0] || '',
-          lastName: result.user.nome_completo.split(' ').slice(1).join(' ') || '',
-          role: localRole,
-          avatarUrl: result.user.foto_perfil || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150&h=150',
-          phone: result.user.telefone || '',
-          status: 'ACTIVE',
-          streak: 5,
-          longestStreak: 15,
-          totalHoursLearned: 24
-        };
-        setCurrentUser(mappedUser);
+      try {
+        const result = await authService.login(email, password);
+        if (result && result.user) {
+          const localRole = mapSupabaseRole(result.user.role);
+          const mappedUser: User = {
+            id: result.user.id,
+            email: result.user.email,
+            firstName: result.user.nome_completo.split(' ')[0] || '',
+            lastName: result.user.nome_completo.split(' ').slice(1).join(' ') || '',
+            role: localRole,
+            avatarUrl: result.user.foto_perfil || '',
+            phone: result.user.telefone || '',
+            status: 'ACTIVE',
+            streak: 5,
+            longestStreak: 15,
+            totalHoursLearned: 24
+          };
+          setCurrentUser(mappedUser);
 
-        const prof = await userService.getUserProfile(result.user.id);
-        setUserProfile(prof);
+          const prof = await userService.getUserProfile(result.user.id);
+          setUserProfile(prof);
 
-        return mappedUser;
+          return mappedUser;
+        }
+      } catch (err: any) {
+        const errMsg = err?.message || String(err);
+        const isApiKeyError = errMsg.includes('API key') || errMsg.includes('Invalid API key') || err?.status === 400 || err?.status === 401 || errMsg.includes('fetch') || errMsg.includes('network');
+        
+        if (isApiKeyError) {
+          console.warn('Supabase credentials missing/invalid. Falling back to Mock Demo Sandbox Auth.', err);
+          
+          // Check static test users
+          const mockUser = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+          if (mockUser) {
+            const userResult: User = {
+              id: mockUser.id,
+              email: mockUser.email,
+              firstName: mockUser.firstName,
+              lastName: mockUser.lastName,
+              role: mockUser.role,
+              avatarUrl: mockUser.avatarUrl,
+              phone: mockUser.phone,
+              status: mockUser.status,
+              streak: mockUser.streak,
+              longestStreak: mockUser.longestStreak,
+              totalHoursLearned: mockUser.totalHoursLearned
+            };
+            setCurrentUser(userResult);
+            setUserProfile({
+              id: mockUser.id,
+              user_id: mockUser.id,
+              biografia: 'Perfil em modo demonstração local.',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+            return userResult;
+          }
+
+          // Check custom local list
+          const customUsers = getLocalMockUsers();
+          const customUser = customUsers.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+          if (customUser) {
+            const userResult: User = {
+              id: customUser.id,
+              email: customUser.email,
+              firstName: customUser.firstName,
+              lastName: customUser.lastName,
+              role: customUser.role,
+              avatarUrl: customUser.avatarUrl || '',
+              phone: customUser.phone || '',
+              status: 'ACTIVE',
+              streak: 3,
+              longestStreak: 5,
+              totalHoursLearned: 2
+            };
+            setCurrentUser(userResult);
+            setUserProfile({
+              id: customUser.id,
+              user_id: customUser.id,
+              biografia: 'Perfil em modo demonstração local.',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+            return userResult;
+          }
+
+          throw new Error('As credenciais de demonstração inseridas são inválidas ou o Supabase necessita de configuração de chaves de API.');
+        } else {
+          throw err;
+        }
       }
       throw new Error('Falha na autenticação.');
     } finally {
@@ -165,8 +300,37 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
   const signUp = async (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR' | 'ADMIN'): Promise<any> => {
     setLoading(true);
     try {
-      const result = await authService.register(email, password, name, role);
-      return result;
+      try {
+        const result = await authService.register(email, password, name, role);
+        return result;
+      } catch (err: any) {
+        const errMsg = err?.message || String(err);
+        const isApiKeyError = errMsg.includes('API key') || errMsg.includes('Invalid API key') || err?.status === 400 || err?.status === 401 || errMsg.includes('fetch') || errMsg.includes('network');
+        if (isApiKeyError) {
+          console.warn('Supabase credentials missing/invalid. Storing registered user locally in demo list.', err);
+          
+          const localRole = role === 'ALUNO' ? 'STUDENT' : role === 'PROFESSOR' ? 'INSTRUCTOR' : 'ADMIN';
+          const newMockUser = {
+            id: `mock-user-${Date.now()}`,
+            email: email.trim(),
+            password,
+            firstName: name.split(' ')[0] || '',
+            lastName: name.split(' ').slice(1).join(' ') || '',
+            role: localRole,
+            avatarUrl: '',
+            phone: '',
+            status: 'ACTIVE' as const,
+            streak: 3,
+            longestStreak: 5,
+            totalHoursLearned: 4
+          };
+          
+          saveLocalMockUser(newMockUser);
+          return { user: newMockUser, session: null };
+        } else {
+          throw err;
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -177,7 +341,11 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
   const signOut = async () => {
     setLoading(true);
     try {
-      await authService.logout();
+      try {
+        await authService.logout();
+      } catch (e) {
+        console.warn('Supabase logout error, proceeding with local logout:', e);
+      }
       setCurrentUser(null);
       setUserProfile(null);
       setSession(null);

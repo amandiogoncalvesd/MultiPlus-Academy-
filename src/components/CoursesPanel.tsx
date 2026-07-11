@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase/client';
 import { Course, PageId } from '../types';
+import { COURSES_LIST } from '../data';
 import { 
   Search, 
   MapPin, 
@@ -56,11 +57,11 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
           }));
           setCourses(mapped);
         } else {
-          setCourses([]);
+          setCourses(COURSES_LIST);
         }
       } catch (err) {
-        console.error('Error fetching courses in catalog:', err);
-        setCourses([]);
+        console.error('Error fetching courses in catalog, falling back to local list:', err);
+        setCourses(COURSES_LIST);
       } finally {
         setLoading(false);
       }
