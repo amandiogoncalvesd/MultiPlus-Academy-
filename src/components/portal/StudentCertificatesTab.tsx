@@ -73,15 +73,15 @@ export default function StudentCertificatesTab({
     <div className="space-y-6 text-left">
       
       {/* Header Banner */}
-      <div className="bg-white p-6 rounded-3xl border border-gray-150 shadow-sm">
-        <span className="text-[10px] font-mono tracking-widest text-[#C89B3C] uppercase block mb-1">Acreditação Letiva CEFR</span>
-        <h3 className="text-xl font-serif font-black text-[#0A2E5D] m-0">Meus Certificados Autenticados</h3>
-        <p className="text-xs text-gray-400 mt-1">Todos os diplomas emitidos integram códigos de validação seguros interligados ao sistema de exames.</p>
+      <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 shadow-sm">
+        <span className="text-[10px] font-mono tracking-widest text-gold-600 uppercase block mb-1">Acreditação Letiva CEFR</span>
+        <h3 className="text-xl font-serif font-black text-ink-900 m-0">Meus Certificados Autenticados</h3>
+        <p className="text-xs text-neutral-400 mt-1">Todos os diplomas emitidos integram códigos de validação seguros interligados ao sistema de exames.</p>
       </div>
 
       {exportMessage && (
         <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold rounded-xl flex items-center gap-2 animate-pulse">
-          <ShieldCheck size={14} className="text-[#C89B3C]" />
+          <ShieldCheck size={14} className="text-gold-600" />
           <span>{exportMessage}</span>
         </div>
       )}
@@ -93,31 +93,31 @@ export default function StudentCertificatesTab({
             key={cert.id}
             className={`rounded-3xl border relative overflow-hidden transition-all flex flex-col justify-between min-h-[380px] p-6 text-left ${
               cert.unlocked 
-                ? 'bg-slate-950 border-4 border-[#C89B3C] text-white shadow-xl' 
-                : 'bg-white border-gray-150 text-gray-400 select-none'
+                ? 'bg-slate-950 border-4 border-gold-600 text-cream-100 shadow-xl' 
+                : 'bg-cream-100 border-gray-150 text-neutral-400 select-none'
             }`}
           >
             {/* Hologram or badge decor */}
             {cert.unlocked && (
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#C89B3C]/10 rounded-full blur-xl pointer-events-none" />
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-gold-600/10 rounded-full blur-xl pointer-events-none" />
             )}
 
             {/* Top row */}
             <div className="flex justify-between items-start border-b border-white/10 pb-4">
               <div>
-                <span className="text-[#C89B3C] text-[9px] font-mono tracking-widest uppercase font-bold block mb-1">
+                <span className="text-gold-600 text-[9px] font-mono tracking-widest uppercase font-bold block mb-1">
                   MULTIPLUS ACADEMY • ANGOLA
                 </span>
-                <span className="text-xs font-mono text-gray-400 font-semibold block">{cert.level}</span>
+                <span className="text-xs font-mono text-neutral-400 font-semibold block">{cert.level}</span>
               </div>
               
               {cert.unlocked ? (
-                <div className="p-1.5 bg-[#C89B3C] rounded-lg text-slate-950 text-3xs font-mono font-bold uppercase tracking-wider flex items-center gap-1">
+                <div className="p-1.5 bg-gold-600 rounded-lg text-slate-950 text-3xs font-mono font-bold uppercase tracking-wider flex items-center gap-1">
                   <CheckCircle2 size={10} />
                   <span>Emitido</span>
                 </div>
               ) : (
-                <div className="p-1.5 bg-gray-100 text-gray-500 rounded-lg text-3xs font-mono font-bold uppercase tracking-wider flex items-center gap-1">
+                <div className="p-1.5 bg-gray-100 text-neutral-400 rounded-lg text-3xs font-mono font-bold uppercase tracking-wider flex items-center gap-1">
                   <Lock size={10} />
                   <span>Pendente</span>
                 </div>
@@ -127,27 +127,27 @@ export default function StudentCertificatesTab({
             {/* Core certificate name */}
             <div className="py-4 space-y-4">
               <div className="space-y-1">
-                <span className="text-[10px] font-mono text-gray-400 block uppercase">CERTIFICA-SE QUE</span>
-                <h4 className="text-lg sm:text-xl font-serif font-bold text-white tracking-wide m-0 italic">
+                <span className="text-[10px] font-mono text-neutral-400 block uppercase">CERTIFICA-SE QUE</span>
+                <h4 className="text-lg sm:text-xl font-serif font-bold text-cream-100 tracking-wide m-0 italic">
                   {cert.unlocked ? studentFull : 'Nome do Aluno'}
                 </h4>
               </div>
 
               <div className="space-y-1">
-                <span className="text-[9px] font-mono text-gray-400 block uppercase">CONCLUIU COM ÊXITO O PROGRAMA ACADÉMICO</span>
-                <p className={`text-sm font-serif font-black ${cert.unlocked ? 'text-[#C89B3C]' : 'text-gray-500'} m-0`}>
+                <span className="text-[9px] font-mono text-neutral-400 block uppercase">CONCLUIU COM ÊXITO O PROGRAMA ACADÉMICO</span>
+                <p className={`text-sm font-serif font-black ${cert.unlocked ? 'text-gold-600' : 'text-neutral-400'} m-0`}>
                   {cert.title}
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-[10px] font-mono pt-2">
                 <div>
-                  <span className="text-gray-400 block text-[8px] uppercase">DATA DE EMISSÃO</span>
-                  <span className="text-white font-bold">{cert.unlocked ? cert.issueDate : '---'}</span>
+                  <span className="text-neutral-400 block text-[8px] uppercase">DATA DE EMISSÃO</span>
+                  <span className="text-cream-100 font-bold">{cert.unlocked ? cert.issueDate : '---'}</span>
                 </div>
                 <div>
-                  <span className="text-gray-400 block text-[8px] uppercase">CÓDIGO DE REGISTO</span>
-                  <span className="text-white font-bold">{cert.unlocked ? cert.serial : 'Pendente'}</span>
+                  <span className="text-neutral-400 block text-[8px] uppercase">CÓDIGO DE REGISTO</span>
+                  <span className="text-cream-100 font-bold">{cert.unlocked ? cert.serial : 'Pendente'}</span>
                 </div>
               </div>
             </div>
@@ -157,21 +157,21 @@ export default function StudentCertificatesTab({
               
               {cert.unlocked ? (
                 <div className="flex items-center gap-3">
-                  <div className="p-1 bg-white rounded flex items-center justify-center shrink-0">
+                  <div className="p-1 bg-cream-100 rounded flex items-center justify-center shrink-0">
                     <QrCode size={36} className="text-slate-950" />
                   </div>
                   <div>
-                    <span className="text-[8px] font-mono text-gray-400 block tracking-widest uppercase">AUTENTICAÇÃO INTEGRAL</span>
+                    <span className="text-[8px] font-mono text-neutral-400 block tracking-widest uppercase">AUTENTICAÇÃO INTEGRAL</span>
                     <button 
                       onClick={() => handleVerifyOnPortal(cert.serial)}
-                      className="text-[#C89B3C] font-mono font-bold text-[9px] uppercase hover:underline flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0"
+                      className="text-gold-600 font-mono font-bold text-[9px] uppercase hover:underline flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0"
                     >
                       Verificar Online <ExternalLink size={10} />
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 text-2xs text-gray-400 leading-normal">
+                <div className="flex items-center gap-2 text-2xs text-neutral-400 leading-normal">
                   <AlertCircle size={14} className="text-yellow-500 flex-shrink-0" />
                   <span>Requisições de moderação ocorrem no fecho curricular.</span>
                 </div>
@@ -181,10 +181,10 @@ export default function StudentCertificatesTab({
                 <button
                   onClick={() => triggerExport(cert.id, cert.title)}
                   disabled={downloadingId !== null}
-                  className="px-4 py-2 bg-[#C89B3C] text-[#0A2E5D] hover:bg-white hover:text-[#0A2E5D] rounded-xl text-3xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 bg-gold-600 text-ink-900 hover:bg-cream-100 hover:text-ink-900 rounded-xl text-3xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   {downloadingId === cert.id ? (
-                    <span className="h-4.5 w-4.5 border-2 border-[#0A2E5D] border-t-transparent rounded-full animate-spin shrink-0" />
+                    <span className="h-4.5 w-4.5 border-2 border-ink-900 border-t-transparent rounded-full animate-spin shrink-0" />
                   ) : (
                     <>
                       <Download size={12} />

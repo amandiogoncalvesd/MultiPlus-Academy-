@@ -526,13 +526,13 @@ export default function AdminPortal({
     ? 'bg-black text-yellow-300 font-extrabold border-yellow-500' 
     : isDarkMode 
       ? 'bg-[#0B1220] text-gray-200 border-slate-850' 
-      : 'bg-[#F8F8F6] text-[#1C1C1C] border-gray-150';
+      : 'bg-cream-100 text-[#1C1C1C] border-gray-150';
 
   const cardThemeClass = highContrast
-    ? 'border-4 border-yellow-500 bg-black text-white'
+    ? 'border-4 border-yellow-500 bg-black text-cream-100'
     : isDarkMode
-      ? 'bg-[#121E36] border border-slate-700/60 shadow text-white'
-      : 'bg-white border border-gray-150 shadow-sm text-[#1C1C1C]';
+      ? 'bg-[#121E36] border border-slate-700/60 shadow text-cream-100'
+      : 'bg-cream-100 border border-gray-150 shadow-sm text-[#1C1C1C]';
 
   return (
     <div id="multiplus-admin-portal" className={`min-h-screen flex items-stretch transition-colors duration-200 ${containerThemeClass}`}>
@@ -548,7 +548,7 @@ export default function AdminPortal({
       {/* 1. SIDEBAR (Collapsible on Mobile, Fixed on Desktop) */}
       <aside 
         className={`fixed inset-y-0 left-0 z-40 w-64 ${
-          highContrast ? 'bg-black border-r-4 border-yellow-500' : isDarkMode ? 'bg-[#0F192E] border-slate-800' : 'bg-[#0A2E5D] text-white'
+          highContrast ? 'bg-black border-r-4 border-yellow-500' : isDarkMode ? 'bg-[#0F192E] border-slate-800' : 'bg-ink-900 text-cream-100'
         } transition-transform duration-300 transform lg:translate-x-0 ${
           mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } flex flex-col justify-between`}
@@ -563,15 +563,15 @@ export default function AdminPortal({
                 className="h-9 w-auto object-contain shrink-0"
               />
               <div className="text-left">
-                <h1 className="text-sm font-serif font-black m-0 tracking-wide text-white">Consola</h1>
-                <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block">Super Admin</span>
+                <h1 className="text-sm font-serif font-black m-0 tracking-wide text-cream-100">Consola</h1>
+                <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block">Super Admin</span>
               </div>
             </div>
             
             {/* Mobile close button */}
             <button 
               onClick={() => setMobileSidebarOpen(false)}
-              className="lg:hidden p-1.5 text-white/70 hover:text-white rounded bg-transparent border-0 cursor-pointer"
+              className="lg:hidden p-1.5 text-cream-100/70 hover:text-cream-100 rounded bg-transparent border-0 cursor-pointer"
               aria-label="Fechar lateral"
             >
               <X size={18} />
@@ -599,8 +599,8 @@ export default function AdminPortal({
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wider text-left transition-all cursor-pointer border-0 ${
                   activeTab === item.id
-                    ? 'bg-[#C89B3C] text-slate-950 shadow-md font-bold'
-                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                    ? 'bg-gold-600 text-slate-950 shadow-md font-bold'
+                    : 'text-cream-100/80 hover:text-cream-100 hover:bg-cream-100/10'
                 }`}
               >
                 {item.icon}
@@ -616,10 +616,10 @@ export default function AdminPortal({
                 {currentUser?.firstName?.[0] || 'A'}
               </div>
               <div className="text-left truncate max-w-[130px]">
-                <h4 className="text-xs font-bold text-white m-0 tracking-wide truncate">
+                <h4 className="text-xs font-bold text-cream-100 m-0 tracking-wide truncate">
                   {currentUser?.firstName || 'Admin'} {currentUser?.lastName || 'MultiPlus'}
                 </h4>
-                <span className="text-[10px] font-mono text-[#C89B3C] font-semibold uppercase">ADMINISTRADOR</span>
+                <span className="text-[10px] font-mono text-gold-600 font-semibold uppercase">ADMINISTRADOR</span>
               </div>
             </div>
 
@@ -631,7 +631,7 @@ export default function AdminPortal({
                 setCurrentUser(null);
                 setCurrentPage('login');
               }}
-              className="w-full py-2 bg-red-600 hover:bg-red-700 text-white text-[10px] font-mono font-bold uppercase rounded-lg border-0 cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+              className="w-full py-2 bg-danger-700 hover:bg-red-700 text-cream-100 text-[10px] font-mono font-bold uppercase rounded-lg border-0 cursor-pointer transition-colors flex items-center justify-center gap-1.5"
             >
               <LogOut size={11} />
               <span>Sair do Portal</span>
@@ -645,7 +645,7 @@ export default function AdminPortal({
         
         {/* 2. TOPBAR HEADER FIXA */}
         <header className={`h-16 px-6 border-b flex items-center justify-between sticky top-0 z-30 transition-colors ${
-          highContrast ? 'bg-black border-yellow-500 text-yellow-300' : isDarkMode ? 'bg-[#0E172A] border-slate-800 text-white' : 'bg-white border-gray-150 text-[#1C1C1C]'
+          highContrast ? 'bg-black border-yellow-500 text-yellow-300' : isDarkMode ? 'bg-[#0E172A] border-slate-800 text-cream-100' : 'bg-cream-100 border-gray-150 text-[#1C1C1C]'
         }`}>
           {/* Left Side */}
           <div className="flex items-center gap-4">
@@ -657,14 +657,14 @@ export default function AdminPortal({
               <Menu size={20} />
             </button>
             <div className="hidden sm:block text-left">
-              <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block">MultiPlus LMS</span>
+              <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block">MultiPlus LMS</span>
               <h2 className="text-sm font-serif font-black tracking-wide m-0 capitalize">{activeTab} • Portal de Administração</h2>
             </div>
           </div>
 
           {/* Center Search bar */}
           <div className="hidden md:flex relative w-64">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
               <Search size={14} />
             </span>
             <input
@@ -672,22 +672,22 @@ export default function AdminPortal({
               placeholder="Pesquisar registros..."
               value={globalSearch}
               onChange={(e) => setGlobalSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-gray-50 border border-gray-200 placeholder:text-gray-400 text-[#1C1C1C] focus:outline-none focus:border-[#C89B3C]"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-cream-200 border border-gray-200 placeholder:text-neutral-400 text-[#1C1C1C] focus:outline-none focus:border-gold-600"
             />
           </div>
 
           {/* Right actions */}
           <div className="flex items-center gap-4 text-xs">
             {/* Critical Alert Bar indicator */}
-            <div className="bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 px-2.5 py-1 rounded-full border border-red-150 dark:border-red-900/45 text-[10px] font-mono font-bold uppercase tracking-wider hidden md:flex items-center gap-1.5 animate-pulse">
-              <span className="w-1.5 h-1.5 bg-red-600 rounded-full"></span>
+            <div className="bg-red-50 dark:bg-danger-700/40 text-red-700 dark:text-danger-700 px-2.5 py-1 rounded-full border border-red-150 dark:border-red-900/45 text-[10px] font-mono font-bold uppercase tracking-wider hidden md:flex items-center gap-1.5 animate-pulse">
+              <span className="w-1.5 h-1.5 bg-danger-700 rounded-full"></span>
               ⚠️ {activeAlerts.length} ALERTA(S) ATIVOS
             </div>
 
             {/* Accessibility swift switch */}
             <button 
               onClick={toggleTheme}
-              className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-[#C89B3C] border-0 cursor-pointer"
+              className="p-2 bg-cream-200 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-gold-600 border-0 cursor-pointer"
               title="Mudar visual cor"
             >
               {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
@@ -696,16 +696,16 @@ export default function AdminPortal({
             {/* Notification Bell toggle menu */}
             <button 
               onClick={() => { setActiveTab('notificacoes'); }}
-              className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-[#0A2E5D] dark:text-blue-400 border-0 cursor-pointer relative"
+              className="p-2 bg-cream-200 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
               title="Aceder a Notificações"
             >
               <Bell size={14} />
-              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500" />
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-danger-700" />
             </button>
 
             {/* Profile menu widget */}
             <div className="flex items-center gap-2.5 border-l pl-4">
-              <div className="w-8 h-8 rounded-full bg-[#C89B3C] text-slate-950 font-bold flex items-center justify-center text-xs shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-gold-600 text-slate-950 font-bold flex items-center justify-center text-xs shadow-sm">
                 {currentUser?.firstName?.[0] || 'A'}
               </div>
               <div className="hidden sm:block text-left">
@@ -729,14 +729,14 @@ export default function AdminPortal({
             >
           
           {/* Executive Top Banner */}
-          <div className="bg-[#0A2E5D] text-white p-6 sm:p-8 rounded-3xl border border-[#C89B3C]/30 relative overflow-hidden shadow-xl">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#C89B3C]/5 rounded-bl-full pointer-events-none" />
+          <div className="bg-ink-900 text-cream-100 p-6 sm:p-8 rounded-3xl border border-gold-600/30 relative overflow-hidden shadow-xl">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gold-600/5 rounded-bl-full pointer-events-none" />
             <div className="relative z-10 space-y-1">
-              <span className="text-[10px] font-mono text-[#C89B3C] font-black tracking-widest block uppercase">Centro de Controlo da MultiPlus Academy</span>
-              <h2 className="text-xl sm:text-2xl font-serif font-black m-0 tracking-wide text-white">
+              <span className="text-[10px] font-mono text-gold-600 font-black tracking-widest block uppercase">Centro de Controlo da MultiPlus Academy</span>
+              <h2 className="text-xl sm:text-2xl font-serif font-black m-0 tracking-wide text-cream-100">
                 Bem-vindo ao Centro de Gestão da MultiPlus Academy
               </h2>
-              <p className="text-xs text-white/70 max-w-2xl">
+              <p className="text-xs text-cream-100/70 max-w-2xl">
                 Autenticação RBAC activa. Administração global de formandos, registo fiscal de receitas, emissão e conferência de chaves de diploma, integradores de API e auditoria estruturada.
               </p>
             </div>
@@ -752,16 +752,16 @@ export default function AdminPortal({
                     { title: "Total de Alunos", val: filteredStudents.length, icon: <Users className="text-blue-500" />, desc: "Matrículas Activas" },
                     { title: "Total de Professores", val: filteredInstructors.length, icon: <Award className="text-amber-500" />, desc: "Docentes Titulares" },
                     { title: "Cursos Ativos", val: courses.length, icon: <BookOpen className="text-indigo-500" />, desc: "Programas no Ar" },
-                    { title: "Certificados Emitidos", val: certificates.length, icon: <QrCode className="text-red-500" />, desc: "Assinaturas Gravadas" }
+                    { title: "Certificados Emitidos", val: certificates.length, icon: <QrCode className="text-danger-700" />, desc: "Assinaturas Gravadas" }
                   ].map((card, idx) => (
-                    <div key={idx} className="bg-white dark:bg-[#121E36] p-4 rounded-2xl border border-gray-150 dark:border-slate-800 flex flex-col justify-between shadow-sm hover:shadow-md transition-all text-[#1C1C1C] dark:text-slate-100">
+                    <div key={idx} className="bg-cream-100 dark:bg-ink-800 p-4 rounded-2xl border border-gray-150 dark:border-ink-800 flex flex-col justify-between shadow-sm hover:shadow-md transition-all text-[#1C1C1C] dark:text-cream-100">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-mono text-gray-450 dark:text-gray-400 uppercase font-black">{card.title}</span>
+                        <span className="text-[10px] font-mono text-gray-450 dark:text-neutral-400 uppercase font-black">{card.title}</span>
                         {card.icon}
                       </div>
                       <div className="mt-2.5">
-                        <span className="text-lg sm:text-xl font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C]">{card.val}</span>
-                        <span className="text-[9px] font-mono text-gray-450 dark:text-gray-400 block mt-0.5">{card.desc}</span>
+                        <span className="text-lg sm:text-xl font-serif font-black text-ink-900 dark:text-gold-600">{card.val}</span>
+                        <span className="text-[9px] font-mono text-gray-450 dark:text-neutral-400 block mt-0.5">{card.desc}</span>
                       </div>
                     </div>
                   ))}
@@ -770,14 +770,14 @@ export default function AdminPortal({
                 {/* Analytical charts & popular courses */}
                 <div className="max-w-3xl">
                   {/* Popular courses list */}
-                  <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-4 text-left text-slate-900 dark:text-slate-100 shadow-sm">
-                    <div className="border-b dark:border-slate-800 pb-3">
-                      <h4 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base m-0">Cursos mais populares</h4>
-                      <p className="text-[10px] text-gray-450 dark:text-gray-400 font-mono uppercase mt-1">Ranking de adesão baseado em matrículas reais no Supabase</p>
+                  <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-4 text-left text-slate-900 dark:text-cream-100 shadow-sm">
+                    <div className="border-b dark:border-ink-800 pb-3">
+                      <h4 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base m-0">Cursos mais populares</h4>
+                      <p className="text-[10px] text-gray-450 dark:text-neutral-400 font-mono uppercase mt-1">Ranking de adesão baseado em matrículas reais no Supabase</p>
                     </div>
                     <div className="space-y-4">
                       {popularCoursesList.length === 0 ? (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-mono py-4 text-center">Nenhuma matrícula registrada para os cursos ativos.</p>
+                        <p className="text-xs text-neutral-400 dark:text-neutral-400 font-mono py-4 text-center">Nenhuma matrícula registrada para os cursos ativos.</p>
                       ) : (
                         popularCoursesList.map((item, idx) => {
                           const maxCount = Math.max(...popularCoursesList.map(c => c.enrollmentCount), 1);
@@ -786,13 +786,13 @@ export default function AdminPortal({
                             <div key={idx} className="space-y-2">
                               <div className="flex justify-between items-center text-xs font-semibold">
                                 <span className="font-serif">{item.title}</span>
-                                <span className="font-mono text-[#C89B3C] text-3xs font-extrabold uppercase">
+                                <span className="font-mono text-gold-600 text-3xs font-extrabold uppercase">
                                   {item.enrollmentCount} {item.enrollmentCount === 1 ? 'Matrícula' : 'Matrículas'}
                                 </span>
                               </div>
                               <div className="w-full h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                 <div 
-                                  className="h-full bg-gradient-to-r from-[#0A2E5D] to-[#C89B3C] transition-all duration-500" 
+                                  className="h-full bg-gradient-to-r from-ink-900 to-gold-600 transition-all duration-500" 
                                   style={{ width: `${percentage}%` }}
                                 ></div>
                               </div>
@@ -809,18 +809,18 @@ export default function AdminPortal({
 
             {/* VIEW 2: UTILIZADORES TAB (Full administration panel) */}
             {activeTab === 'utilizadores' && (
-              <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-6 text-slate-900 dark:text-slate-100">
+              <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-slate-900 dark:text-cream-100">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
-                    <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Controle de Autenticação e Perfis (RBAC)</h3>
-                    <p className="text-xs text-gray-400 mt-1 font-sans">Registe novas contas corporativas, desative credenciais imediatamente e conceda autorizações granulares.</p>
+                    <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Controle de Autenticação e Perfis (RBAC)</h3>
+                    <p className="text-xs text-neutral-400 mt-1 font-sans">Registe novas contas corporativas, desative credenciais imediatamente e conceda autorizações granulares.</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400 font-mono">Filtrar Função:</span>
+                    <span className="text-xs text-neutral-400 font-mono">Filtrar Função:</span>
                     <select
                       value={roleFilter}
                       onChange={(e) => setRoleFilter(e.target.value as any)}
-                      className="p-2 border rounded-xl text-xs bg-white text-slate-800"
+                      className="p-2 border rounded-xl text-xs bg-cream-100 text-slate-800"
                     >
                       <option value="ALL">Todos os Membros</option>
                       <option value="STUDENT">Alunos (STUDENT)</option>
@@ -831,35 +831,35 @@ export default function AdminPortal({
                 </div>
 
                 {/* Form to insert new account */}
-                <form onSubmit={handleCreateUser} className="bg-gray-55 dark:bg-slate-900/50 p-5 rounded-2xl border border-gray-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-5 gap-4 items-end text-xs">
+                <form onSubmit={handleCreateUser} className="bg-gray-55 dark:bg-ink-900/50 p-5 rounded-2xl border border-gray-200 dark:border-ink-800 grid grid-cols-1 md:grid-cols-5 gap-4 items-end text-xs">
                   <div>
-                    <label className="block text-[9px] font-mono text-gray-400 uppercase font-black mb-1">Nome Completo</label>
+                    <label className="block text-[9px] font-mono text-neutral-400 uppercase font-black mb-1">Nome Completo</label>
                     <input
                       type="text"
                       required
                       placeholder="Ex: Dra. Madalena Huambo"
                       value={newUserName}
                       onChange={(e) => setNewUserName(e.target.value)}
-                      className="w-full p-2.5 bg-white dark:bg-slate-850 border dark:border-slate-850 rounded-xl text-current focus:outline-none focus:border-[#C89B3C]"
+                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-slate-850 rounded-xl text-current focus:outline-none focus:border-gold-600"
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-mono text-gray-400 uppercase font-black mb-1">E-mail de Login</label>
+                    <label className="block text-[9px] font-mono text-neutral-400 uppercase font-black mb-1">E-mail de Login</label>
                     <input
                       type="email"
                       required
                       placeholder="exemplo@advogados.ao"
                       value={newUserEmail}
                       onChange={(e) => setNewUserEmail(e.target.value)}
-                      className="w-full p-2.5 bg-white dark:bg-slate-850 border dark:border-slate-850 rounded-xl text-current focus:outline-none focus:border-[#C89B3C]"
+                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-slate-850 rounded-xl text-current focus:outline-none focus:border-gold-600"
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-mono text-gray-400 uppercase font-black mb-1">Função de Acesso</label>
+                    <label className="block text-[9px] font-mono text-neutral-400 uppercase font-black mb-1">Função de Acesso</label>
                     <select
                       value={newUserRole}
                       onChange={(e) => setNewUserRole(e.target.value as UserRole)}
-                      className="w-full p-2.5 bg-white dark:bg-slate-850 border dark:border-slate-850 rounded-xl text-xs text-current focus:outline-none focus:border-[#C89B3C]"
+                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-slate-850 rounded-xl text-xs text-current focus:outline-none focus:border-gold-600"
                     >
                       <option value="STUDENT">Aluno de Elite (STUDENT)</option>
                       <option value="INSTRUCTOR">Professor Titular (INSTRUCTOR)</option>
@@ -867,7 +867,7 @@ export default function AdminPortal({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[9px] font-mono text-gray-400 uppercase font-black mb-1">Senha de Acesso</label>
+                    <label className="block text-[9px] font-mono text-neutral-400 uppercase font-black mb-1">Senha de Acesso</label>
                     <div className="flex gap-1.5">
                       <input
                         type="text"
@@ -875,7 +875,7 @@ export default function AdminPortal({
                         placeholder="Mínimo 8 caracteres"
                         value={newUserPassword}
                         onChange={(e) => setNewUserPassword(e.target.value)}
-                        className="flex-grow p-2.5 bg-white dark:bg-slate-850 border dark:border-slate-850 rounded-xl text-current focus:outline-none focus:border-[#C89B3C]"
+                        className="flex-grow p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-slate-850 rounded-xl text-current focus:outline-none focus:border-gold-600"
                       />
                       <button
                         type="button"
@@ -889,7 +889,7 @@ export default function AdminPortal({
                   </div>
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer transition-colors h-[38px] flex items-center justify-center"
+                    className="w-full py-2.5 bg-ink-900 text-cream-100 hover:bg-gold-600 hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer transition-colors h-[38px] flex items-center justify-center"
                   >
                     Registrar Credencial
                   </button>
@@ -899,8 +899,8 @@ export default function AdminPortal({
                   <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-xs text-left animate-fadeIn">
                     <div>
                       <h4 className="font-serif font-black text-emerald-850 dark:text-emerald-400 m-0">Conta criada com sucesso!</h4>
-                      <p className="text-gray-600 dark:text-gray-300 mt-1">Copie as credenciais de acesso temporárias do utilizador para enviar a ele:</p>
-                      <div className="mt-2 font-mono text-xs space-y-1 bg-white dark:bg-slate-900 p-2.5 rounded-lg border dark:border-slate-800 select-all text-slate-800 dark:text-slate-100">
+                      <p className="text-neutral-400 dark:text-gray-300 mt-1">Copie as credenciais de acesso temporárias do utilizador para enviar a ele:</p>
+                      <div className="mt-2 font-mono text-xs space-y-1 bg-cream-100 dark:bg-ink-900 p-2.5 rounded-lg border dark:border-ink-800 select-all text-slate-800 dark:text-cream-100">
                         <div><strong>E-mail:</strong> {createdCredentials.email}</div>
                         <div><strong>Senha:</strong> {createdCredentials.pass}</div>
                       </div>
@@ -911,13 +911,13 @@ export default function AdminPortal({
                           navigator.clipboard.writeText(`Email: ${createdCredentials.email}\nSenha: ${createdCredentials.pass}`);
                           alert('Credenciais copiadas para a área de transferência!');
                         }}
-                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-3xs font-bold uppercase rounded-lg border-0 cursor-pointer shrink-0"
+                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-cream-100 font-mono text-3xs font-bold uppercase rounded-lg border-0 cursor-pointer shrink-0"
                       >
                         Copiar Tudo
                       </button>
                       <button
                         onClick={() => setCreatedCredentials(null)}
-                        className="px-2.5 py-1.5 bg-gray-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg border-0 cursor-pointer hover:bg-gray-300 shrink-0"
+                        className="px-2.5 py-1.5 bg-gray-200 dark:bg-slate-800 text-slate-700 dark:text-cream-200 rounded-lg border-0 cursor-pointer hover:bg-gray-300 shrink-0"
                       >
                         Fechar
                       </button>
@@ -935,7 +935,7 @@ export default function AdminPortal({
                     <>
                       <table className="hidden md:table w-full text-left text-xs">
                         <thead>
-                          <tr className="bg-gray-50 dark:bg-slate-900/30 uppercase text-[9px] font-mono text-gray-400 border-b">
+                          <tr className="bg-cream-200 dark:bg-ink-900/30 uppercase text-[9px] font-mono text-neutral-400 border-b">
                             <th className="p-3">Membro</th>
                             <th className="p-3">Função / RBAC</th>
                             <th className="p-3">Estado</th>
@@ -944,16 +944,16 @@ export default function AdminPortal({
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                           {dbUsers.filter(u => roleFilter === 'ALL' || u.role === roleFilter).map(user => (
-                            <tr key={user.id} className="hover:bg-gray-50/60 transition-colors">
+                            <tr key={user.id} className="hover:bg-cream-200/60 transition-colors">
                               <td className="p-3 flex items-center gap-2.5">
                                 <img src={user.avatarUrl} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
                                 <div>
                                   <span className="font-semibold block">{user.firstName} {user.lastName}</span>
-                                  <span className="text-[10px] text-gray-400 block font-mono">{user.email}</span>
+                                  <span className="text-[10px] text-neutral-400 block font-mono">{user.email}</span>
                                 </div>
                               </td>
                               <td className="p-3">
-                                <span className="font-mono text-[10px] text-[#C89B3C] font-extrabold">{user.role}</span>
+                                <span className="font-mono text-[10px] text-gold-600 font-extrabold">{user.role}</span>
                               </td>
                               <td className="p-3">
                                 <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-black ${
@@ -971,13 +971,13 @@ export default function AdminPortal({
                                 </button>
                                 <button
                                   onClick={() => handleImpersonate(user)}
-                                  className="px-2.5 py-1 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 rounded font-mono text-[9px] inline-flex items-center gap-1"
+                                  className="px-2.5 py-1 bg-ink-900 text-cream-100 hover:bg-gold-600 hover:text-slate-900 rounded font-mono text-[9px] inline-flex items-center gap-1"
                                 >
                                   <Eye size={10} /> Pre-visualizar
                                 </button>
                                 <button
                                   onClick={() => handleDeleteUser(user.id)}
-                                  className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
+                                  className="p-1 text-danger-700 hover:text-red-700 hover:bg-red-50 rounded"
                                 >
                                   <Trash2 size={12} />
                                 </button>
@@ -990,12 +990,12 @@ export default function AdminPortal({
                       {/* Mobile view of stacked cards */}
                       <div className="block md:hidden space-y-4">
                         {dbUsers.filter(u => roleFilter === 'ALL' || u.role === roleFilter).map(user => (
-                          <div key={user.id} className="bg-white p-4 rounded-2xl border border-gray-150 space-y-3 shadow-sm text-left">
+                          <div key={user.id} className="bg-cream-100 p-4 rounded-2xl border border-gray-150 space-y-3 shadow-sm text-left">
                             <div className="flex items-center gap-3">
                               <img src={user.avatarUrl} alt="Avatar" className="w-9 h-9 rounded-full object-cover" />
                               <div className="min-w-0 flex-1">
                                 <span className="font-semibold block text-xs truncate">{user.firstName} {user.lastName}</span>
-                                <span className="text-[10px] text-gray-400 block truncate font-mono">{user.email}</span>
+                                <span className="text-[10px] text-neutral-400 block truncate font-mono">{user.email}</span>
                               </div>
                               <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-black ${
                                 user.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
@@ -1004,7 +1004,7 @@ export default function AdminPortal({
                               </span>
                             </div>
                             <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                              <span className="font-mono text-[10px] text-[#C89B3C] font-extrabold">{user.role}</span>
+                              <span className="font-mono text-[10px] text-gold-600 font-extrabold">{user.role}</span>
                               <div className="flex gap-1.5">
                                 <button
                                   onClick={() => handleToggleUserStatus(user.id)}
@@ -1014,13 +1014,13 @@ export default function AdminPortal({
                                 </button>
                                 <button
                                   onClick={() => handleImpersonate(user)}
-                                  className="px-2 py-1 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 rounded font-mono text-[9px] inline-flex items-center gap-1"
+                                  className="px-2 py-1 bg-ink-900 text-cream-100 hover:bg-gold-600 hover:text-slate-900 rounded font-mono text-[9px] inline-flex items-center gap-1"
                                 >
                                   <Eye size={10} /> Pre-visualizar
                                 </button>
                                 <button
                                   onClick={() => handleDeleteUser(user.id)}
-                                  className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
+                                  className="p-1 text-danger-700 hover:text-red-700 hover:bg-red-50 rounded"
                                 >
                                   <Trash2 size={12} />
                                 </button>
@@ -1038,13 +1038,13 @@ export default function AdminPortal({
 
             {/* VIEW 5: GESTÃO DE CURSOS */}
             {activeTab === 'cursos' && (
-              <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-6 text-slate-900 dark:text-slate-100">
+              <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-slate-900 dark:text-cream-100">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Catálogo de Especializações Ativas</h3>
-                    <p className="text-xs text-gray-400 mt-1">Gestão de currículos jurídicos, fixação de mensalidades e oradores associados.</p>
+                    <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Catálogo de Especializações Ativas</h3>
+                    <p className="text-xs text-neutral-400 mt-1">Gestão de currículos jurídicos, fixação de mensalidades e oradores associados.</p>
                   </div>
-                  <button onClick={() => { setIsCreatingCourse(true); setCourseTitle(''); }} className="px-3.5 py-1.5 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] rounded-xl text-3xs font-mono font-bold uppercase transition-all flex items-center gap-1.5">
+                  <button onClick={() => { setIsCreatingCourse(true); setCourseTitle(''); }} className="px-3.5 py-1.5 bg-ink-900 text-cream-100 hover:bg-gold-600 rounded-xl text-3xs font-mono font-bold uppercase transition-all flex items-center gap-1.5">
                     <Plus size={12} /> Criar Curso
                   </button>
                 </div>
@@ -1091,31 +1091,31 @@ export default function AdminPortal({
                       addAuditLog("CRIAÇÃO CURSO", `Criado novo curso: ${courseTitle}`);
                       alert('Novo programa indexado com sucesso no Supabase!');
                     }
-                  }} className="p-4 bg-gray-50 dark:bg-[#121E36] rounded-xl space-y-3">
-                    <p className="font-serif font-bold text-xs m-0 text-[#0A2E5D] dark:text-white">Formulário do Novo Curso</p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-slate-800 dark:text-slate-100">
-                      <input type="text" placeholder="Nome do Curso..." value={courseTitle} onChange={(e) => setCourseTitle(e.target.value)} required className="p-2 bg-white dark:bg-slate-850 border dark:border-slate-800 rounded text-current" />
-                      <input type="text" placeholder="Preço (Ex: €450)..." value={coursePrice} onChange={(e) => setCoursePrice(e.target.value)} className="p-2 bg-white dark:bg-slate-850 border dark:border-slate-800 rounded text-current" />
-                      <input type="text" placeholder="Oradora responsável..." value={courseInstructor} onChange={(e) => setCourseInstructor(e.target.value)} className="p-2 bg-white dark:bg-slate-850 border dark:border-slate-800 rounded text-current" />
+                  }} className="p-4 bg-cream-200 dark:bg-ink-800 rounded-xl space-y-3">
+                    <p className="font-serif font-bold text-xs m-0 text-ink-900 dark:text-cream-100">Formulário do Novo Curso</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-slate-800 dark:text-cream-100">
+                      <input type="text" placeholder="Nome do Curso..." value={courseTitle} onChange={(e) => setCourseTitle(e.target.value)} required className="p-2 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded text-current" />
+                      <input type="text" placeholder="Preço (Ex: €450)..." value={coursePrice} onChange={(e) => setCoursePrice(e.target.value)} className="p-2 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded text-current" />
+                      <input type="text" placeholder="Oradora responsável..." value={courseInstructor} onChange={(e) => setCourseInstructor(e.target.value)} className="p-2 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded text-current" />
                     </div>
                     <div className="flex gap-2 justify-end">
-                      <button type="button" onClick={() => setIsCreatingCourse(false)} className="px-3 py-1 bg-gray-100 dark:bg-slate-800 text-slate-650 dark:text-slate-300 rounded">Cancelar</button>
-                      <button type="submit" className="px-3 py-1 bg-[#0A2E5D] text-white rounded">Salvar Curso</button>
+                      <button type="button" onClick={() => setIsCreatingCourse(false)} className="px-3 py-1 bg-gray-100 dark:bg-slate-800 text-slate-650 dark:text-cream-200 rounded">Cancelar</button>
+                      <button type="submit" className="px-3 py-1 bg-ink-900 text-cream-100 rounded">Salvar Curso</button>
                     </div>
                   </form>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {courses.map(course => (
-                    <div key={course.id} className="p-4 bg-[#FAF9F6] dark:bg-[#121E36] border border-gray-150 dark:border-slate-800 rounded-2xl flex flex-col justify-between text-left hover:border-[#C89B3C]/55">
+                    <div key={course.id} className="p-4 bg-[#FAF9F6] dark:bg-ink-800 border border-gray-150 dark:border-ink-800 rounded-2xl flex flex-col justify-between text-left hover:border-gold-600/55">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-[#C89B3C] font-bold block">{course.duration} • {course.price}</span>
-                        <h4 className="font-serif font-black text-sm text-[#0A2E5D] dark:text-white m-0">{course.title}</h4>
-                        <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-normal">{course.subtitle}</p>
+                        <span className="text-[10px] font-mono text-gold-600 font-bold block">{course.duration} • {course.price}</span>
+                        <h4 className="font-serif font-black text-sm text-ink-900 dark:text-cream-100 m-0">{course.title}</h4>
+                        <p className="text-[11px] text-neutral-400 dark:text-neutral-400 leading-normal">{course.subtitle}</p>
                       </div>
 
                       <div className="flex justify-between items-center pt-3 border-t dark:border-slate-850 mt-4 text-[10px] font-mono">
-                        <span className="text-gray-400">Responsável: {courseInstructor}</span>
+                        <span className="text-neutral-400">Responsável: {courseInstructor}</span>
                         <div className="flex gap-1.5">
                           <button onClick={async () => {
                             if (confirm('Deseja realmente duplicar este programa de estudos?')) {
@@ -1146,7 +1146,7 @@ export default function AdminPortal({
                                 alert('Curso duplicado com sucesso no Supabase!');
                               }
                             }
-                          }} className="p-1 text-slate-650 bg-white dark:bg-slate-800 border dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700 rounded text-xs">Duplicar</button>
+                          }} className="p-1 text-slate-650 bg-cream-100 dark:bg-slate-800 border dark:border-ink-800 hover:bg-gray-100 dark:hover:bg-slate-700 rounded text-xs">Duplicar</button>
                           <button onClick={async () => {
                             if (confirm('Deseja realmente remover permanentemente este curso do Supabase?')) {
                               const { error } = await supabase.from('courses').delete().eq('id', course.id);
@@ -1170,20 +1170,20 @@ export default function AdminPortal({
 
             {/* VIEW 7: CERTIFICADOS */}
             {activeTab === 'certificados' && (
-              <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-6 text-slate-900 dark:text-slate-100">
+              <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-slate-900 dark:text-cream-100">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
                   <div>
-                    <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Registro de Chaves de Diplomas Digitais</h3>
-                    <p className="text-xs text-gray-400 mt-1">Emissão em lote de certificados com blockchain local e tecnologia QR-Code auditável publicamente.</p>
+                    <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Registro de Chaves de Diplomas Digitais</h3>
+                    <p className="text-xs text-neutral-400 mt-1">Emissão em lote de certificados com blockchain local e tecnologia QR-Code auditável publicamente.</p>
                   </div>
                   <div className="flex gap-2.5">
-                    <input type="text" id="cert-recipient" placeholder="Nome do Jurista..." className="p-2 text-xs bg-white dark:bg-slate-850 border dark:border-slate-800 rounded-xl w-44 text-current" />
+                    <input type="text" id="cert-recipient" placeholder="Nome do Jurista..." className="p-2 text-xs bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded-xl w-44 text-current" />
                     <button onClick={() => {
                       const name = (document.getElementById('cert-recipient') as HTMLInputElement)?.value;
                       if (!name) return alert('Por favor insira um nome de outorgado.');
                       handleEmitCertificate(name, "English for the Legal Field in Angola");
                       (document.getElementById('cert-recipient') as HTMLInputElement).value = '';
-                    }} className="px-3 py-2 bg-[#0A2E5D] text-white rounded-xl text-3xs font-mono font-bold uppercase transition-colors">
+                    }} className="px-3 py-2 bg-ink-900 text-cream-100 rounded-xl text-3xs font-mono font-bold uppercase transition-colors">
                       Gerar Agora
                     </button>
                   </div>
@@ -1191,14 +1191,14 @@ export default function AdminPortal({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {certificates.map((cert, i) => (
-                    <div key={i} className="p-4 bg-white border-2 border-[#C89B3C]/40 rounded-2xl flex justify-between items-center text-left">
+                    <div key={i} className="p-4 bg-cream-100 border-2 border-gold-600/40 rounded-2xl flex justify-between items-center text-left">
                       <div className="space-y-1">
-                        <span className="text-[8px] font-mono text-[#C89B3C] font-bold uppercase">Código: {cert.verificationCode}</span>
+                        <span className="text-[8px] font-mono text-gold-600 font-bold uppercase">Código: {cert.verificationCode}</span>
                         <h4 className="font-serif font-black text-xs text-slate-700 m-0">{cert.recipientName}</h4>
-                        <p className="text-[10px] text-gray-400 font-mono m-0">{cert.courseName}</p>
-                        <span className="text-[9px] text-[#0A2E5D] block">Emitido em: {cert.completionDate}</span>
+                        <p className="text-[10px] text-neutral-400 font-mono m-0">{cert.courseName}</p>
+                        <span className="text-[9px] text-ink-900 block">Emitido em: {cert.completionDate}</span>
                       </div>
-                      <div className="p-1 border bg-gray-50 rounded">
+                      <div className="p-1 border bg-cream-200 rounded">
                         <QrCode className="text-slate-800" size={40} />
                       </div>
                     </div>
@@ -1211,9 +1211,9 @@ export default function AdminPortal({
             {/* VIEW 12: MENSAGENS PANEL */}
             {activeTab === 'mensagens' && (
               <div className="space-y-4">
-                <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 text-slate-900 dark:text-slate-100">
-                  <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Central de Mensagens e Comunicações em Tempo Real</h3>
-                  <p className="text-xs text-gray-400 mt-1">Converse individualmente com formandos e formadores ou envie mensagens em massa.</p>
+                <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 text-slate-900 dark:text-cream-100">
+                  <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Central de Mensagens e Comunicações em Tempo Real</h3>
+                  <p className="text-xs text-neutral-400 mt-1">Converse individualmente com formandos e formadores ou envie mensagens em massa.</p>
                 </div>
                 <ChatShell role="ADMIN" />
               </div>
@@ -1221,11 +1221,11 @@ export default function AdminPortal({
 
             {/* VIEW 13: NOTIFICAÇÕES */}
             {activeTab === 'notificacoes' && (
-              <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-6 text-slate-900 dark:text-slate-100">
-                <div className="flex justify-between items-center border-b dark:border-slate-800 pb-3">
+              <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-slate-900 dark:text-cream-100">
+                <div className="flex justify-between items-center border-b dark:border-ink-800 pb-3">
                   <div>
-                    <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Notificações e Alertas Urgentes</h3>
-                    <p className="text-xs text-gray-400 mt-1">Centro de monitorização de falhas, reconciliação de guias e inscrições.</p>
+                    <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Notificações e Alertas Urgentes</h3>
+                    <p className="text-xs text-neutral-400 mt-1">Centro de monitorização de falhas, reconciliação de guias e inscrições.</p>
                   </div>
                   <button onClick={handleClearAlerts} className="text-3xs font-mono text-blue-900 uppercase">Limpar Alertas</button>
                 </div>
@@ -1241,7 +1241,7 @@ export default function AdminPortal({
                     </div>
                   ))}
                   {activeAlerts.length === 0 && (
-                    <div className="text-center py-6 text-gray-400 text-xs">Nenhum alerta crítico ativo no painel MultiPlus.</div>
+                    <div className="text-center py-6 text-neutral-400 text-xs">Nenhum alerta crítico ativo no painel MultiPlus.</div>
                   )}
                 </div>
 
@@ -1250,17 +1250,17 @@ export default function AdminPortal({
 
             {/* VIEW 16: INTEGRAÇÕES */}
             {activeTab === 'integracoes' && (
-              <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-6 text-slate-900 dark:text-slate-100">
+              <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-slate-900 dark:text-cream-100">
                 <div>
-                  <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Gateway de Ligações de API</h3>
-                  <p className="text-xs text-gray-400 mt-1">Relação e status de serviços Cloud externos integrados para automatizar a vida académica da MultiPlus.</p>
+                  <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Gateway de Ligações de API</h3>
+                  <p className="text-xs text-neutral-400 mt-1">Relação e status de serviços Cloud externos integrados para automatizar a vida académica da MultiPlus.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {Object.entries(integrationStatuses).map(([key, value]) => (
-                    <div key={key} className="p-4 bg-gray-50 dark:bg-slate-900/40 border dark:border-slate-800 rounded-2xl flex justify-between items-center text-left">
+                    <div key={key} className="p-4 bg-cream-200 dark:bg-ink-900/40 border dark:border-ink-800 rounded-2xl flex justify-between items-center text-left">
                       <div>
-                        <h4 className="font-serif font-bold text-[#0A2E5D] dark:text-white text-xs m-0">{key} Integration</h4>
+                        <h4 className="font-serif font-bold text-ink-900 dark:text-cream-100 text-xs m-0">{key} Integration</h4>
                         <span className="text-[9px] font-mono text-gray-450 block mt-1">
                           {key === "Supabase" ? "Autenticação e DB" : key === "Cloudinary" ? "Média CDN" : "API Produtividade"}
                         </span>
@@ -1274,7 +1274,7 @@ export default function AdminPortal({
                           });
                         }}
                         className={`px-2.5 py-1 rounded text-[9px] font-mono font-bold uppercase ${
-                          value ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-red-450'
+                          value ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400' : 'bg-red-100 dark:bg-danger-700/40 text-red-800 dark:text-red-450'
                         }`}
                       >
                         {value ? 'Ativo' : 'Inativo'}
@@ -1288,23 +1288,23 @@ export default function AdminPortal({
 
             {/* VIEW 17: CONFIGURAÇÕES */}
             {activeTab === 'configuracoes' && (
-              <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-6 text-slate-900 dark:text-slate-100">
+              <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-slate-900 dark:text-cream-100">
                 <div>
-                  <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-base">Configurações Gerais de Operação</h3>
-                  <p className="text-xs text-gray-400 mt-1">Definição dos parâmetros institucionais base, emails de tesouraria de Luanda e Huambo e taxas de câmbio.</p>
+                  <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Configurações Gerais de Operação</h3>
+                  <p className="text-xs text-neutral-400 mt-1">Definição dos parâmetros institucionais base, emails de tesouraria de Luanda e Huambo e taxas de câmbio.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-left">
                   <div className="space-y-1">
-                    <label className="block text-[8px] font-mono text-gray-400 uppercase font-black">Nome da Instituição</label>
+                    <label className="block text-[8px] font-mono text-neutral-400 uppercase font-black">Nome da Instituição</label>
                     <input type="text" value={instName} onChange={(e) => setInstName(e.target.value)} className="w-full p-2.5 bg-[#FAF9F6] border rounded-xl font-serif font-extrabold" />
                   </div>
                   <div className="space-y-1">
-                    <label className="block text-[8px] font-mono text-gray-400 uppercase font-black">Domínio de Internet</label>
+                    <label className="block text-[8px] font-mono text-neutral-400 uppercase font-black">Domínio de Internet</label>
                     <input type="text" value={instDomain} onChange={(e) => setInstDomain(e.target.value)} className="w-full p-2.5 bg-[#FAF9F6] border rounded-xl font-mono" />
                   </div>
                   <div className="space-y-1 md:col-span-2">
-                    <label className="block text-[8px] font-mono text-gray-400 uppercase font-black">Contacto de Emergência</label>
+                    <label className="block text-[8px] font-mono text-neutral-400 uppercase font-black">Contacto de Emergência</label>
                     <input type="text" value={instPhone} onChange={(e) => setInstPhone(e.target.value)} className="w-full p-2.5 bg-[#FAF9F6] border rounded-xl" />
                   </div>
                 </div>
@@ -1322,7 +1322,7 @@ export default function AdminPortal({
                     }
                     addAuditLog("CONFIG GERAL", "Atualizado informações da instituição pelo Admin");
                     alert('As alterações da instituição foram salvas!');
-                  }} className="px-5 py-2.5 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer">
+                  }} className="px-5 py-2.5 bg-ink-900 text-cream-100 hover:bg-gold-600 hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer">
                     Salvar Parâmetros
                   </button>
                 </div>
@@ -1330,26 +1330,26 @@ export default function AdminPortal({
               </div>
             )}
             {activeTab === 'perfil' && (
-              <div className="bg-white dark:bg-[#121E36] p-6 rounded-3xl border border-gray-150 dark:border-slate-800 space-y-6 text-left text-slate-900 dark:text-slate-100">
+              <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-left text-slate-900 dark:text-cream-100">
                 <div className="flex gap-4 items-center">
-                  <div className="w-16 h-16 rounded-full bg-[#C89B3C] text-slate-950 font-black flex items-center justify-center text-xl border-2 border-[#C89B3C] shadow-md uppercase">
+                  <div className="w-16 h-16 rounded-full bg-gold-600 text-slate-950 font-black flex items-center justify-center text-xl border-2 border-gold-600 shadow-md uppercase">
                     {adminName?.[0] || currentUser?.firstName?.[0] || 'A'}
                   </div>
                   <div>
-                    <h3 className="font-serif font-black text-[#0A2E5D] dark:text-white text-lg m-0">{adminName || 'Administrador'}</h3>
-                    <p className="text-xs text-[#C89B3C] font-mono tracking-wider uppercase">ADMINISTRADOR GERAL • MULTIPLUS ACADEMY</p>
+                    <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-lg m-0">{adminName || 'Administrador'}</h3>
+                    <p className="text-xs text-gold-600 font-mono tracking-wider uppercase">ADMINISTRADOR GERAL • MULTIPLUS ACADEMY</p>
                   </div>
                 </div>
 
-                <div className="p-4 bg-gray-55 dark:bg-slate-900/50 border dark:border-slate-800 rounded-2xl text-xs space-y-3 leading-normal">
+                <div className="p-4 bg-gray-55 dark:bg-ink-900/50 border dark:border-ink-800 rounded-2xl text-xs space-y-3 leading-normal">
                   <p><strong>Cargo Hierárquico:</strong> Super Administrador</p>
                   <p><strong>E-mail de Login:</strong> {currentUser?.email || 'admin@multiplus.ao'}</p>
                   <p><strong>Permissão RBAC:</strong> Acesso Pleno de Administração (Gestão de utilizadores, emissão de certificados e auditoria completa do sistema).</p>
                   <p className="text-amber-600 dark:text-amber-400 font-semibold">⚠️ Proteja bem as suas credenciais. Qualquer acção efetuada sob esta conta é registada nos logs de auditoria.</p>
                 </div>
 
-                <div className="space-y-4 border-t dark:border-slate-800 pt-5">
-                  <h4 className="font-serif font-bold text-[#0A2E5D] dark:text-white text-sm">Editar Informações de Perfil</h4>
+                <div className="space-y-4 border-t dark:border-ink-800 pt-5">
+                  <h4 className="font-serif font-bold text-ink-900 dark:text-cream-100 text-sm">Editar Informações de Perfil</h4>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div className="space-y-1">
@@ -1358,16 +1358,16 @@ export default function AdminPortal({
                         type="text" 
                         value={adminName} 
                         onChange={(e) => setAdminName(e.target.value)} 
-                        className="w-full p-2.5 bg-[#FAF9F6] dark:bg-slate-850 border dark:border-slate-800 rounded-xl text-current focus:outline-none focus:border-[#C89B3C]" 
+                        className="w-full p-2.5 bg-[#FAF9F6] dark:bg-ink-800 border dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600" 
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="block text-[8px] font-mono text-gray-400 uppercase font-black">Contacto de Telefone</label>
+                      <label className="block text-[8px] font-mono text-neutral-400 uppercase font-black">Contacto de Telefone</label>
                       <input 
                         type="text" 
                         value={adminPhone} 
                         onChange={(e) => setAdminPhone(e.target.value)} 
-                        className="w-full p-2.5 bg-[#FAF9F6] dark:bg-slate-850 border dark:border-slate-800 rounded-xl text-current focus:outline-none focus:border-[#C89B3C]" 
+                        className="w-full p-2.5 bg-[#FAF9F6] dark:bg-ink-800 border dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600" 
                       />
                     </div>
                     <div className="space-y-1 md:col-span-2">
@@ -1376,7 +1376,7 @@ export default function AdminPortal({
                         value={adminBio} 
                         onChange={(e) => setAdminBio(e.target.value)} 
                         rows={3}
-                        className="w-full p-2.5 bg-[#FAF9F6] dark:bg-slate-850 border dark:border-slate-800 rounded-xl text-current focus:outline-none focus:border-[#C89B3C]"
+                        className="w-full p-2.5 bg-[#FAF9F6] dark:bg-ink-800 border dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
                         placeholder="Escreva uma breve biografia ou introdução para o perfil do portal..."
                       />
                     </div>
@@ -1388,7 +1388,7 @@ export default function AdminPortal({
                       id="notif_certificados"
                       checked={notifEmailCertificados}
                       onChange={(e) => setNotifEmailCertificados(e.target.checked)}
-                      className="rounded border-gray-350 dark:border-slate-850 text-[#0A2E5D] focus:ring-[#C89B3C] cursor-pointer"
+                      className="rounded border-gray-350 dark:border-slate-850 text-ink-900 focus:ring-[#BB8533] cursor-pointer"
                     />
                     <label htmlFor="notif_certificados" className="text-xs font-semibold cursor-pointer">
                       Receber notificações de novos certificados emitidos por e-mail
@@ -1450,7 +1450,7 @@ export default function AdminPortal({
                           alert(`Erro ao salvar perfil no Supabase: ${err.message || err}`);
                         }
                       }} 
-                      className="px-5 py-2.5 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer"
+                      className="px-5 py-2.5 bg-ink-900 text-cream-100 hover:bg-gold-600 hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer"
                     >
                       Guardar Alterações
                     </button>

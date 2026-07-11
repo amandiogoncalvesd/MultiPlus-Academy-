@@ -52,18 +52,18 @@ export default function InstructorMessagesTab() {
   return (
     <div className="space-y-6 text-left">
       {/* Selector Title Header */}
-      <div className="bg-white p-5 rounded-3xl border border-gray-150 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="bg-cream-100 p-5 rounded-3xl border border-gray-150 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block mb-0.5">Comunicação e Redes</span>
-          <h3 className="text-lg font-serif font-black text-[#0A2E5D] m-0">Canal de Debate e Mensagens Diretas</h3>
-          <p className="text-xs text-gray-400 mt-0.5">Conecte-se com alunos, anuncie diretrizes de workshop ou ordene comunicados.</p>
+          <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block mb-0.5">Comunicação e Redes</span>
+          <h3 className="text-lg font-serif font-black text-ink-900 m-0">Canal de Debate e Mensagens Diretas</h3>
+          <p className="text-xs text-neutral-400 mt-0.5">Conecte-se com alunos, anuncie diretrizes de workshop ou ordene comunicados.</p>
         </div>
 
         <div className="flex gap-2 text-3xs font-mono">
           <button
             onClick={() => setSelectedChatType('individual')}
             className={`px-3 py-1.5 rounded-lg border uppercase font-bold cursor-pointer transition-all ${
-              selectedChatType === 'individual' ? 'bg-[#0A2E5D] text-white border-[#0A2E5D]' : 'bg-transparent text-gray-550 hover:bg-gray-50'
+              selectedChatType === 'individual' ? 'bg-ink-900 text-cream-100 border-ink-900' : 'bg-transparent text-gray-550 hover:bg-cream-200'
             }`}
           >
             Chats Privados (Tempo Real)
@@ -72,7 +72,7 @@ export default function InstructorMessagesTab() {
           <button
             onClick={() => setSelectedChatType('mural')}
             className={`px-3 py-1.5 rounded-lg border uppercase font-bold cursor-pointer transition-all ${
-              selectedChatType === 'mural' ? 'bg-[#0A2E5D] text-white border-[#0A2E5D]' : 'bg-transparent text-gray-550 hover:bg-gray-50'
+              selectedChatType === 'mural' ? 'bg-ink-900 text-cream-100 border-ink-900' : 'bg-transparent text-gray-550 hover:bg-cream-200'
             }`}
           >
             Mural Geral de Avisos
@@ -85,10 +85,10 @@ export default function InstructorMessagesTab() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Announcement formulation row */}
-          <div className="lg:col-span-5 bg-white p-6 rounded-3xl border border-gray-150 text-left space-y-4">
+          <div className="lg:col-span-5 bg-cream-100 p-6 rounded-3xl border border-gray-150 text-left space-y-4">
             <div>
-              <h4 className="font-serif font-black text-[#0A2E5D] text-sm m-0">Afixar Aviso de Aula no Mural</h4>
-              <p className="text-2xs text-gray-400 font-mono mt-0.5 uppercase">PAINEL DE BULLETINS CURRICULARES</p>
+              <h4 className="font-serif font-black text-ink-900 text-sm m-0">Afixar Aviso de Aula no Mural</h4>
+              <p className="text-2xs text-neutral-400 font-mono mt-0.5 uppercase">PAINEL DE BULLETINS CURRICULARES</p>
             </div>
 
             <form onSubmit={handlePublishAnnouncement} className="space-y-4">
@@ -103,7 +103,7 @@ export default function InstructorMessagesTab() {
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase tracking-widest cursor-pointer shadow transition-all"
+                className="w-full py-2.5 bg-ink-900 text-cream-100 hover:bg-gold-600 hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase tracking-widest cursor-pointer shadow transition-all"
               >
                 Publicar Comunicação no Mural
               </button>
@@ -111,8 +111,8 @@ export default function InstructorMessagesTab() {
           </div>
 
           {/* Existing lists */}
-          <div className="lg:col-span-7 bg-white p-6 rounded-3xl border border-gray-150 space-y-4 text-left">
-            <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest block font-black border-b border-gray-100 pb-2">
+          <div className="lg:col-span-7 bg-cream-100 p-6 rounded-3xl border border-gray-150 space-y-4 text-left">
+            <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest block font-black border-b border-gray-100 pb-2">
               Atividade Registada no Mural de Avisos
             </span>
             
@@ -121,21 +121,21 @@ export default function InstructorMessagesTab() {
                 <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
               </div>
             ) : muralFeed.length === 0 ? (
-              <p className="text-center font-mono text-gray-400 text-xs py-10">
+              <p className="text-center font-mono text-neutral-400 text-xs py-10">
                 Nenhum aviso registado no mural de avisos.
               </p>
             ) : (
               <div className="space-y-3 max-h-96 overflow-y-auto w-full">
                 {muralFeed.map((feedItem) => (
-                  <div key={feedItem.id} className="p-4 bg-gray-50/50 border border-gray-150 rounded-2xl text-left space-y-1.5 hover:border-amber-200 transition-all">
-                    <div className="flex justify-between items-center text-[8px] font-mono font-bold text-[#C89B3C]">
+                  <div key={feedItem.id} className="p-4 bg-cream-200/50 border border-gray-150 rounded-2xl text-left space-y-1.5 hover:border-amber-200 transition-all">
+                    <div className="flex justify-between items-center text-[8px] font-mono font-bold text-gold-600">
                       <span className="uppercase">INFORMATIVO GERAL</span>
                       <span className="text-gray-450 font-semibold">
                         {new Date(feedItem.created_at).toLocaleDateString()}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-800 font-sans leading-relaxed m-0">{feedItem.mensagem}</p>
-                    <span className="block text-[8px] font-mono text-gray-400 font-semibold">
+                    <p className="text-xs text-neutral-400 font-sans leading-relaxed m-0">{feedItem.mensagem}</p>
+                    <span className="block text-[8px] font-mono text-neutral-400 font-semibold">
                       ID do Autor: {feedItem.author_id}
                     </span>
                   </div>

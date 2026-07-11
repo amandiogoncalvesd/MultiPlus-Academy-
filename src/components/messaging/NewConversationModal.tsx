@@ -25,36 +25,36 @@ export default function NewConversationModal({ contacts, onClose, onSelect }: Ne
 
   return (
     <div id="new-conv-modal" className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100 flex flex-col max-h-[85vh]">
-        <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+      <div className="bg-cream-100 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100 flex flex-col max-h-[85vh]">
+        <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-cream-200">
           <h3 className="font-serif text-lg font-bold text-slate-800">Nova Conversa</h3>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 transition-colors">
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-neutral-400" />
           </button>
         </div>
 
-        <div className="p-4 border-b border-gray-100 bg-white">
+        <div className="p-4 border-b border-gray-100 bg-cream-100">
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-neutral-400" />
             <input
               type="text"
               placeholder="Pesquisar contacto..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all bg-gray-50"
+              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all bg-cream-200"
             />
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-2 bg-white divide-y divide-gray-50">
+        <div className="flex-1 overflow-y-auto p-2 bg-cream-100 divide-y divide-gray-50">
           {filtered.length === 0 ? (
-            <p className="text-center text-xs text-gray-400 py-8">Nenhum contacto encontrado.</p>
+            <p className="text-center text-xs text-neutral-400 py-8">Nenhum contacto encontrado.</p>
           ) : (
             filtered.map((c) => (
               <button
                 key={c.id}
                 onClick={() => onSelect(c)}
-                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition-all text-left"
+                className="w-full flex items-center gap-3 p-3 hover:bg-cream-200 rounded-xl transition-all text-left"
               >
                 {c.foto_perfil ? (
                   <img src={c.foto_perfil} alt={c.nome_completo} className="w-10 h-10 rounded-full object-cover border border-gray-100" referrerPolicy="no-referrer" />
@@ -65,7 +65,7 @@ export default function NewConversationModal({ contacts, onClose, onSelect }: Ne
                 )}
                 <div>
                   <h4 className="text-sm font-semibold text-slate-800 leading-snug">{c.nome_completo}</h4>
-                  <p className="text-xs text-gray-400 leading-none mt-0.5 capitalize">{c.role.toLowerCase()}</p>
+                  <p className="text-xs text-neutral-400 leading-none mt-0.5 capitalize">{c.role.toLowerCase()}</p>
                 </div>
               </button>
             ))

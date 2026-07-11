@@ -394,13 +394,13 @@ export default function InstructorPortal({
     ? 'bg-black text-yellow-300 font-extrabold border-yellow-500' 
     : isDarkMode 
       ? 'bg-[#0B1220] text-gray-200 border-slate-850' 
-      : 'bg-[#F8F8F6] text-[#1C1C1C] border-gray-150';
+      : 'bg-cream-100 text-[#1C1C1C] border-gray-150';
 
   const cardThemeClass = highContrast
-    ? 'border-4 border-yellow-500 bg-black text-white'
+    ? 'border-4 border-yellow-500 bg-black text-cream-100'
     : isDarkMode
-      ? 'bg-[#121E36] border border-slate-700/60 shadow text-white'
-      : 'bg-white border border-gray-150 shadow-sm text-[#1C1C1C]';
+      ? 'bg-[#121E36] border border-slate-700/60 shadow text-cream-100'
+      : 'bg-cream-100 border border-gray-150 shadow-sm text-[#1C1C1C]';
 
   return (
     <div id="multiplus-instructor-portal" className={`min-h-screen flex items-stretch transition-colors duration-200 ${containerThemeClass}`}>
@@ -416,7 +416,7 @@ export default function InstructorPortal({
       {/* 1. SIDEBAR (Collapsible on Mobile, Fixed on Desktop) */}
       <aside 
         className={`fixed inset-y-0 left-0 z-40 w-64 ${
-          highContrast ? 'bg-black border-r-4 border-yellow-500' : isDarkMode ? 'bg-[#0F192E] border-slate-800' : 'bg-[#0A2E5D] text-white'
+          highContrast ? 'bg-black border-r-4 border-yellow-500' : isDarkMode ? 'bg-[#0F192E] border-slate-800' : 'bg-ink-900 text-cream-100'
         } transition-transform duration-300 transform lg:translate-x-0 ${
           mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } flex flex-col justify-between`}
@@ -431,15 +431,15 @@ export default function InstructorPortal({
                 className="h-9 w-auto object-contain shrink-0"
               />
               <div className="text-left">
-                <h1 className="text-sm font-serif font-black m-0 tracking-wide text-white">MultiPlus</h1>
-                <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block">Teacher Portal</span>
+                <h1 className="text-sm font-serif font-black m-0 tracking-wide text-cream-100">MultiPlus</h1>
+                <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block">Teacher Portal</span>
               </div>
             </div>
             
             {/* Mobile close button */}
             <button 
               onClick={() => setMobileSidebarOpen(false)}
-              className="lg:hidden p-1.5 text-white/70 hover:text-white rounded bg-transparent border-0 cursor-pointer"
+              className="lg:hidden p-1.5 text-cream-100/70 hover:text-cream-100 rounded bg-transparent border-0 cursor-pointer"
               aria-label="Fechar lateral"
             >
               <X size={18} />
@@ -472,8 +472,8 @@ export default function InstructorPortal({
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wider text-left transition-all cursor-pointer border-0 ${
                   activeTab === item.id
-                    ? 'bg-[#C89B3C] text-slate-950 shadow-md font-bold'
-                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                    ? 'bg-gold-600 text-slate-950 shadow-md font-bold'
+                    : 'text-cream-100/80 hover:text-cream-100 hover:bg-cream-100/10'
                 }`}
               >
                 {item.icon}
@@ -489,10 +489,10 @@ export default function InstructorPortal({
                 {currentUser?.firstName?.[0] || 'E'}
               </div>
               <div className="text-left truncate max-w-[130px]">
-                <h4 className="text-xs font-bold text-white m-0 tracking-wide truncate">
+                <h4 className="text-xs font-bold text-cream-100 m-0 tracking-wide truncate">
                   {currentUser?.firstName || 'Esmeralda'} {currentUser?.lastName || 'Sumbelelo'}
                 </h4>
-                <span className="text-[10px] font-mono text-[#C89B3C] font-semibold uppercase">Professor</span>
+                <span className="text-[10px] font-mono text-gold-600 font-semibold uppercase">Professor</span>
               </div>
             </div>
 
@@ -504,7 +504,7 @@ export default function InstructorPortal({
                 setCurrentUser(null);
                 setCurrentPage('login');
               }}
-              className="w-full py-2 bg-red-600 hover:bg-red-700 text-white text-[10px] font-mono font-bold uppercase rounded-lg border-0 cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+              className="w-full py-2 bg-danger-700 hover:bg-red-700 text-cream-100 text-[10px] font-mono font-bold uppercase rounded-lg border-0 cursor-pointer transition-colors flex items-center justify-center gap-1.5"
             >
               <LogOut size={11} />
               <span>Sair do Portal</span>
@@ -518,7 +518,7 @@ export default function InstructorPortal({
         
         {/* 2. TOPBAR HEADER FIXA */}
         <header className={`h-16 px-6 border-b flex items-center justify-between sticky top-0 z-30 transition-colors ${
-          highContrast ? 'bg-black border-yellow-500 text-yellow-300' : isDarkMode ? 'bg-[#0E172A] border-slate-800 text-white' : 'bg-white border-gray-150 text-[#1C1C1C]'
+          highContrast ? 'bg-black border-yellow-500 text-yellow-300' : isDarkMode ? 'bg-[#0E172A] border-slate-800 text-cream-100' : 'bg-cream-100 border-gray-150 text-[#1C1C1C]'
         }`}>
           {/* Left Side */}
           <div className="flex items-center gap-4">
@@ -530,14 +530,14 @@ export default function InstructorPortal({
               <Menu size={20} />
             </button>
             <div className="hidden sm:block text-left">
-              <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block">MultiPlus LMS</span>
+              <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block">MultiPlus LMS</span>
               <h2 className="text-sm font-serif font-black tracking-wide m-0 capitalize">{activeTab} • Portal do Professor</h2>
             </div>
           </div>
 
           {/* Center Search bar */}
           <div className="hidden md:flex relative w-64">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
               <Search size={14} />
             </span>
             <input
@@ -545,7 +545,7 @@ export default function InstructorPortal({
               placeholder="Pesquisar arquivos..."
               value={globalSearchTerm}
               onChange={(e) => setGlobalSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-gray-50 border border-gray-200 placeholder:text-gray-400 text-[#1C1C1C] focus:outline-none focus:border-[#C89B3C]"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-cream-200 border border-gray-200 placeholder:text-neutral-400 text-[#1C1C1C] focus:outline-none focus:border-gold-600"
             />
           </div>
 
@@ -554,7 +554,7 @@ export default function InstructorPortal({
             {/* Accessibility swift switch */}
             <button 
               onClick={toggleTheme}
-              className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-[#C89B3C] border-0 cursor-pointer"
+              className="p-2 bg-cream-200 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-gold-600 border-0 cursor-pointer"
               title="Mudar visual cor"
             >
               {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
@@ -564,10 +564,10 @@ export default function InstructorPortal({
             <div className="relative">
               <button 
                 onClick={() => setShowNotificationsMenu(!showNotificationsMenu)}
-                className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-[#0A2E5D] dark:text-blue-400 border-0 cursor-pointer relative"
+                className="p-2 bg-cream-200 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
               >
                 <Bell size={14} />
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500" />
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-danger-700" />
               </button>
 
               <AnimatePresence>
@@ -579,14 +579,14 @@ export default function InstructorPortal({
                     className={`absolute right-0 mt-2 w-72 rounded-2xl p-4 shadow-xl text-left ${cardThemeClass} z-50`}
                   >
                     <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                      <span className="font-mono text-2xs font-bold text-gray-500">NOTIFICAÇÕES DA TURMA</span>
+                      <span className="font-mono text-2xs font-bold text-neutral-400">NOTIFICAÇÕES DA TURMA</span>
                     </div>
                     <div className="space-y-2 mt-2 divide-y divide-gray-100">
                       {notifications.length === 0 ? (
-                        <p className="text-2xs text-gray-400 m-0 py-2">Sem novas notificações.</p>
+                        <p className="text-2xs text-neutral-400 m-0 py-2">Sem novas notificações.</p>
                       ) : (
                         notifications.map(n => (
-                          <div key={n.id} className="pt-2 text-2xs text-gray-600 dark:text-gray-300">
+                          <div key={n.id} className="pt-2 text-2xs text-neutral-400 dark:text-gray-300">
                             <p className="m-0 leading-snug">{n.text}</p>
                           </div>
                         ))
@@ -602,7 +602,7 @@ export default function InstructorPortal({
               onClick={() => {
                 alert('Tutor assistente MultiPlus: Por favor envie um e-mail para: suporte@multiplus.ao com a sua credencial Huambo.');
               }}
-              className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-gray-400 border-0 cursor-pointer"
+              className="p-2 bg-cream-200 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-neutral-400 border-0 cursor-pointer"
               title="Ajuda ao Docente"
             >
               <HelpCircle size={14} />
@@ -663,11 +663,11 @@ export default function InstructorPortal({
 
           {/* TAB 3: CRIAR CURSO */}
           {activeTab === 'criar-curso' && (
-            <div className="bg-white p-6 rounded-3xl border border-gray-150 text-left space-y-6">
+            <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 text-left space-y-6">
               <div>
-                <span className="text-[9px] font-mono text-[#C89B3C] font-black tracking-widest block uppercase">Formulário Ministerial</span>
-                <h3 className="font-serif font-black text-[#0A2E5D] text-lg mt-1 m-0">Criar Novo Curso de Extensão Linguística</h3>
-                <p className="text-xs text-gray-400">Preencha o programa para disponibilizar matrículas diretas aos juristas de Luanda e Huambo.</p>
+                <span className="text-[9px] font-mono text-gold-600 font-black tracking-widest block uppercase">Formulário Ministerial</span>
+                <h3 className="font-serif font-black text-ink-900 text-lg mt-1 m-0">Criar Novo Curso de Extensão Linguística</h3>
+                <p className="text-xs text-neutral-400">Preencha o programa para disponibilizar matrículas diretas aos juristas de Luanda e Huambo.</p>
               </div>
 
               <form onSubmit={handleAddNewCourse} className="space-y-4">
@@ -680,7 +680,7 @@ export default function InstructorPortal({
                       placeholder="Ex: English for Contract Negotiation in Oil & Gas"
                       value={newCourseTitle}
                       onChange={(e) => setNewCourseTitle(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#C89B3C] text-slate-800"
+                      className="w-full p-2.5 text-xs bg-cream-200 border border-gray-200 rounded-xl focus:outline-none focus:border-gold-600 text-slate-800"
                     />
                   </div>
 
@@ -691,7 +691,7 @@ export default function InstructorPortal({
                       placeholder="Ex: Técnicas de debate oral em disputas energéticas angolanas"
                       value={newCourseSubtitle}
                       onChange={(e) => setNewCourseSubtitle(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#C89B3C] text-slate-800"
+                      className="w-full p-2.5 text-xs bg-cream-200 border border-gray-200 rounded-xl focus:outline-none focus:border-gold-600 text-slate-800"
                     />
                   </div>
                 </div>
@@ -703,7 +703,7 @@ export default function InstructorPortal({
                       type="text"
                       value={newCoursePrice}
                       onChange={(e) => setNewCoursePrice(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl text-center font-bold text-slate-800"
+                      className="w-full p-2.5 text-xs bg-cream-200 border border-gray-200 rounded-xl text-center font-bold text-slate-800"
                     />
                   </div>
 
@@ -712,7 +712,7 @@ export default function InstructorPortal({
                     <select
                       value={newCourseCategory}
                       onChange={(e) => setNewCourseCategory(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl text-slate-805"
+                      className="w-full p-2.5 text-xs bg-cream-200 border border-gray-200 rounded-xl text-slate-805"
                     >
                       <option value="Direito Corporativo">Direito Corporativo & Negócios</option>
                       <option value="Setor Extrativo">Setor de Petróleo, Gás & Minas</option>
@@ -726,14 +726,14 @@ export default function InstructorPortal({
                       type="text"
                       value={newCourseDuration}
                       onChange={(e) => setNewCourseDuration(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl text-center text-slate-808"
+                      className="w-full p-2.5 text-xs bg-cream-200 border border-gray-200 rounded-xl text-center text-slate-808"
                     />
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 text-xs font-mono font-extrabold uppercase rounded-xl border-0 cursor-pointer transition-all"
+                  className="px-4 py-2 bg-ink-900 text-cream-100 hover:bg-gold-600 hover:text-slate-900 text-xs font-mono font-extrabold uppercase rounded-xl border-0 cursor-pointer transition-all"
                 >
                   Registrar Curso Ativo
                 </button>
@@ -743,25 +743,25 @@ export default function InstructorPortal({
 
           {/* TAB 4: GERIR AULAS */}
           {activeTab === 'aulas' && (
-            <div className="bg-white p-6 rounded-3xl border border-gray-150 text-left space-y-6">
+            <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 text-left space-y-6">
               <div>
-                <span className="text-[9px] font-mono text-[#C89B3C] font-black uppercase tracking-widest block">INTEGRAÇÃO CLOUDINARY CLOUD</span>
-                <h3 className="font-serif font-black text-[#0A2E5D] text-lg mt-1 m-0">Videoteca de Transcrições de Oratória</h3>
-                <p className="text-xs text-gray-400">Anexe materiais lúdicos (PDFs), apresentações de slides (PPT), determine tempos estimados e marque regras de acesso.</p>
+                <span className="text-[9px] font-mono text-gold-600 font-black uppercase tracking-widest block">INTEGRAÇÃO CLOUDINARY CLOUD</span>
+                <h3 className="font-serif font-black text-ink-900 text-lg mt-1 m-0">Videoteca de Transcrições de Oratória</h3>
+                <p className="text-xs text-neutral-400">Anexe materiais lúdicos (PDFs), apresentações de slides (PPT), determine tempos estimados e marque regras de acesso.</p>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 
                 {/* Upload Simulated Area */}
-                <div className="p-6 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center space-y-3">
-                  <Upload size={30} className="text-gray-400" />
+                <div className="p-6 bg-cream-200 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center space-y-3">
+                  <Upload size={30} className="text-neutral-400" />
                   <div>
                     <h4 className="font-serif font-bold text-slate-700 text-sm m-0">Arraste seu arquivo mp4 ou srt aqui</h4>
-                    <span className="text-[10px] text-gray-400 block mt-1">Capacidade de processamento de até 1 GB por vídeo</span>
+                    <span className="text-[10px] text-neutral-400 block mt-1">Capacidade de processamento de até 1 GB por vídeo</span>
                   </div>
                   <button 
                     onClick={() => alert('Selecione vídeo de simulação: O lms carrega as legendas automáticas via Cloudinary.')}
-                    className="px-3.5 py-1.5 bg-[#0D2644] text-white rounded-lg text-3xs font-mono font-bold uppercase transition-all cursor-pointer"
+                    className="px-3.5 py-1.5 bg-[#0D2644] text-cream-100 rounded-lg text-3xs font-mono font-bold uppercase transition-all cursor-pointer"
                   >
                     Navegar Arquivos Físicos
                   </button>
@@ -769,18 +769,18 @@ export default function InstructorPortal({
 
                 {/* Video list mock and privacy configurations */}
                 <div className="space-y-4">
-                  <span className="text-[9px] font-mono text-gray-400 font-extrabold uppercase tracking-wider block">Videoaulas Carregadas Recentes</span>
+                  <span className="text-[9px] font-mono text-neutral-400 font-extrabold uppercase tracking-wider block">Videoaulas Carregadas Recentes</span>
                   
                   {[
                     { title: 'Conceito e Diferenciação de Indemnisation', duration: '24M', status: 'Livre' },
                     { title: 'Precedentes Judiciais e Casos de Arbitragem em Luanda', duration: '44M', status: 'Apenas Membros' }
                   ].map((vid, vidIdx) => (
-                    <div key={vidIdx} className="p-3 bg-white border border-gray-150 rounded-xl flex items-center justify-between">
+                    <div key={vidIdx} className="p-3 bg-cream-100 border border-gray-150 rounded-xl flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <Video size={14} className="text-[#C89B3C]" />
+                        <Video size={14} className="text-gold-600" />
                         <div>
                           <span className="font-serif font-black text-xs text-slate-700 block">{vid.title}</span>
-                          <span className="text-[9px] font-mono text-gray-400">{vid.duration} • Legendas em Português</span>
+                          <span className="text-[9px] font-mono text-neutral-400">{vid.duration} • Legendas em Português</span>
                         </div>
                       </div>
                       <span className="text-[8px] font-mono uppercase bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg">
@@ -798,31 +798,31 @@ export default function InstructorPortal({
           {activeTab === 'modulos' && (
             <div className={`p-6 rounded-3xl ${cardThemeClass} text-left space-y-6`}>
               <div>
-                <span className="text-[9px] font-mono text-[#C89B3C] font-black uppercase tracking-widest block">Course Structure Tree / Planner</span>
-                <h3 className="font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C] text-lg mt-1 m-0">Planeador Modular de Ementas</h3>
-                <p className="text-xs text-gray-400">Arraste temas, crie novos pilares e estipule cronogramas em tempo real antes do lançamento letivo.</p>
+                <span className="text-[9px] font-mono text-gold-600 font-black uppercase tracking-widest block">Course Structure Tree / Planner</span>
+                <h3 className="font-serif font-black text-ink-900 dark:text-gold-600 text-lg mt-1 m-0">Planeador Modular de Ementas</h3>
+                <p className="text-xs text-neutral-400">Arraste temas, crie novos pilares e estipule cronogramas em tempo real antes do lançamento letivo.</p>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                 
                 {/* Form to insert module */}
-                <div className={`lg:col-span-5 p-5 rounded-2xl border ${isDarkMode ? 'bg-[#152542] border-slate-750' : 'bg-gray-50 border-gray-200'}`}>
-                  <h4 className="text-2xs font-mono font-bold text-gray-500 uppercase block mb-3 border-b pb-1.5">ANEXAR CATEGORIA DE CONTEÚDO</h4>
+                <div className={`lg:col-span-5 p-5 rounded-2xl border ${isDarkMode ? 'bg-[#152542] border-slate-750' : 'bg-cream-200 border-gray-200'}`}>
+                  <h4 className="text-2xs font-mono font-bold text-neutral-400 uppercase block mb-3 border-b pb-1.5">ANEXAR CATEGORIA DE CONTEÚDO</h4>
                   <form onSubmit={handleAddPlannerModule} className="space-y-4">
                     <div>
-                      <label className="block text-[8px] font-mono text-gray-400 uppercase mb-1">Título do Segmento Académico</label>
+                      <label className="block text-[8px] font-mono text-neutral-400 uppercase mb-1">Título do Segmento Académico</label>
                       <input
                         type="text"
                         required
                         placeholder="Ex: Módulo IV - Fusões Internacionais e Joint Ventures"
                         value={newPlannerModuleTitle}
                         onChange={(e) => setNewPlannerModuleTitle(e.target.value)}
-                        className="w-full p-2 bg-white dark:bg-[#1E293B] border rounded text-xs text-slate-809 dark:text-white"
+                        className="w-full p-2 bg-cream-100 dark:bg-[#1E293B] border rounded text-xs text-slate-809 dark:text-cream-100"
                       />
                     </div>
                     <button
                       type="submit"
-                      className="px-3.5 py-2 bg-[#0A2E5D] hover:bg-[#C89B3C] text-white hover:text-slate-900 rounded text-3xs font-mono font-extrabold uppercase cursor-pointer"
+                      className="px-3.5 py-2 bg-ink-900 hover:bg-gold-600 text-cream-100 hover:text-slate-900 rounded text-3xs font-mono font-extrabold uppercase cursor-pointer"
                     >
                       Acrescentar Eixo Letivo
                     </button>
@@ -831,14 +831,14 @@ export default function InstructorPortal({
 
                 {/* Structure visual representations */}
                 <div className="lg:col-span-7 space-y-3">
-                  <span className="text-[9px] font-mono text-gray-400 font-extrabold uppercase block text-left">PILARES DA GRADE DE PORTFOLIO JURÍDICO</span>
+                  <span className="text-[9px] font-mono text-neutral-400 font-extrabold uppercase block text-left">PILARES DA GRADE DE PORTFOLIO JURÍDICO</span>
                   {plannerModules.map((pm, pmIdx) => (
-                    <div key={pmIdx} className={`p-3 border rounded-xl flex justify-between items-center text-left ${isDarkMode ? 'bg-[#0E172A] border-slate-700/50' : 'bg-white border-gray-150'}`}>
+                    <div key={pmIdx} className={`p-3 border rounded-xl flex justify-between items-center text-left ${isDarkMode ? 'bg-[#0E172A] border-slate-700/50' : 'bg-cream-100 border-gray-150'}`}>
                       <div>
-                        <span className="text-[8px] font-mono text-[#C89B3C] font-bold block">{pm.number}</span>
+                        <span className="text-[8px] font-mono text-gold-600 font-bold block">{pm.number}</span>
                         <h5 className="font-serif font-black text-slate-700 dark:text-gray-300 text-xs m-0">{pm.title}</h5>
                       </div>
-                      <span className="text-[9px] font-mono text-gray-400 font-semibold">{pm.lessonsCount} Tópicos Indexados</span>
+                      <span className="text-[9px] font-mono text-neutral-400 font-semibold">{pm.lessonsCount} Tópicos Indexados</span>
                     </div>
                   ))}
                 </div>
@@ -861,20 +861,20 @@ export default function InstructorPortal({
 
           {/* TAB 7: BIBLIOTECA DIGITAL */}
           {activeTab === 'biblioteca' && (
-            <div className="bg-white p-6 rounded-3xl border border-gray-150 text-left space-y-6">
+            <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 text-left space-y-6">
               
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <span className="text-[9px] font-mono text-[#C89B3C] font-black uppercase tracking-wider block">Library Common Repository</span>
-                  <p className="font-serif font-black text-md text-[#0A2E5D] m-0 leading-tight">Materiais Complementares das Classes</p>
-                  <p className="text-xs text-gray-400 mt-1">Carregue manuais (PDF), cartilhas de vocabulário, rascunhos em docx e gabaritos de apoio.</p>
+                  <span className="text-[9px] font-mono text-gold-600 font-black uppercase tracking-wider block">Library Common Repository</span>
+                  <p className="font-serif font-black text-md text-ink-900 m-0 leading-tight">Materiais Complementares das Classes</p>
+                  <p className="text-xs text-neutral-400 mt-1">Carregue manuais (PDF), cartilhas de vocabulário, rascunhos em docx e gabaritos de apoio.</p>
                 </div>
 
                 <div className="flex gap-2">
                   <button
                     onClick={() => setLibraryCategory('all')}
                     className={`px-3 py-1 text-4xs font-mono uppercase rounded-lg border cursor-pointer ${
-                      libraryCategory === 'all' ? 'bg-[#0A2E5D] text-white' : 'bg-transparent text-gray-500'
+                      libraryCategory === 'all' ? 'bg-ink-900 text-cream-100' : 'bg-transparent text-neutral-400'
                     }`}
                   >
                     Ver Todos
@@ -882,7 +882,7 @@ export default function InstructorPortal({
                   <button
                     onClick={() => setLibraryCategory('pdf')}
                     className={`px-3 py-1 text-4xs font-mono uppercase rounded-lg border cursor-pointer ${
-                      libraryCategory === 'pdf' ? 'bg-[#0A2E5D] text-white' : 'bg-transparent text-gray-500'
+                      libraryCategory === 'pdf' ? 'bg-ink-900 text-cream-100' : 'bg-transparent text-neutral-400'
                     }`}
                   >
                     PDF
@@ -890,7 +890,7 @@ export default function InstructorPortal({
                   <button
                     onClick={() => setLibraryCategory('docx')}
                     className={`px-3 py-1 text-4xs font-mono uppercase rounded-lg border cursor-pointer ${
-                      libraryCategory === 'docx' ? 'bg-[#0A2E5D] text-white' : 'bg-transparent text-gray-500'
+                      libraryCategory === 'docx' ? 'bg-ink-900 text-cream-100' : 'bg-transparent text-neutral-400'
                     }`}
                   >
                     DOCX
@@ -899,18 +899,18 @@ export default function InstructorPortal({
               </div>
 
               {/* Upload dynamic form bar */}
-              <form onSubmit={handleUploadLibraryFile} className="bg-gray-50 p-4 rounded-xl border border-gray-150 flex gap-2">
+              <form onSubmit={handleUploadLibraryFile} className="bg-cream-200 p-4 rounded-xl border border-gray-150 flex gap-2">
                 <input
                   type="text"
                   required
                   placeholder="Nome do novo arquivo (Ex: Dicionário-de-Termos-Comuns.pdf)..."
                   value={newLibraryFileName}
                   onChange={(e) => setNewLibraryFileName(e.target.value)}
-                  className="flex-grow p-2 text-xs bg-white rounded border focus:outline-none"
+                  className="flex-grow p-2 text-xs bg-cream-100 rounded border focus:outline-none"
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#0A2E5D] text-white rounded text-3xs font-mono font-bold uppercase cursor-pointer"
+                  className="px-4 py-2 bg-ink-900 text-cream-100 rounded text-3xs font-mono font-bold uppercase cursor-pointer"
                 >
                   Anexar à Pasta
                 </button>
@@ -921,14 +921,14 @@ export default function InstructorPortal({
                 {libraryFiles
                   .filter(f => libraryCategory === 'all' || f.type === libraryCategory)
                   .map((file) => (
-                    <div key={file.id} className="p-4 bg-white border border-gray-150 rounded-2xl space-y-2 flex flex-col justify-between hover:border-[#C89B3C]/40 hover:shadow-sm">
+                    <div key={file.id} className="p-4 bg-cream-100 border border-gray-150 rounded-2xl space-y-2 flex flex-col justify-between hover:border-gold-600/40 hover:shadow-sm">
                       <div className="flex items-start gap-2.5">
-                        <FileText className="text-[#C89B3C] shrink-0 mt-0.5" size={16} />
+                        <FileText className="text-gold-600 shrink-0 mt-0.5" size={16} />
                         <div className="truncate">
                           <h6 className="font-serif font-bold text-xs text-slate-800 m-0 truncate leading-tight" title={file.name}>
                             {file.name}
                           </h6>
-                          <span className="text-[9px] font-mono text-gray-400 block mt-0.5">{file.size} • {file.date}</span>
+                          <span className="text-[9px] font-mono text-neutral-400 block mt-0.5">{file.size} • {file.date}</span>
                         </div>
                       </div>
 
@@ -966,13 +966,13 @@ export default function InstructorPortal({
 
           {/* TAB 9: EMISSÃO DIPLOMAS */}
           {activeTab === 'certificados' && (
-            <div className="bg-white p-6 rounded-3xl border border-gray-150 text-left space-y-6">
+            <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 text-left space-y-6">
               
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
                 
                 {/* Visual diploma view templates (Gold Styled, Neo-Skeuomorphic) */}
-                <div className="lg:col-span-8 p-6 sm:p-10 bg-white border-8 border-double border-[#C89B3C]/80 rounded-3xl shadow-xl space-y-6 text-center select-none relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#C89B3C]/5 rounded-bl-full pointer-events-none" />
+                <div className="lg:col-span-8 p-6 sm:p-10 bg-cream-100 border-8 border-double border-gold-600/80 rounded-3xl shadow-xl space-y-6 text-center select-none relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gold-600/5 rounded-bl-full pointer-events-none" />
                   
                   <div className="space-y-1.5">
                     <img
@@ -980,42 +980,42 @@ export default function InstructorPortal({
                       alt="MultiPlus Logo"
                       className="h-14 w-auto mx-auto object-contain"
                     />
-                    <h5 className="font-mono text-4xs tracking-widest text-[#C89B3C] font-bold">MULTIPLUS ACADEMY • ANGOLA</h5>
+                    <h5 className="font-mono text-4xs tracking-widest text-gold-600 font-bold">MULTIPLUS ACADEMY • ANGOLA</h5>
                     <h3 className="font-serif font-black text-slate-800 text-lg sm:text-xl m-0">CERTIFICADO DE MÉRITO ACADÉMICO</h3>
                   </div>
 
-                  <p className="text-2xs text-gray-500 leading-relaxed font-serif italic max-w-lg mx-auto">
+                  <p className="text-2xs text-neutral-400 leading-relaxed font-serif italic max-w-lg mx-auto">
                     Certificamos por via deste carimbo de modulação fiscal que o formando outorgado concluiu satisfatoriamente todas as 72 horas letivas teóricas e simulacros práticos orais correspondentes ao programa intensivo.
                   </p>
 
                   <div className="space-y-1">
-                    <span className="text-[10px] font-mono text-gray-400 block">NOME DO MERECEDOR JURISTA</span>
-                    <span className="font-serif font-black text-[#0A2E5D] text-md sm:text-lg block underline decoration-[#C89B3C] decoration-2">
+                    <span className="text-[10px] font-mono text-neutral-400 block">NOME DO MERECEDOR JURISTA</span>
+                    <span className="font-serif font-black text-ink-900 text-md sm:text-lg block underline decoration-[#BB8533] decoration-2">
                       Dr. António Ferreira Carvalho
                     </span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 pt-4 border-t border-gray-100 max-w-md mx-auto text-center font-mono">
                     <div>
-                      <span className="text-[8px] text-gray-400 block uppercase">Avaliação</span>
+                      <span className="text-[8px] text-neutral-400 block uppercase">Avaliação</span>
                       <span className="font-extrabold text-slate-850 text-2xs block">92 / 100</span>
                     </div>
                     <div>
-                      <span className="text-[8px] text-gray-400 block uppercase">Código Hash</span>
-                      <span className="font-extrabold text-slate-850 text-[9px] block text-[#C89B3C]">MPA-2026-UNLOCKED-PER_</span>
+                      <span className="text-[8px] text-neutral-400 block uppercase">Código Hash</span>
+                      <span className="font-extrabold text-slate-850 text-[9px] block text-gold-600">MPA-2026-UNLOCKED-PER_</span>
                     </div>
                     <div>
-                      <span className="text-[8px] text-gray-400 block uppercase">Diretora</span>
-                      <span className="font-extrabold text-[#0A2E5D] text-3xs block">Esmeralda Sumbelelo</span>
+                      <span className="text-[8px] text-neutral-400 block uppercase">Diretora</span>
+                      <span className="font-extrabold text-ink-900 text-3xs block">Esmeralda Sumbelelo</span>
                     </div>
                   </div>
 
                   {/* Mock QR Code representation */}
                   <div className="pt-2 flex flex-col items-center space-y-1.5">
-                    <div className="p-2 border border-gray-200 bg-white inline-block rounded-xl shadow-inner">
+                    <div className="p-2 border border-gray-200 bg-cream-100 inline-block rounded-xl shadow-inner">
                       <QrCode className="text-slate-800" size={54} />
                     </div>
-                    <span className="text-[8px] font-mono text-gray-400 uppercase tracking-widest block font-black">Scan to Validate Registry Authenticity</span>
+                    <span className="text-[8px] font-mono text-neutral-400 uppercase tracking-widest block font-black">Scan to Validate Registry Authenticity</span>
                   </div>
 
                 </div>
@@ -1023,7 +1023,7 @@ export default function InstructorPortal({
                 {/* Validation verification center right column */}
                 <div className="lg:col-span-4 space-y-5">
                   <div className="bg-gray-55 p-5 rounded-3xl border border-gray-150 space-y-4">
-                    <h4 className="font-serif font-bold text-[#0A2E5D] text-xs m-0 border-b pb-2">Validação Fiscal de Chaves</h4>
+                    <h4 className="font-serif font-bold text-ink-900 text-xs m-0 border-b pb-2">Validação Fiscal de Chaves</h4>
                     <form onSubmit={testValidateCertificate} className="space-y-3">
                       <input
                         type="text"
@@ -1031,18 +1031,18 @@ export default function InstructorPortal({
                         placeholder="Insira código hash (Ex: MPA-2026-UNLOCKED-PER_)..."
                         value={inputHashVerify}
                         onChange={(e) => setInputHashVerify(e.target.value)}
-                        className="w-full p-2.5 bg-white border rounded text-xs select-text text-center text-slate-800 font-mono font-bold"
+                        className="w-full p-2.5 bg-cream-100 border rounded text-xs select-text text-center text-slate-800 font-mono font-bold"
                       />
                       <button
                         type="submit"
-                        className="w-full py-2 bg-[#0A2E5D] hover:bg-[#C89B3C] text-white hover:text-slate-900 border-0 rounded text-3xs font-mono font-bold uppercase transition-all cursor-pointer"
+                        className="w-full py-2 bg-ink-900 hover:bg-gold-600 text-cream-100 hover:text-slate-900 border-0 rounded text-3xs font-mono font-bold uppercase transition-all cursor-pointer"
                       >
                         Autenticar Código
                       </button>
                     </form>
 
                     {hashResultText && (
-                      <div className="p-3 bg-white border rounded text-2xs font-mono text-[#0A2E5D] font-bold leading-normal">
+                      <div className="p-3 bg-cream-100 border rounded text-2xs font-mono text-ink-900 font-bold leading-normal">
                         {hashResultText}
                       </div>
                     )}
@@ -1074,20 +1074,20 @@ export default function InstructorPortal({
           {activeTab === 'relatorios' && (
             <div className="space-y-6 text-left">
               
-              <div className="bg-white p-5 rounded-3xl border border-gray-150">
-                <span className="text-[9px] font-mono text-[#C89B3C] font-black uppercase block tracking-widest">Relatório Académico Geral</span>
-                <h3 className="font-serif font-black text-lg text-[#0A2E5D] m-0 leading-tight">Taxas de Retenção & Notas Gerais</h3>
-                <p className="text-xs text-gray-400 mt-1">Dados estatísticos sincronizados diretos do Sistema de Gestão Escolar (LMS).</p>
+              <div className="bg-cream-100 p-5 rounded-3xl border border-gray-150">
+                <span className="text-[9px] font-mono text-gold-600 font-black uppercase block tracking-widest">Relatório Académico Geral</span>
+                <h3 className="font-serif font-black text-lg text-ink-900 m-0 leading-tight">Taxas de Retenção & Notas Gerais</h3>
+                <p className="text-xs text-neutral-400 mt-1">Dados estatísticos sincronizados diretos do Sistema de Gestão Escolar (LMS).</p>
               </div>
 
               {/* Rich Visual SVGs grids stats */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
                 
                 {/* SVG 1: Distribuição de Alunos por Nível Letivo */}
-                <div className="bg-white p-6 rounded-3xl border border-gray-150 flex flex-col justify-between align-stretch text-left">
+                <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 flex flex-col justify-between align-stretch text-left">
                   <div className="border-b pb-2 mb-3">
-                    <span className="text-[8px] font-mono text-gray-400 block uppercase">KPI - Nível Geral</span>
-                    <h4 className="font-serif font-black text-xs text-[#0A2E5D] m-0">Inscritos por Módulo Curricular</h4>
+                    <span className="text-[8px] font-mono text-neutral-400 block uppercase">KPI - Nível Geral</span>
+                    <h4 className="font-serif font-black text-xs text-ink-900 m-0">Inscritos por Módulo Curricular</h4>
                   </div>
                   
                   {/* Visual SVG Circular or Stacked bars */}
@@ -1096,31 +1096,31 @@ export default function InstructorPortal({
                       {/* Circle arcs mock */}
                       <circle cx="50" cy="50" r="40" fill="none" stroke="#e1e1e1" strokeWidth="8" />
                       {/* Active arc */}
-                      <circle cx="50" cy="50" r="40" fill="none" stroke="#C89B3C" strokeWidth="8" strokeDasharray="180 250" strokeLinecap="round" transform="rotate(-90 50 50)" />
-                      <text x="50" y="55" textAnchor="middle" className="font-serif font-black text-lg fill-[#0A2E5D] text-xs">78%</text>
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="#BB8533" strokeWidth="8" strokeDasharray="180 250" strokeLinecap="round" transform="rotate(-90 50 50)" />
+                      <text x="50" y="55" textAnchor="middle" className="font-serif font-black text-lg fill-[#151D29] text-xs">78%</text>
                     </svg>
                   </div>
-                  <span className="text-[9px] font-mono text-center text-gray-400">78% de frequência conclutiva de exercícios práticos</span>
+                  <span className="text-[9px] font-mono text-center text-neutral-400">78% de frequência conclutiva de exercícios práticos</span>
                 </div>
 
                 {/* SVG 2: Engajamento por dia de semana */}
-                <div className="bg-white p-6 rounded-3xl border border-gray-150 flex flex-col justify-between align-stretch text-left">
+                <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 flex flex-col justify-between align-stretch text-left">
                   <div className="border-b pb-2 mb-3">
-                    <span className="text-[8px] font-mono text-gray-400 block uppercase">KPI - Atividade LMS</span>
-                    <h4 className="font-serif font-black text-xs text-[#0A2E5D] m-0">Acessos dos Juristas por Dia</h4>
+                    <span className="text-[8px] font-mono text-neutral-400 block uppercase">KPI - Atividade LMS</span>
+                    <h4 className="font-serif font-black text-xs text-ink-900 m-0">Acessos dos Juristas por Dia</h4>
                   </div>
                   
                   {/* SVG Vertical Charts bars */}
                   <div className="py-4">
                     <svg viewBox="0 0 100 40" className="w-full h-24">
                       {/* Bars */}
-                      <rect x="5" y="10" width="8" height="30" fill="#0A2E5D" rx="2" />
-                      <rect x="25" y="5" width="8" height="35" fill="#C89B3C" rx="2" />
-                      <rect x="45" y="15" width="8" height="25" fill="#0A2E5D" rx="2" />
-                      <rect x="65" y="2" width="8" height="38" fill="#C89B3C" rx="2" />
-                      <rect x="85" y="20" width="8" height="20" fill="#0A2E5D" rx="2" />
+                      <rect x="5" y="10" width="8" height="30" fill="#151D29" rx="2" />
+                      <rect x="25" y="5" width="8" height="35" fill="#BB8533" rx="2" />
+                      <rect x="45" y="15" width="8" height="25" fill="#151D29" rx="2" />
+                      <rect x="65" y="2" width="8" height="38" fill="#BB8533" rx="2" />
+                      <rect x="85" y="20" width="8" height="20" fill="#151D29" rx="2" />
                     </svg>
-                    <div className="flex justify-between text-[7px] font-mono text-gray-400 pt-2 border-t">
+                    <div className="flex justify-between text-[7px] font-mono text-neutral-400 pt-2 border-t">
                       <span>SEG</span>
                       <span>TER (AULA)</span>
                       <span>QUA</span>
@@ -1137,43 +1137,43 @@ export default function InstructorPortal({
 
           {/* TAB 13: PERFIL DO DOCENTE CP */}
           {activeTab === 'perfil' && (
-            <div className="bg-white p-6 rounded-3xl border border-gray-150 text-left space-y-6">
+            <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 text-left space-y-6">
               
               <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-gray-100">
                 <img
                   src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg"
                   alt="Esmeralda Foto"
-                  className="w-24 h-24 rounded-full object-cover border-4 border-[#C89B3C]"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-gold-600"
                 />
                 <div className="text-center sm:text-left">
-                  <span className="text-[10px] font-mono tracking-widest text-[#C89B3C] uppercase block">Docente Titular</span>
+                  <span className="text-[10px] font-mono tracking-widest text-gold-600 uppercase block">Docente Titular</span>
                   <h3 className="font-serif font-black text-slate-805 text-xl m-0 leading-tight">Drª. Esmeralda Bruno Sumbelelo</h3>
-                  <span className="text-2xs font-mono text-gray-400 block mt-1">Diretora da Cadeia de Inglês Jurídico • Huambo, Angola</span>
+                  <span className="text-2xs font-mono text-neutral-400 block mt-1">Diretora da Cadeia de Inglês Jurídico • Huambo, Angola</span>
                 </div>
               </div>
 
               {/* CV bio form edits */}
               <div className="space-y-4">
-                <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest font-black block">Resumo do Currículo Vitae (Exposto no site)</span>
+                <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest font-black block">Resumo do Currículo Vitae (Exposto no site)</span>
                 
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[8px] font-mono text-gray-400 uppercase mb-1">Apresentação Curta (Bio)</label>
+                    <label className="block text-[8px] font-mono text-neutral-400 uppercase mb-1">Apresentação Curta (Bio)</label>
                     <textarea
                       rows={3}
                       value={profileBio}
                       onChange={(e) => setProfileBio(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-gray-50 border rounded text-slate-800"
+                      className="w-full p-2.5 text-xs bg-cream-200 border rounded text-slate-800"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[8px] font-mono text-gray-400 uppercase mb-1">Instruções de Credenciamento</label>
+                    <label className="block text-[8px] font-mono text-neutral-400 uppercase mb-1">Instruções de Credenciamento</label>
                     <input
                       type="text"
                       value={profileCredentials}
                       onChange={(e) => setProfileCredentials(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-gray-50 border rounded text-slate-808"
+                      className="w-full p-2.5 text-xs bg-cream-200 border rounded text-slate-808"
                     />
                   </div>
 
@@ -1181,7 +1181,7 @@ export default function InstructorPortal({
                     onClick={() => {
                       alert('O seu currículo e perfil de oradora titular foram guardados. O site institucional atualizará as informações na próxima sincronização pública.');
                     }}
-                    className="px-4 py-2 bg-[#0A2E5D] text-white hover:bg-[#C89B3C] hover:text-slate-900 border-0 text-xs font-mono font-bold uppercase rounded-xl transition-colors cursor-pointer"
+                    className="px-4 py-2 bg-ink-900 text-cream-100 hover:bg-gold-600 hover:text-slate-900 border-0 text-xs font-mono font-bold uppercase rounded-xl transition-colors cursor-pointer"
                   >
                     Guardar Currículo
                   </button>
@@ -1193,33 +1193,33 @@ export default function InstructorPortal({
 
           {/* TAB 14: CONFIGURAÇÕES ACCESSIBILITY */}
           {activeTab === 'configuracoes' && (
-            <div className="bg-white p-6 rounded-3xl border border-gray-150 text-left space-y-6">
+            <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 text-left space-y-6">
               <div>
-                <span className="text-[9px] font-mono text-[#C89B3C] font-black uppercase tracking-widest block">LMS Access Control</span>
-                <h3 className="font-serif font-black text-[#0A2E5D] text-lg mt-1 m-0">Acessibilidade, Layout & Integrações</h3>
-                <p className="text-xs text-gray-400">Ative configurações de voz, painéis térmicos ou conecte APIs externas.</p>
+                <span className="text-[9px] font-mono text-gold-600 font-black uppercase tracking-widest block">LMS Access Control</span>
+                <h3 className="font-serif font-black text-ink-900 text-lg mt-1 m-0">Acessibilidade, Layout & Integrações</h3>
+                <p className="text-xs text-neutral-400">Ative configurações de voz, painéis térmicos ou conecte APIs externas.</p>
               </div>
 
               {/* Adjusts selectors */}
               <div className="space-y-4">
                 
-                <div className="flex justify-between items-center p-3.5 bg-gray-50 rounded-xl">
+                <div className="flex justify-between items-center p-3.5 bg-cream-200 rounded-xl">
                   <div>
-                    <span className="text-xs font-serif font-bold text-[#0A2E5D] block">Modo Escuro / Noturno de Leitura</span>
-                    <span className="text-4xs text-gray-400 font-mono">Modera cores do painel para evitar desgaste visual</span>
+                    <span className="text-xs font-serif font-bold text-ink-900 block">Modo Escuro / Noturno de Leitura</span>
+                    <span className="text-4xs text-neutral-400 font-mono">Modera cores do painel para evitar desgaste visual</span>
                   </div>
                   <input
                     type="checkbox"
                     checked={isDarkMode}
                     onChange={toggleTheme}
-                    className="w-4 h-4 accent-[#C89B3C] cursor-pointer"
+                    className="w-4 h-4 accent-[#BB8533] cursor-pointer"
                   />
                 </div>
 
-                <div className="flex justify-between items-center p-3.5 bg-gray-50 rounded-xl">
+                <div className="flex justify-between items-center p-3.5 bg-cream-200 rounded-xl">
                   <div>
-                    <span className="text-xs font-serif font-bold text-[#0A2E5D] block">Contraste de Acessibilidade Académico</span>
-                    <span className="text-4xs text-gray-400 font-mono">Realça bordas de tabelas para leitores com deficiências visuais</span>
+                    <span className="text-xs font-serif font-bold text-ink-900 block">Contraste de Acessibilidade Académico</span>
+                    <span className="text-4xs text-neutral-400 font-mono">Realça bordas de tabelas para leitores com deficiências visuais</span>
                   </div>
                   <input
                     type="checkbox"
@@ -1228,12 +1228,12 @@ export default function InstructorPortal({
                       setHighContrast(e.target.checked);
                       alert('Modo alto contraste ativado com integridade estrutural.');
                     }}
-                    className="w-4 h-4 accent-[#C89B3C] cursor-pointer"
+                    className="w-4 h-4 accent-[#BB8533] cursor-pointer"
                   />
                 </div>
 
-                <div className="p-5 border border-dashed border-gray-200 rounded-2xl bg-slate-900 text-white font-mono space-y-2 select-none">
-                  <span className="text-[8px] text-[#C89B3C] font-black uppercase">SYSTEM INTEGRATIONS REGISTRY LOG</span>
+                <div className="p-5 border border-dashed border-gray-200 rounded-2xl bg-slate-900 text-cream-100 font-mono space-y-2 select-none">
+                  <span className="text-[8px] text-gold-600 font-black uppercase">SYSTEM INTEGRATIONS REGISTRY LOG</span>
                   <div className="grid grid-cols-2 gap-4 pt-1 text-[10px]">
                     <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>

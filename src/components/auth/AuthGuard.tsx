@@ -21,8 +21,8 @@ export default function AuthGuard({ children, setCurrentPage, fallbackPage = 'lo
     return (
       <div className="flex-grow flex items-center justify-center min-h-[300px] h-full">
         <div className="flex flex-col items-center space-y-4">
-          <div className="h-8 w-8 border-4 border-[#C89B3C] border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-xs font-mono uppercase tracking-wider text-gray-400">Verificando Credenciais...</p>
+          <div className="h-8 w-8 border-4 border-gold-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-xs font-mono uppercase tracking-wider text-neutral-400">Verificando Credenciais...</p>
         </div>
       </div>
     );

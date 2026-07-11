@@ -63,7 +63,7 @@ export default function VerifyCertificatePanel({
   };
 
   return (
-    <div id="verify-certificate-root" className="bg-[#F8F8F6] text-[#1C1C1C] pt-28 pb-20 min-h-screen flex flex-col justify-center items-center">
+    <div id="verify-certificate-root" className="bg-cream-100 text-[#1C1C1C] pt-28 pb-20 min-h-screen flex flex-col justify-center items-center">
       <div className="max-w-xl w-full px-4">
         
         {/* Navigation Indicator */}
@@ -72,21 +72,21 @@ export default function VerifyCertificatePanel({
             setVerificationCode('');
             setCurrentPage('home');
           }}
-          className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest uppercase text-[#0A2E5D] hover:text-[#C89B3C] mb-8 transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest uppercase text-ink-900 hover:text-gold-600 mb-8 transition-colors"
         >
           <ArrowLeft size={14} />
           Voltar à Página Principal
         </button>
 
         {/* Dynamic Card */}
-        <div className="neo-card bg-white rounded-3xl overflow-hidden border border-gray-150 p-8 text-center space-y-6">
-          <div className="w-16 h-16 bg-[#0A2E5D]/5 text-[#C89B3C] border border-[#C89B3C]/20 rounded-full flex items-center justify-center mx-auto shadow-sm">
+        <div className="neo-card bg-cream-100 rounded-3xl overflow-hidden border border-gray-150 p-8 text-center space-y-6">
+          <div className="w-16 h-16 bg-ink-900/5 text-gold-600 border border-gold-600/20 rounded-full flex items-center justify-center mx-auto shadow-sm">
             <Award size={32} />
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-3xl font-serif font-black text-[#0A2E5D] tracking-tight m-0">Portal de Verificação</h1>
-            <p className="text-xs text-gray-500 font-sans leading-relaxed">
+            <h1 className="text-3xl font-serif font-black text-ink-900 tracking-tight m-0">Portal de Verificação</h1>
+            <p className="text-xs text-neutral-400 font-sans leading-relaxed">
               Introduza o código de validação único impresso no certificado MultiPlus Academy para verificar a sua autenticidade académica.
             </p>
           </div>
@@ -105,7 +105,7 @@ export default function VerifyCertificatePanel({
             
             <button
               type="submit"
-              className="w-full py-3 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors shadow-md"
+              className="w-full py-3 bg-ink-900 hover:bg-ink-900 text-cream-100 text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors shadow-md"
             >
               Consultar Autenticidade
             </button>
@@ -133,33 +133,33 @@ export default function VerifyCertificatePanel({
 
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div>
-                      <span className="block text-[9px] font-mono text-gray-400 uppercase tracking-wider">Titular do Diploma</span>
-                      <span className="font-serif font-black text-[#0A2E5D] text-sm block">{result.recipientName}</span>
+                      <span className="block text-[9px] font-mono text-neutral-400 uppercase tracking-wider">Titular do Diploma</span>
+                      <span className="font-serif font-black text-ink-900 text-sm block">{result.recipientName}</span>
                     </div>
 
                     <div>
-                      <span className="block text-[9px] font-mono text-gray-400 uppercase tracking-wider">Formação Concluída</span>
-                      <span className="font-semibold text-gray-800 block">{result.courseName}</span>
+                      <span className="block text-[9px] font-mono text-neutral-400 uppercase tracking-wider">Formação Concluída</span>
+                      <span className="font-semibold text-neutral-400 block">{result.courseName}</span>
                     </div>
 
                     <div>
-                      <span className="block text-[9px] font-mono text-gray-400 uppercase tracking-wider">Diretora Pedagógica</span>
-                      <span className="font-medium text-gray-700 block">{result.instructorName}</span>
+                      <span className="block text-[9px] font-mono text-neutral-400 uppercase tracking-wider">Diretora Pedagógica</span>
+                      <span className="font-medium text-neutral-400 block">{result.instructorName}</span>
                     </div>
 
                     <div>
-                      <span className="block text-[9px] font-mono text-gray-400 uppercase tracking-wider">Data de Emissão</span>
-                      <span className="font-mono text-gray-600 block">{result.completionDate}</span>
+                      <span className="block text-[9px] font-mono text-neutral-400 uppercase tracking-wider">Data de Emissão</span>
+                      <span className="font-mono text-neutral-400 block">{result.completionDate}</span>
                     </div>
 
                     <div>
-                      <span className="block text-[9px] font-mono text-gray-400 uppercase tracking-wider">Aproveitamento Académico</span>
+                      <span className="block text-[9px] font-mono text-neutral-400 uppercase tracking-wider">Aproveitamento Académico</span>
                       <span className="font-mono text-emerald-700 font-bold block">{result.finalGrade}</span>
                     </div>
 
                     <div>
-                      <span className="block text-[9px] font-mono text-gray-400 uppercase tracking-wider">Validade Regulamentar</span>
-                      <span className="font-medium text-gray-600 block">{result.validUntil}</span>
+                      <span className="block text-[9px] font-mono text-neutral-400 uppercase tracking-wider">Validade Regulamentar</span>
+                      <span className="font-medium text-neutral-400 block">{result.validUntil}</span>
                     </div>
                   </div>
 
@@ -170,7 +170,7 @@ export default function VerifyCertificatePanel({
               ) : (
                 /* INEXISTENT CODE ERROR */
                 <div className="p-5 rounded-2xl bg-red-50 border border-red-200/50 flex gap-3">
-                  <ShieldAlert className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+                  <ShieldAlert className="text-danger-700 flex-shrink-0 mt-0.5" size={20} />
                   <div className="space-y-1">
                     <h4 className="text-sm font-serif font-bold text-red-800">Código Não Encontrado</h4>
                     <p className="text-xs text-red-700 leading-relaxed font-sans">
@@ -183,7 +183,7 @@ export default function VerifyCertificatePanel({
           )}
 
           {/* Quick tips */}
-          <div className="pt-2 text-2xs text-gray-400 font-sans leading-normal">
+          <div className="pt-2 text-2xs text-neutral-400 font-sans leading-normal">
             * Se tentou registar interesse agora e não concluiu o curso, obtenha a aprovação pedagógica para que o certificado apareça ativo neste sistema nacional.
           </div>
 

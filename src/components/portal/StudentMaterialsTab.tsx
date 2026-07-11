@@ -112,7 +112,7 @@ export default function StudentMaterialsTab() {
   const getCategoryIcon = (cat: string) => {
     switch (cat) {
       case 'PDF':
-        return <FileText className="w-5 h-5 text-red-600" />;
+        return <FileText className="w-5 h-5 text-danger-700" />;
       case 'DOCX':
         return <FileCheck className="w-5 h-5 text-blue-600" />;
       case 'PPT':
@@ -120,9 +120,9 @@ export default function StudentMaterialsTab() {
       case 'Audio':
         return <Headphones className="w-5 h-5 text-emerald-600" />;
       case 'Video':
-        return <Video className="w-5 h-5 text-[#0A2E5D]" />;
+        return <Video className="w-5 h-5 text-ink-900" />;
       default:
-        return <ExternalLink className="w-5 h-5 text-[#C89B3C]" />;
+        return <ExternalLink className="w-5 h-5 text-gold-600" />;
     }
   };
 
@@ -130,17 +130,17 @@ export default function StudentMaterialsTab() {
     <div className="space-y-6">
       
       {/* Search and Category Filter Toolbar header */}
-      <div className="bg-white p-6 rounded-3xl border border-gray-150 shadow-sm text-left space-y-4">
+      <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 shadow-sm text-left space-y-4">
         
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <span className="text-[10px] font-mono tracking-widest text-[#C89B3C] uppercase block mb-1">Biblioteca Académica</span>
-            <h3 className="text-lg font-serif font-black text-[#0A2E5D] m-0">Materiais de Estudo</h3>
+            <span className="text-[10px] font-mono tracking-widest text-gold-600 uppercase block mb-1">Biblioteca Académica</span>
+            <h3 className="text-lg font-serif font-black text-ink-900 m-0">Materiais de Estudo</h3>
           </div>
 
           {/* Real-time search widget container */}
           <div className="relative w-full md:max-w-xs">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
               <Search size={14} />
             </span>
             <input
@@ -148,7 +148,7 @@ export default function StudentMaterialsTab() {
               placeholder="Pesquisar manuais ou modelos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs placeholder:text-gray-400 focus:outline-none focus:border-[#C89B3C] text-[#1C1C1C]"
+              className="w-full pl-9 pr-4 py-2 bg-cream-200 border border-gray-200 rounded-xl text-xs placeholder:text-neutral-400 focus:outline-none focus:border-gold-600 text-[#1C1C1C]"
             />
           </div>
         </div>
@@ -161,8 +161,8 @@ export default function StudentMaterialsTab() {
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1.5 rounded-lg text-2xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 selectedCategory === cat 
-                  ? 'bg-[#0A2E5D] text-white' 
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                  ? 'bg-ink-900 text-cream-100' 
+                  : 'bg-gray-100 hover:bg-gray-200 text-neutral-400'
               }`}
             >
               {cat === 'ALL' ? 'Todos' : cat}
@@ -181,7 +181,7 @@ export default function StudentMaterialsTab() {
             exit={{ opacity: 0, scale: 0.95 }}
             className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-semibold flex items-center gap-2.5 shadow-sm text-left"
           >
-            <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] shrink-0 font-bold">✓</div>
+            <div className="w-5 h-5 rounded-full bg-emerald-600 text-cream-100 flex items-center justify-center text-[10px] shrink-0 font-bold">✓</div>
             <span>{downloadSuccessMessage}</span>
           </motion.div>
         )}
@@ -190,7 +190,7 @@ export default function StudentMaterialsTab() {
       {/* Materials Visual List Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredMaterials.length === 0 ? (
-          <div className="col-span-2 py-16 bg-white rounded-3xl border border-gray-150 text-center text-gray-500 font-mono text-xs flex flex-col items-center justify-center">
+          <div className="col-span-2 py-16 bg-cream-100 rounded-3xl border border-gray-150 text-center text-neutral-400 font-mono text-xs flex flex-col items-center justify-center">
             <AlertCircle size={24} className="text-yellow-500 mb-2" />
             <p className="m-0">Nenhum recurso académico corresponde à pesquisa solicitada.</p>
           </div>
@@ -198,31 +198,31 @@ export default function StudentMaterialsTab() {
           filteredMaterials.map(mat => (
             <div 
               key={mat.id} 
-              className="bg-white p-5 rounded-2xl border border-gray-150 hover:border-[#C89B3C]/35 hover:shadow-md transition-all flex justify-between gap-4 text-left group relative"
+              className="bg-cream-100 p-5 rounded-2xl border border-gray-150 hover:border-gold-600/35 hover:shadow-md transition-all flex justify-between gap-4 text-left group relative"
             >
               <div className="space-y-2 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="p-2 rounded-xl bg-gray-50 border border-gray-100 shrink-0 block">
+                  <span className="p-2 rounded-xl bg-cream-200 border border-gray-100 shrink-0 block">
                     {getCategoryIcon(mat.category)}
                   </span>
                   <div>
-                    <span className="inline-block text-[8px] font-mono tracking-widest font-bold uppercase bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                    <span className="inline-block text-[8px] font-mono tracking-widest font-bold uppercase bg-gray-100 text-neutral-400 px-2 py-0.5 rounded">
                       {mat.category}
                     </span>
                     {mat.fileSize && (
-                      <span className="text-[9px] font-mono text-gray-400 ml-2">{mat.fileSize}</span>
+                      <span className="text-[9px] font-mono text-neutral-400 ml-2">{mat.fileSize}</span>
                     )}
                   </div>
                 </div>
 
-                <h4 className="text-sm font-serif font-black text-[#0A2E5D] leading-snug group-hover:text-[#C89B3C] transition-colors mt-1 mb-0 line-clamp-1">
+                <h4 className="text-sm font-serif font-black text-ink-900 leading-snug group-hover:text-gold-600 transition-colors mt-1 mb-0 line-clamp-1">
                   {mat.title}
                 </h4>
-                <p className="text-[11px] text-gray-500 leading-normal font-sans line-clamp-2 mt-1 mb-0">
+                <p className="text-[11px] text-neutral-400 leading-normal font-sans line-clamp-2 mt-1 mb-0">
                   {mat.description}
                 </p>
                 
-                <span className="block text-[9px] font-mono text-gray-400 mt-2 font-semibold">
+                <span className="block text-[9px] font-mono text-neutral-400 mt-2 font-semibold">
                   📂 {mat.downloadCount + (downloadingId === mat.id ? 1 : 0)} DESCARGAS ACADÉMICAS
                 </span>
               </div>
@@ -231,11 +231,11 @@ export default function StudentMaterialsTab() {
                 <button
                   onClick={() => handleDownload(mat.id, mat.title)}
                   disabled={downloadingId !== null}
-                  className="p-3 rounded-xl bg-gray-50 border border-gray-200 hover:border-[#C89B3C] text-gray-600 hover:text-[#C89B3C] hover:bg-gray-100 transition-all cursor-pointer flex items-center justify-center"
+                  className="p-3 rounded-xl bg-cream-200 border border-gray-200 hover:border-gold-600 text-neutral-400 hover:text-gold-600 hover:bg-gray-100 transition-all cursor-pointer flex items-center justify-center"
                   aria-label="Descarregar ficheiro"
                 >
                   {downloadingId === mat.id ? (
-                    <span className="h-4 w-4 border-2 border-[#C89B3C] border-t-transparent rounded-full animate-spin block" />
+                    <span className="h-4 w-4 border-2 border-gold-600 border-t-transparent rounded-full animate-spin block" />
                   ) : (
                     <Download size={14} />
                   )}

@@ -134,21 +134,21 @@ export default function StudentTasksTab() {
       {/* Left Columns - Tasks Folder Directory List */}
       <div className="lg:col-span-8 space-y-4">
         
-        <div className="bg-white p-5 rounded-3xl border border-gray-150 shadow-sm text-left flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div className="bg-cream-100 p-5 rounded-3xl border border-gray-150 shadow-sm text-left flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           <div>
-            <span className="text-[10px] font-mono tracking-widest text-[#C89B3C] uppercase block mb-1">Avaliações Letivas</span>
-            <h3 className="text-lg font-serif font-black text-[#0A2E5D] m-0">Minhas Tarefas Académicas</h3>
+            <span className="text-[10px] font-mono tracking-widest text-gold-600 uppercase block mb-1">Avaliações Letivas</span>
+            <h3 className="text-lg font-serif font-black text-ink-900 m-0">Minhas Tarefas Académicas</h3>
           </div>
 
-          <div className="flex gap-1 border border-gray-100 bg-gray-50 p-1 rounded-xl">
+          <div className="flex gap-1 border border-gray-100 bg-cream-200 p-1 rounded-xl">
             {(['PENDING', 'COMPLETED', 'OVERDUE'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-3 py-1.5 rounded-lg text-3xs font-mono font-bold uppercase transition-all whitespace-nowrap cursor-pointer ${
                   activeTab === tab 
-                    ? 'bg-[#0A2E5D] text-white shadow-sm' 
-                    : 'text-gray-500 hover:text-gray-800'
+                    ? 'bg-ink-900 text-cream-100 shadow-sm' 
+                    : 'text-neutral-400 hover:text-neutral-400'
                 }`}
               >
                 {tab === 'PENDING' ? 'Pendentes' : tab === 'COMPLETED' ? 'Concluídas' : 'Em Atraso'}
@@ -160,7 +160,7 @@ export default function StudentTasksTab() {
         {/* Display tasks mapping */}
         <div className="space-y-3">
           {filteredTasks.length === 0 ? (
-            <div className="py-16 bg-white rounded-3xl border border-gray-150 text-center text-gray-400 font-mono text-xs flex flex-col items-center justify-center">
+            <div className="py-16 bg-cream-100 rounded-3xl border border-gray-150 text-center text-neutral-400 font-mono text-xs flex flex-col items-center justify-center">
               <CheckCircle size={24} className="text-emerald-600 mb-2" />
               <p className="m-0">Sem tarefas nesta pasta. Tudo em ordem em sua agenda acadêmica!</p>
             </div>
@@ -168,14 +168,14 @@ export default function StudentTasksTab() {
             filteredTasks.map(task => (
               <div 
                 key={task.id} 
-                className="bg-white p-5 rounded-2xl border border-gray-150 hover:border-[#C89B3C]/35 transition-all text-left flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+                className="bg-cream-100 p-5 rounded-2xl border border-gray-150 hover:border-gold-600/35 transition-all text-left flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
               >
                 <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-2">
-                    {task.status === 'PENDING' && <ClipboardList className="text-[#C89B3C] w-4 h-4 shrink-0" />}
+                    {task.status === 'PENDING' && <ClipboardList className="text-gold-600 w-4 h-4 shrink-0" />}
                     {task.status === 'COMPLETED' && <CheckCircle className="text-emerald-600 w-4 h-4 shrink-0" />}
-                    {task.status === 'OVERDUE' && <AlertTriangle className="text-red-600 w-4 h-4 shrink-0" />}
-                    <span className="text-[9px] font-mono font-bold bg-[#0A2E5D]/5 text-[#0A2E5D] px-2 py-0.5 rounded">
+                    {task.status === 'OVERDUE' && <AlertTriangle className="text-danger-700 w-4 h-4 shrink-0" />}
+                    <span className="text-[9px] font-mono font-bold bg-ink-900/5 text-ink-900 px-2 py-0.5 rounded">
                       VALOR: {task.points} PONTOS
                     </span>
                     {task.status === 'PENDING' && (
@@ -183,8 +183,8 @@ export default function StudentTasksTab() {
                     )}
                   </div>
 
-                  <h4 className="text-sm font-serif font-black text-[#0A2E5D] mb-1">{task.title}</h4>
-                  <p className="text-[11px] text-gray-500 font-sans leading-normal m-0">{task.description}</p>
+                  <h4 className="text-sm font-serif font-black text-ink-900 mb-1">{task.title}</h4>
+                  <p className="text-[11px] text-neutral-400 font-sans leading-normal m-0">{task.description}</p>
                   
                   {task.submittedFile && (
                     <div className="pt-2 flex items-center gap-1.5 text-2xs text-emerald-700 font-mono">
@@ -197,7 +197,7 @@ export default function StudentTasksTab() {
                     <div className="mt-3 p-3 bg-slate-50 border border-slate-100 rounded-xl space-y-1">
                       <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
                         <span>AURA DE CORREÇÃO DOCENTE:</span>
-                        <span className="font-bold text-[#C89B3C]">{task.feedback.score} / 100</span>
+                        <span className="font-bold text-gold-600">{task.feedback.score} / 100</span>
                       </div>
                       <p className="text-2xs text-slate-600 italic m-0">"{task.feedback.text}"</p>
                     </div>
@@ -211,7 +211,7 @@ export default function StudentTasksTab() {
                         setSelectedTaskId(task.id);
                         setIsSubmitOpen(true);
                       }}
-                      className="w-full sm:w-auto px-4 py-2 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-[10px] font-mono font-bold uppercase rounded-xl tracking-wider transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      className="w-full sm:w-auto px-4 py-2 bg-ink-900 hover:bg-ink-900 text-cream-100 text-[10px] font-mono font-bold uppercase rounded-xl tracking-wider transition-all flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <span>Submeter Minuta</span>
                       <ArrowRight size={10} />
@@ -233,23 +233,23 @@ export default function StudentTasksTab() {
       {/* Right Column: Submit Form Drawer Section */}
       <div className="lg:col-span-4">
         {isSubmitOpen && currentUploadTask ? (
-          <div className="bg-white p-5 rounded-3xl border border-[#C89B3C]/30 shadow-md text-left space-y-4 sticky top-28">
+          <div className="bg-cream-100 p-5 rounded-3xl border border-gold-600/30 shadow-md text-left space-y-4 sticky top-28">
             <div className="border-b border-gray-100 pb-3 flex justify-between items-center">
               <div>
-                <span className="text-[8px] font-mono text-gray-400 uppercase tracking-widest font-bold">SUBMISSÃO DIGITAL MPA</span>
-                <h4 className="text-xs font-serif font-black text-[#0A2E5D] m-0">Enviar Minuta Jurídica</h4>
+                <span className="text-[8px] font-mono text-neutral-400 uppercase tracking-widest font-bold">SUBMISSÃO DIGITAL MPA</span>
+                <h4 className="text-xs font-serif font-black text-ink-900 m-0">Enviar Minuta Jurídica</h4>
               </div>
               <button 
                 onClick={() => { setIsSubmitOpen(false); setUploadedFile(null); }}
-                className="text-gray-400 hover:text-gray-700 text-xs font-mono font-bold hover:underline bg-transparent border-0 cursor-pointer"
+                className="text-neutral-400 hover:text-neutral-400 text-xs font-mono font-bold hover:underline bg-transparent border-0 cursor-pointer"
               >
                 Cancelar
               </button>
             </div>
 
-            <div className="p-3 bg-gray-50 rounded-xl space-y-1">
-              <span className="text-[9px] font-mono text-gray-400 block uppercase">TAREFA EM FOCO:</span>
-              <p className="text-2xs font-serif font-bold text-gray-800 m-0 leading-normal">{currentUploadTask.title}</p>
+            <div className="p-3 bg-cream-200 rounded-xl space-y-1">
+              <span className="text-[9px] font-mono text-neutral-400 block uppercase">TAREFA EM FOCO:</span>
+              <p className="text-2xs font-serif font-bold text-neutral-400 m-0 leading-normal">{currentUploadTask.title}</p>
             </div>
 
             {/* Interactive Drag and Drop Mock Area */}
@@ -258,7 +258,7 @@ export default function StudentTasksTab() {
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer relative flex flex-col items-center justify-center min-h-[140px] ${
-                dragOver ? 'border-[#C89B3C] bg-amber-50/20 shadow-inner' : 'border-gray-200 hover:border-gray-300'
+                dragOver ? 'border-gold-600 bg-amber-50/20 shadow-inner' : 'border-gray-200 hover:border-gray-300'
               }`}
             >
               <input
@@ -267,9 +267,9 @@ export default function StudentTasksTab() {
                 className="absolute inset-0 opacity-0 cursor-pointer"
                 onChange={handleFileChange}
               />
-              <Upload size={24} className="text-[#C89B3C] mb-2 fill-neutral-50" />
-              <p className="text-xs font-medium text-gray-700 m-0">Arraste a minuta em PDF ou DOCX</p>
-              <p className="text-[10px] font-mono text-gray-400 mt-1 m-0">ou clique para selecionar do computador</p>
+              <Upload size={24} className="text-gold-600 mb-2 fill-neutral-50" />
+              <p className="text-xs font-medium text-neutral-400 m-0">Arraste a minuta em PDF ou DOCX</p>
+              <p className="text-[10px] font-mono text-neutral-400 mt-1 m-0">ou clique para selecionar do computador</p>
             </div>
 
             {uploadedFile && (
@@ -282,7 +282,7 @@ export default function StudentTasksTab() {
             <button
               onClick={handleSubmitTask}
               disabled={!uploadedFile || successAnimation}
-              className="w-full py-2.5 bg-[#C89B3C] text-white hover:bg-[#b58b35] disabled:opacity-40 rounded-xl text-2xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full py-2.5 bg-gold-600 text-cream-100 hover:bg-[#b58b35] disabled:opacity-40 rounded-xl text-2xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               {successAnimation ? (
                 <>
@@ -298,10 +298,10 @@ export default function StudentTasksTab() {
             </button>
           </div>
         ) : (
-          <div className="bg-white p-5 rounded-3xl border border-gray-150 shadow-sm text-center py-10 space-y-3 sticky top-28">
-            <ClipboardList size={28} className="text-[#C89B3C] mx-auto opacity-75" />
-            <h4 className="text-xs font-serif font-black text-[#0A2E5D] m-0">Submissão Facilitada</h4>
-            <p className="text-2xs text-gray-500 font-sans leading-relaxed max-w-[190px] mx-auto m-0">Selecione o botão <strong>Submeter Minuta</strong> em qualquer tarefa ativa para carregar suas respostas.</p>
+          <div className="bg-cream-100 p-5 rounded-3xl border border-gray-150 shadow-sm text-center py-10 space-y-3 sticky top-28">
+            <ClipboardList size={28} className="text-gold-600 mx-auto opacity-75" />
+            <h4 className="text-xs font-serif font-black text-ink-900 m-0">Submissão Facilitada</h4>
+            <p className="text-2xs text-neutral-400 font-sans leading-relaxed max-w-[190px] mx-auto m-0">Selecione o botão <strong>Submeter Minuta</strong> em qualquer tarefa ativa para carregar suas respostas.</p>
           </div>
         )}
       </div>

@@ -88,9 +88,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         <AnimatePresence>
           {toasts.map((toast) => {
             // Setup status styles
-            let bgStyle = 'bg-[#FFFFFF]/95 border-l-4 shadow-xl border-[#0A2E5D] text-slate-800';
-            let iconColor = 'text-[#0A2E5D]';
-            let progressBg = 'bg-[#0A2E5D]';
+            let bgStyle = 'bg-cream-100/95 border-l-4 shadow-xl border-ink-900 text-slate-800';
+            let iconColor = 'text-ink-900';
+            let progressBg = 'bg-ink-900';
             let Icon = Info;
 
             if (toast.type === 'success') {

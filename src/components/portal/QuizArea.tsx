@@ -114,26 +114,26 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
 
   if (loading) {
     return (
-      <div id="quiz-loading" className="p-6 bg-white dark:bg-slate-900 border border-gray-150 dark:border-slate-800 rounded-2xl flex flex-col items-center justify-center py-10 gap-2">
+      <div id="quiz-loading" className="p-6 bg-cream-100 dark:bg-ink-900 border border-gray-150 dark:border-ink-800 rounded-2xl flex flex-col items-center justify-center py-10 gap-2">
         <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-        <span className="text-xs text-gray-500">A carregar questionário da aula...</span>
+        <span className="text-xs text-neutral-400">A carregar questionário da aula...</span>
       </div>
     );
   }
 
   if (hasError) {
     return (
-      <div id="quiz-error" className="p-6 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-2xl flex flex-col items-center justify-center py-8 gap-3 text-center">
-        <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
+      <div id="quiz-error" className="p-6 bg-red-50 dark:bg-danger-700/20 border border-red-200 dark:border-red-900/30 rounded-2xl flex flex-col items-center justify-center py-8 gap-3 text-center">
+        <AlertTriangle className="w-8 h-8 text-danger-700 dark:text-danger-700" />
         <div className="space-y-1">
           <h4 className="text-sm font-serif font-bold text-red-900 dark:text-red-300">Falha ao carregar o questionário</h4>
-          <p className="text-xs text-red-700/80 dark:text-red-400/80 max-w-sm">
+          <p className="text-xs text-red-700/80 dark:text-danger-700/80 max-w-sm">
             Não foi possível obter o quiz desta aula. Por favor, tente novamente.
           </p>
         </div>
         <button
           onClick={loadQuizAndSubmission}
-          className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-mono font-bold uppercase transition-colors cursor-pointer flex items-center gap-1.5"
+          className="px-4 py-1.5 bg-danger-700 hover:bg-red-700 text-cream-100 rounded-xl text-xs font-mono font-bold uppercase transition-colors cursor-pointer flex items-center gap-1.5"
         >
           <RefreshCw className="w-3.5 h-3.5" /> Tentar Novamente
         </button>
@@ -143,8 +143,8 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
 
   if (questions.length === 0) {
     return (
-      <div id="quiz-empty" className="p-5 rounded-2xl border border-dashed border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/40 text-center py-6">
-        <span className="text-xs text-gray-500 dark:text-gray-400 font-sans">
+      <div id="quiz-empty" className="p-5 rounded-2xl border border-dashed border-gray-200 dark:border-ink-800 bg-cream-200/50 dark:bg-ink-900/40 text-center py-6">
+        <span className="text-xs text-neutral-400 dark:text-neutral-400 font-sans">
           Esta aula não possui quiz de avaliação contínua.
         </span>
       </div>
@@ -154,7 +154,7 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
   const currentQuestion = questions[currentQuestionIdx];
 
   return (
-    <div id="quiz-container" className="p-5 rounded-2xl border border-gray-150 dark:border-slate-800 bg-white dark:bg-slate-900 relative overflow-hidden space-y-4 text-left shadow-xs">
+    <div id="quiz-container" className="p-5 rounded-2xl border border-gray-150 dark:border-ink-800 bg-cream-100 dark:bg-ink-900 relative overflow-hidden space-y-4 text-left shadow-xs">
       
       {/* Visual Confetti Explosion (pure CSS) */}
       {showConfetti && (
@@ -167,14 +167,14 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
         </div>
       )}
 
-      <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-3">
+      <div className="flex items-center justify-between border-b border-gray-100 dark:border-ink-800 pb-3">
         <div className="flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-[#C89B3C]" />
-          <span className="text-[10px] font-mono text-[#C89B3C] font-black uppercase tracking-wider">
+          <Trophy className="w-4 h-4 text-gold-600" />
+          <span className="text-[10px] font-mono text-gold-600 font-black uppercase tracking-wider">
             Avaliação Contínua • Quiz de Compreensão
           </span>
         </div>
-        <span className="text-[10px] font-mono text-gray-400">
+        <span className="text-[10px] font-mono text-neutral-400">
           Questão {currentQuestionIdx + 1} de {questions.length}
         </span>
       </div>
@@ -192,14 +192,14 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
       )}
 
       <div className="space-y-3">
-        <h4 className="text-sm font-serif font-bold text-slate-800 dark:text-white leading-snug">
+        <h4 className="text-sm font-serif font-bold text-slate-800 dark:text-cream-100 leading-snug">
           {currentQuestion.question}
         </h4>
 
         <div className="space-y-2">
           {currentQuestion.options.map((opt, idx) => {
             const isSelected = selectedOption === idx;
-            let optionStyle = 'border-gray-100 dark:border-slate-800 hover:border-gray-300 dark:hover:border-slate-700 bg-gray-50/50 dark:bg-slate-800/40';
+            let optionStyle = 'border-gray-100 dark:border-ink-800 hover:border-gray-300 dark:hover:border-slate-700 bg-cream-200/50 dark:bg-slate-800/40';
             
             if (isSelected) {
               optionStyle = 'border-indigo-600 bg-indigo-50/20 dark:bg-indigo-950/10 text-indigo-700 dark:text-indigo-400';
@@ -250,7 +250,7 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
                 setHasSubmitted(false);
                 setSelectedOption(null);
               }}
-              className="px-3.5 py-1.5 border border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-500 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer flex items-center gap-1"
+              className="px-3.5 py-1.5 border border-gray-200 dark:border-ink-800 hover:bg-cream-200 dark:hover:bg-slate-800 text-neutral-400 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer flex items-center gap-1"
             >
               <RefreshCw className="w-3 h-3" /> Tentar Novamente
             </button>
@@ -260,14 +260,14 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
             <button
               onClick={handleSubmit}
               disabled={selectedOption === null || saving || alreadyPassed}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white hover:text-slate-100 disabled:opacity-50 text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center gap-1"
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-cream-100 hover:text-slate-100 disabled:opacity-50 text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center gap-1"
             >
               {saving ? 'A guardar...' : 'Submeter Resposta'}
             </button>
           ) : currentQuestionIdx < questions.length - 1 ? (
             <button
               onClick={handleNext}
-              className="px-4 py-2 bg-[#C89B3C] hover:bg-[#b08530] text-white hover:text-slate-900 text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center gap-1"
+              className="px-4 py-2 bg-gold-600 hover:bg-[#b08530] text-cream-100 hover:text-slate-900 text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center gap-1"
             >
               Seguinte <ArrowRight className="w-3 h-3" />
             </button>

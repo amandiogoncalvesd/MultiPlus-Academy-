@@ -620,13 +620,13 @@ export default function StudentPortal({
     ? 'bg-black text-yellow-300 font-extrabold border-yellow-500' 
     : themeMode === 'dark' 
       ? 'bg-[#0B1220] text-gray-200 border-slate-850' 
-      : 'bg-[#F8F8F6] text-[#1C1C1C] border-gray-150';
+      : 'bg-cream-100 text-[#1C1C1C] border-gray-150';
 
   const cardThemeClass = isHighContrast
-    ? 'border-4 border-yellow-500 bg-black text-white'
+    ? 'border-4 border-yellow-500 bg-black text-cream-100'
     : themeMode === 'dark'
-      ? 'bg-[#121E36] border border-slate-700/60 shadow text-white'
-      : 'bg-white border border-gray-150 shadow-sm text-[#1C1C1C]';
+      ? 'bg-[#121E36] border border-slate-700/60 shadow text-cream-100'
+      : 'bg-cream-100 border border-gray-150 shadow-sm text-[#1C1C1C]';
 
   return (
     <div id="multiplus-student-lms-portal" className={`min-h-screen flex items-stretch transition-colors duration-200 ${containerThemeClass}`}>
@@ -634,7 +634,7 @@ export default function StudentPortal({
       {/* SIDEBAR NAVIGATION - Collapsible on Mobile, Fixed on Desktop */}
       <aside 
         className={`fixed inset-y-0 left-0 z-40 w-64 ${
-          isHighContrast ? 'bg-black border-r-4 border-yellow-500' : themeMode === 'dark' ? 'bg-[#0F192E] border-slate-800' : 'bg-[#0A2E5D] text-white'
+          isHighContrast ? 'bg-black border-r-4 border-yellow-500' : themeMode === 'dark' ? 'bg-[#0F192E] border-slate-800' : 'bg-ink-900 text-cream-100'
         } transition-transform duration-300 transform lg:translate-x-0 ${
           isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } flex flex-col justify-between`}
@@ -649,15 +649,15 @@ export default function StudentPortal({
                 className="h-9 w-auto object-contain shrink-0"
               />
               <div className="text-left">
-                <h1 className="text-sm font-serif font-black m-0 tracking-wide text-white">MultiPlus</h1>
-                <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block">Student LMS</span>
+                <h1 className="text-sm font-serif font-black m-0 tracking-wide text-cream-100">MultiPlus</h1>
+                <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block">Student LMS</span>
               </div>
             </div>
             
             {/* Mobile close button */}
             <button 
               onClick={() => setIsMobileSidebarOpen(false)}
-              className="lg:hidden p-1.5 text-white/70 hover:text-white rounded bg-transparent border-0 cursor-pointer"
+              className="lg:hidden p-1.5 text-cream-100/70 hover:text-cream-100 rounded bg-transparent border-0 cursor-pointer"
               aria-label="Fichar lateral"
             >
               <X size={18} />
@@ -686,8 +686,8 @@ export default function StudentPortal({
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wider text-left transition-all cursor-pointer border-0 ${
                   activeTab === link.id
-                    ? 'bg-[#C89B3C] text-slate-950 shadow-md font-bold'
-                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                    ? 'bg-gold-600 text-slate-950 shadow-md font-bold'
+                    : 'text-cream-100/80 hover:text-cream-100 hover:bg-cream-100/10'
                 }`}
               >
                 {link.icon}
@@ -703,8 +703,8 @@ export default function StudentPortal({
                 {currentUser?.firstName[0] || 'A' }
               </div>
               <div className="text-left truncate max-w-[130px]">
-                <h4 className="text-xs font-bold text-white m-0 tracking-wide truncate">{currentUser?.firstName} {currentUser?.lastName}</h4>
-                <span className="text-[10px] font-mono text-[#C89B3C] font-semibold uppercase">{currentUser?.role || 'Aluno'}</span>
+                <h4 className="text-xs font-bold text-cream-100 m-0 tracking-wide truncate">{currentUser?.firstName} {currentUser?.lastName}</h4>
+                <span className="text-[10px] font-mono text-gold-600 font-semibold uppercase">{currentUser?.role || 'Aluno'}</span>
               </div>
             </div>
 
@@ -716,7 +716,7 @@ export default function StudentPortal({
                 setCurrentUser(null);
                 setCurrentPage('login');
               }}
-              className="w-full py-2 bg-red-600 hover:bg-red-700 text-white text-[10px] font-mono font-bold uppercase rounded-lg border-0 cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+              className="w-full py-2 bg-danger-700 hover:bg-red-700 text-cream-100 text-[10px] font-mono font-bold uppercase rounded-lg border-0 cursor-pointer transition-colors flex items-center justify-center gap-1.5"
             >
               <LogOut size={11} />
               <span>Sair do Portal</span>
@@ -730,7 +730,7 @@ export default function StudentPortal({
         
         {/* TOPBAR HEADER ACTIONS */}
         <header className={`h-16 px-6 border-b flex items-center justify-between sticky top-0 z-30 transition-colors ${
-          isHighContrast ? 'bg-black border-yellow-500 text-yellow-300' : themeMode === 'dark' ? 'bg-[#0E172A] border-slate-800 text-white' : 'bg-white border-gray-150 text-[#1C1C1C]'
+          isHighContrast ? 'bg-black border-yellow-500 text-yellow-300' : themeMode === 'dark' ? 'bg-[#0E172A] border-slate-800 text-cream-100' : 'bg-cream-100 border-gray-150 text-[#1C1C1C]'
         }`}>
           {/* Topbar Left - Hamburger burger and section headers */}
           <div className="flex items-center gap-4">
@@ -743,14 +743,14 @@ export default function StudentPortal({
             </button>
             
             <div className="hidden sm:block text-left">
-              <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block">MultiPlus LMS</span>
+              <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block">MultiPlus LMS</span>
               <h2 className="text-sm font-serif font-black tracking-wide m-0 capitalize">{activeTab} • Portal de Aluno</h2>
             </div>
           </div>
 
           {/* Topbar Center Search bar */}
           <form onSubmit={handleGlobalSearchSubmit} className="hidden md:flex relative w-64">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
               <Search size={14} />
             </span>
             <input
@@ -758,7 +758,7 @@ export default function StudentPortal({
               placeholder="Pesquisar certificado, drafting..."
               value={globalSearch}
               onChange={(e) => setGlobalSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-gray-50 border border-gray-200 placeholder:text-gray-400 text-[#1C1C1C] focus:outline-none focus:border-[#C89B3C]"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-cream-200 border border-gray-200 placeholder:text-neutral-400 text-[#1C1C1C] focus:outline-none focus:border-gold-600"
             />
           </form>
 
@@ -774,7 +774,7 @@ export default function StudentPortal({
             {/* Accessibility swift switch */}
             <button 
               onClick={toggleTheme}
-              className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-[#C89B3C] border-0 cursor-pointer"
+              className="p-2 bg-cream-200 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-gold-600 border-0 cursor-pointer"
               title="Mudar visual cor"
             >
               {themeMode === 'light' ? <Moon size={14} /> : <Sun size={14} />}
@@ -784,10 +784,10 @@ export default function StudentPortal({
             <div className="relative">
               <button 
                 onClick={() => { setIsNotificationsOpen(!isNotificationsOpen); setIsUserMenuOpen(false); }}
-                className="p-2 bg-gray-50 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-[#0A2E5D] dark:text-blue-400 border-0 cursor-pointer relative"
+                className="p-2 bg-cream-200 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
               >
                 <Bell size={14} />
-                <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-[#C89B3C] animate-ping" />
+                <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-gold-600 animate-ping" />
               </button>
 
               <AnimatePresence>
@@ -799,18 +799,18 @@ export default function StudentPortal({
                     className={`absolute right-0 mt-2 w-72 rounded-2xl p-4 shadow-xl text-left ${cardThemeClass} z-50`}
                   >
                     <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                      <span className="font-mono text-2xs font-bold text-gray-500">NOTIFICAÇÕES</span>
+                      <span className="font-mono text-2xs font-bold text-neutral-400">NOTIFICAÇÕES</span>
                       <button 
                         onClick={() => setNotifications(notifications.map(n => ({...n, read: true})))}
-                        className="text-[#C89B3C] font-mono text-4xs uppercase font-extrabold hover:underline"
+                        className="text-gold-600 font-mono text-4xs uppercase font-extrabold hover:underline"
                       >
                         Marcar tudo lido
                       </button>
                     </div>
                     <div className="space-y-2 mt-2 divide-y divide-gray-100">
                       {notifications.map(n => (
-                        <div key={n.id} className="pt-2 flex items-start gap-2 text-2xs text-gray-600 dark:text-gray-300">
-                          <div className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1 ${n.read ? 'bg-gray-200' : 'bg-[#C89B3C]'}`} />
+                        <div key={n.id} className="pt-2 flex items-start gap-2 text-2xs text-neutral-400 dark:text-gray-300">
+                          <div className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1 ${n.read ? 'bg-gray-200' : 'bg-gold-600'}`} />
                           <p className="m-0 leading-snug">{n.text}</p>
                         </div>
                       ))}
@@ -824,9 +824,9 @@ export default function StudentPortal({
             <div className="relative">
               <button 
                 onClick={() => { setIsUserMenuOpen(!isUserMenuOpen); setIsNotificationsOpen(false); }}
-                className="flex items-center gap-1 text-[#0A2E5D] dark:text-white font-semibold cursor-pointer border-0 bg-transparent p-0"
+                className="flex items-center gap-1 text-ink-900 dark:text-cream-100 font-semibold cursor-pointer border-0 bg-transparent p-0"
               >
-                <span className="h-6 w-6 rounded-full bg-[#C89B3C] text-slate-950 font-bold flex items-center justify-center font-mono">
+                <span className="h-6 w-6 rounded-full bg-gold-600 text-slate-950 font-bold flex items-center justify-center font-mono">
                   {currentUser?.firstName[0]}
                 </span>
                 <ChevronDown size={12} />
@@ -850,7 +850,7 @@ export default function StudentPortal({
                           setActiveTab(act.tab as any);
                           setIsUserMenuOpen(false);
                         }}
-                        className="w-full flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-lg text-2xs text-gray-700 dark:text-gray-200 text-left cursor-pointer border-0"
+                        className="w-full flex items-center gap-2 p-2 hover:bg-cream-200 dark:hover:bg-slate-700/50 rounded-lg text-2xs text-neutral-400 dark:text-gray-200 text-left cursor-pointer border-0"
                       >
                         {act.id}
                         <span>{act.text}</span>
@@ -865,7 +865,7 @@ export default function StudentPortal({
                         setCurrentUser(null);
                         setCurrentPage('login');
                       }}
-                      className="w-full flex items-center gap-2 p-2 hover:bg-red-50 text-red-600 rounded-lg text-2xs text-left cursor-pointer border-0"
+                      className="w-full flex items-center gap-2 p-2 hover:bg-red-50 text-danger-700 rounded-lg text-2xs text-left cursor-pointer border-0"
                     >
                       <LogOut size={12} />
                       <span>Sair do MultPlus</span>
@@ -880,7 +880,7 @@ export default function StudentPortal({
 
         {/* Global Lookup feed search warning feedbacks notification banner */}
         {searchFeedback && (
-          <div className="mx-6 mt-4 p-3.5 bg-[#0A2E5D]/10 border border-[#C89B3C] text-[#0A2E5D] text-xs font-semibold rounded-xl text-left">
+          <div className="mx-6 mt-4 p-3.5 bg-ink-900/10 border border-gold-600 text-ink-900 text-xs font-semibold rounded-xl text-left">
             <span>🔎 {searchFeedback}</span>
           </div>
         )}
@@ -900,15 +900,15 @@ export default function StudentPortal({
               {activeTab === 'dashboard' && (
                 <div className="space-y-6">
                   {enrollments.length === 0 ? (
-                    <div className="bg-white dark:bg-slate-900 border border-gray-150 dark:border-slate-800 rounded-3xl p-8 sm:p-12 text-center max-w-lg mx-auto space-y-6 shadow-sm mt-6">
-                      <div className="w-16 h-16 bg-[#0A2E5D]/5 text-[#C89B3C] rounded-full flex items-center justify-center mx-auto">
+                    <div className="bg-cream-100 dark:bg-ink-900 border border-gray-150 dark:border-ink-800 rounded-3xl p-8 sm:p-12 text-center max-w-lg mx-auto space-y-6 shadow-sm mt-6">
+                      <div className="w-16 h-16 bg-ink-900/5 text-gold-600 rounded-full flex items-center justify-center mx-auto">
                         <BookOpen size={28} />
                       </div>
                       <div className="space-y-2 text-center">
-                        <h4 className="font-serif font-black text-lg text-[#0A2E5D] dark:text-white leading-tight m-0">
+                        <h4 className="font-serif font-black text-lg text-ink-900 dark:text-cream-100 leading-tight m-0">
                           Você ainda não está inscrito em nenhum curso.
                         </h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-450 leading-relaxed font-sans m-0">
+                        <p className="text-xs text-neutral-400 dark:text-gray-450 leading-relaxed font-sans m-0">
                           Entre em contato com o seu instrutor ou administrador da MultiPlus Academy para efetuar a sua matrícula nos cursos disponíveis.
                         </p>
                       </div>
@@ -917,37 +917,37 @@ export default function StudentPortal({
                     <>
                       {/* Personal Greetings Block with UTC live date clock and progress indicator */}
                       <div className={`p-6 sm:p-8 rounded-3xl relative overflow-hidden text-left ${
-                        isHighContrast ? 'border-4 border-yellow-500 bg-black text-white' : 'bg-[#0A2E5D] text-white border border-[#C89B3C]/20 shadow-md'
+                        isHighContrast ? 'border-4 border-yellow-500 bg-black text-cream-100' : 'bg-ink-900 text-cream-100 border border-gold-600/20 shadow-md'
                       }`}>
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#C89B3C]/10 to-transparent rounded-full pointer-events-none" />
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-gold-600/10 to-transparent rounded-full pointer-events-none" />
                         
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
                           <div>
                             {/* Live real-time clock and precise formatted dates */}
-                            <div className="flex items-center gap-3 text-[#C89B3C] text-[10px] font-mono tracking-widest uppercase font-bold">
+                            <div className="flex items-center gap-3 text-gold-600 text-[10px] font-mono tracking-widest uppercase font-bold">
                               <span>ASSENTO ACADÉMICO ATIVO • MULTIPLUS</span>
-                              <span className="px-2 py-0.5 rounded bg-black/40 text-white select-none">
+                              <span className="px-2 py-0.5 rounded bg-black/40 text-cream-100 select-none">
                                 ⏱ {currentTime.toLocaleTimeString()}
                               </span>
                             </div>
 
-                            <h2 className="text-2xl sm:text-3xl font-serif font-black m-0 text-white mt-1.5 leading-tight">
+                            <h2 className="text-2xl sm:text-3xl font-serif font-black m-0 text-cream-100 mt-1.5 leading-tight">
                               Olá, {profileForm.firstName || 'Doutor(a)'}! 👋
                             </h2>
-                            <p className="text-xs text-white/70 mt-1 max-w-xl">
+                            <p className="text-xs text-cream-100/70 mt-1 max-w-xl">
                               Bem-vindo(a) de volta à MultiPlus Academy. Desenvolva as suas competências de oratória ("oral advocacy") e drafting formal de contratos em inglês hoje.
                             </p>
                           </div>
 
-                          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/5 space-y-2 shrink-0">
-                            <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block font-bold">PRÓXIMA AULA SÍNCRONA</span>
+                          <div className="bg-cream-100/10 backdrop-blur-md p-4 rounded-2xl border border-white/5 space-y-2 shrink-0">
+                            <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block font-bold">PRÓXIMA AULA SÍNCRONA</span>
                             <h4 className="text-xs font-serif font-black m-0">Tuesday Legal Advisory Class</h4>
                             <span className="text-[10px] font-mono text-emerald-400 block font-bold">TERÇA-FEIRA • 18h30 - 20h30</span>
                             
                             <a 
                               href="https://meet.google.com/lookup/mock-multiplus"
                               target="_blank"
-                              className="px-3.5 py-1.5 bg-[#C89B3C] hover:bg-white hover:text-slate-900 text-slate-950 font-mono text-3xs font-extrabold rounded-lg tracking-wider transition-all inline-flex items-center gap-1"
+                              className="px-3.5 py-1.5 bg-gold-600 hover:bg-cream-100 hover:text-slate-900 text-slate-950 font-mono text-3xs font-extrabold rounded-lg tracking-wider transition-all inline-flex items-center gap-1"
                             >
                               Entrar Meet do Google <ExternalLink size={10} />
                             </a>
@@ -966,14 +966,14 @@ export default function StudentPortal({
                           <div key={idx} className={`p-5 rounded-2xl text-left flex flex-col justify-between ${cardThemeClass}`}>
                             <div className="flex justify-between items-start">
                               <div>
-                                <span className="text-[8px] font-mono text-gray-400 uppercase tracking-widest block mb-1">{stat.title}</span>
-                                <span className="text-xl font-serif font-black text-[#0A2E5D] dark:text-white leading-tight">{stat.value}</span>
+                                <span className="text-[8px] font-mono text-neutral-400 uppercase tracking-widest block mb-1">{stat.title}</span>
+                                <span className="text-xl font-serif font-black text-ink-900 dark:text-cream-100 leading-tight">{stat.value}</span>
                               </div>
-                              <div className="p-2.5 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shrink-0">
+                              <div className="p-2.5 bg-cream-200 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-ink-800 shrink-0">
                                 {stat.icon}
                               </div>
                             </div>
-                            <span className="text-[9px] font-mono text-gray-400 mt-3 block">{stat.note}</span>
+                            <span className="text-[9px] font-mono text-neutral-400 mt-3 block">{stat.note}</span>
                           </div>
                         ))}
                       </div>
@@ -985,25 +985,25 @@ export default function StudentPortal({
                         <div className={`lg:col-span-8 p-6 rounded-3xl text-left space-y-4 flex flex-col justify-between ${cardThemeClass}`}>
                           <div className="border-b border-gray-150 pb-3 flex justify-between items-center w-full">
                             <div>
-                              <span className="text-[9px] font-mono text-gray-400 uppercase font-black tracking-wide">Módulo Ativo</span>
-                              <h3 className="text-base font-serif font-black m-0 text-[#0A2E5D] dark:text-white">Retome do Módulo II: Drafting Prático</h3>
+                              <span className="text-[9px] font-mono text-neutral-400 uppercase font-black tracking-wide">Módulo Ativo</span>
+                              <h3 className="text-base font-serif font-black m-0 text-ink-900 dark:text-cream-100">Retome do Módulo II: Drafting Prático</h3>
                             </div>
                             <span className="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded text-[9px] font-mono">66% COMPLETO</span>
                           </div>
 
-                          <div className="p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 space-y-3">
-                            <span className="text-[9px] font-mono text-[#C89B3C] tracking-wide block uppercase font-bold">RETOMAR HOJE:</span>
-                            <h4 className="text-xs font-serif font-black text-gray-800 dark:text-gray-200 mt-1 m-0">
+                          <div className="p-4 rounded-xl bg-cream-200 dark:bg-slate-800/50 border border-gray-100 dark:border-ink-800/50 space-y-3">
+                            <span className="text-[9px] font-mono text-gold-600 tracking-wide block uppercase font-bold">RETOMAR HOJE:</span>
+                            <h4 className="text-xs font-serif font-black text-neutral-400 dark:text-gray-200 mt-1 m-0">
                               {currentLecture.title}
                             </h4>
-                            <p className="text-2xs text-gray-500 dark:text-gray-300 leading-relaxed font-sans mt-1 m-0">
+                            <p className="text-2xs text-neutral-400 dark:text-gray-300 leading-relaxed font-sans mt-1 m-0">
                               {currentLecture.description}
                             </p>
                           </div>
 
                           <button
                             onClick={() => setActiveTab('courses')}
-                            className="px-4 py-2.5 bg-[#011a3d] hover:bg-[#C89B3C] text-white hover:text-slate-900 border-0 transition-colors text-2xs font-mono font-bold uppercase rounded-xl tracking-wider flex items-center justify-center gap-1.5 cursor-pointer w-full"
+                            className="px-4 py-2.5 bg-[#011a3d] hover:bg-gold-600 text-cream-100 hover:text-slate-900 border-0 transition-colors text-2xs font-mono font-bold uppercase rounded-xl tracking-wider flex items-center justify-center gap-1.5 cursor-pointer w-full"
                           >
                             <PlayCircle size={14} />
                             <span>Abrir Leitor de Videoaulas</span>
@@ -1013,15 +1013,15 @@ export default function StudentPortal({
                         {/* Support block info links */}
                         <div className={`lg:col-span-4 p-6 rounded-3xl text-left flex flex-col justify-between space-y-4 ${cardThemeClass}`}>
                           <div className="space-y-3">
-                            <span className="text-[9px] font-mono text-[#C89B3C] uppercase tracking-widest font-black block">Atalhos Úteis</span>
-                            <h3 className="text-sm font-serif font-black text-[#0A2E5D] dark:text-white m-0">Biblioteca de Dicionários</h3>
-                            <p className="text-2xs text-gray-500 font-sans leading-relaxed m-0">Assegure eficácia na redação perante tribunais descarregando dicionarizações jurídicas na secção de materiais.</p>
+                            <span className="text-[9px] font-mono text-gold-600 uppercase tracking-widest font-black block">Atalhos Úteis</span>
+                            <h3 className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 m-0">Biblioteca de Dicionários</h3>
+                            <p className="text-2xs text-neutral-400 font-sans leading-relaxed m-0">Assegure eficácia na redação perante tribunais descarregando dicionarizações jurídicas na secção de materiais.</p>
                           </div>
 
                           <div className="space-y-2.5">
                             <button
                               onClick={() => setActiveTab('materials')}
-                              className="w-full py-2 bg-gray-100 hover:bg-gray-200 dark:bg-slate-850 dark:hover:bg-slate-705 text-gray-700 dark:text-gray-200 border-0 transition-colors rounded-xl text-3xs font-mono font-bold uppercase tracking-wider"
+                              className="w-full py-2 bg-gray-100 hover:bg-gray-200 dark:bg-ink-800 dark:hover:bg-slate-705 text-neutral-400 dark:text-gray-200 border-0 transition-colors rounded-xl text-3xs font-mono font-bold uppercase tracking-wider"
                             >
                               Ir para os Manuais
                             </button>
@@ -1042,15 +1042,15 @@ export default function StudentPortal({
               {activeTab === 'courses' && (
                 <div className="space-y-6 text-left">
                   {enrollments.length === 0 ? (
-                    <div className="bg-white dark:bg-slate-900 border border-gray-150 dark:border-slate-800 rounded-3xl p-8 sm:p-12 text-center max-w-lg mx-auto space-y-6 shadow-sm mt-6">
-                      <div className="w-16 h-16 bg-[#0A2E5D]/5 text-[#C89B3C] rounded-full flex items-center justify-center mx-auto">
+                    <div className="bg-cream-100 dark:bg-ink-900 border border-gray-150 dark:border-ink-800 rounded-3xl p-8 sm:p-12 text-center max-w-lg mx-auto space-y-6 shadow-sm mt-6">
+                      <div className="w-16 h-16 bg-ink-900/5 text-gold-600 rounded-full flex items-center justify-center mx-auto">
                         <BookOpen size={28} />
                       </div>
                       <div className="space-y-2 text-center">
-                        <h4 className="font-serif font-black text-lg text-[#0A2E5D] dark:text-white leading-tight m-0">
+                        <h4 className="font-serif font-black text-lg text-ink-900 dark:text-cream-100 leading-tight m-0">
                           Você ainda não está inscrito em nenhum curso.
                         </h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-450 leading-relaxed font-sans m-0">
+                        <p className="text-xs text-neutral-400 dark:text-gray-450 leading-relaxed font-sans m-0">
                           A área de videoaulas estará disponível assim que for matriculado num curso oficial.
                         </p>
                       </div>
@@ -1060,13 +1060,13 @@ export default function StudentPortal({
                       {/* Section Title and grid selector */}
                       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-150 pb-4">
                         <div>
-                          <span className="text-[10px] font-mono tracking-widest text-[#C89B3C] uppercase block mb-1">Módulo I & II Ativos</span>
-                          <h3 className="text-lg font-serif font-black m-0 text-[#0A2E5D] dark:text-white">Leitor Integrado de Videoaulas</h3>
+                          <span className="text-[10px] font-mono tracking-widest text-gold-600 uppercase block mb-1">Módulo I & II Ativos</span>
+                          <h3 className="text-lg font-serif font-black m-0 text-ink-900 dark:text-cream-100">Leitor Integrado de Videoaulas</h3>
                         </div>
 
                         {/* Preparation course future catalog displays as requested */}
                         <select
-                          className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 text-xs font-serif font-bold text-[#0A2E5D] dark:text-white focus:outline-none"
+                          className="px-3 py-1.5 rounded-xl bg-cream-100 dark:bg-slate-800 border border-gray-200 text-xs font-serif font-bold text-ink-900 dark:text-cream-100 focus:outline-none"
                           value={selectedCourseId}
                           onChange={(e) => handleCourseChange(e.target.value)}
                         >
@@ -1085,17 +1085,17 @@ export default function StudentPortal({
                     <div className="lg:col-span-8 space-y-4">
                       
                       {/* Interactive player mock card */}
-                      <div className="aspect-video bg-slate-900 border border-[#C89B3C]/35 rounded-2xl overflow-hidden relative flex flex-col justify-between items-stretch p-4 select-none shadow">
+                      <div className="aspect-video bg-slate-900 border border-gold-600/35 rounded-2xl overflow-hidden relative flex flex-col justify-between items-stretch p-4 select-none shadow">
                         
                         {/* Video streaming top logs */}
-                        <div className="flex justify-between items-center text-[10px] font-mono text-white/50 z-10">
+                        <div className="flex justify-between items-center text-[10px] font-mono text-cream-100/50 z-10">
                           <span className="bg-black/40 px-2 py-0.5 rounded border border-white/5">Cloudinary Segment Stream v2</span>
-                          <span className="bg-emerald-600 font-extrabold text-white px-2 py-0.5 rounded">AUTO 1080P</span>
+                          <span className="bg-emerald-600 font-extrabold text-cream-100 px-2 py-0.5 rounded">AUTO 1080P</span>
                         </div>
 
                         {/* Interactive anti-recorders watermarker layer */}
                         <div 
-                          className="absolute text-white/10 text-[11px] sm:text-xs font-mono tracking-widest font-extrabold pointer-events-none z-20 bg-black/10 px-2.5 py-1 rounded border border-white/5 whitespace-nowrap transition-all duration-1000 ease-in-out"
+                          className="absolute text-cream-100/10 text-[11px] sm:text-xs font-mono tracking-widest font-extrabold pointer-events-none z-20 bg-black/10 px-2.5 py-1 rounded border border-white/5 whitespace-nowrap transition-all duration-1000 ease-in-out"
                           style={{ top: randomWatermark.top, left: randomWatermark.left, transform: 'rotate(-5deg)' }}
                         >
                           🛡 {currentUser?.email || 'antonio@advogados.ao'} • MULTIPLUS
@@ -1103,11 +1103,11 @@ export default function StudentPortal({
 
                         {/* Player Backdrops visual layout */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,rgba(10,46,93,0.3)_0%,#040c1a_100%)]">
-                          <Video size={44} className="text-[#C89B3C]/40 mb-2 animate-pulse" />
-                          <h4 className="text-white text-xs sm:text-sm font-serif font-black text-center max-w-sm mt-1 mb-0 leading-snug">
+                          <Video size={44} className="text-gold-600/40 mb-2 animate-pulse" />
+                          <h4 className="text-cream-100 text-xs sm:text-sm font-serif font-black text-center max-w-sm mt-1 mb-0 leading-snug">
                             {currentLecture.title}
                           </h4>
-                          <span className="text-[10px] font-mono text-gray-500 mt-2 block">
+                          <span className="text-[10px] font-mono text-neutral-400 mt-2 block">
                             {isPlayingVideo ? `A reproduzir a ${videoPlaybackSpeed}x` : 'Pausado'} • {Math.floor(videoPlaySec / 60)}:{(videoPlaySec % 60).toString().padStart(2, '0')} / {currentLecture.duration}
                           </span>
                         </div>
@@ -1117,13 +1117,13 @@ export default function StudentPortal({
                           <div className="flex items-center gap-3">
                             <button
                               onClick={() => setIsPlayingVideo(!isPlayingVideo)}
-                              className="px-3.5 py-1 bg-[#C89B3C] text-slate-950 font-mono text-[10px] font-bold rounded-lg uppercase cursor-pointer"
+                              className="px-3.5 py-1 bg-gold-600 text-slate-950 font-mono text-[10px] font-bold rounded-lg uppercase cursor-pointer"
                             >
                               {isPlayingVideo ? 'Pausar' : 'Reproduzir'}
                             </button>
                             <button
                               onClick={() => setVideoPlaySec(prev => prev + 15)}
-                              className="text-white/75 hover:text-[#C89B3C] text-3xs font-mono"
+                              className="text-cream-100/75 hover:text-gold-600 text-3xs font-mono"
                             >
                               +15 segundos
                             </button>
@@ -1131,13 +1131,13 @@ export default function StudentPortal({
 
                           {/* Speed dial switches */}
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[8px] font-mono text-gray-400">VELOCIDADE:</span>
+                            <span className="text-[8px] font-mono text-neutral-400">VELOCIDADE:</span>
                             {[1, 1.25, 1.5, 2].map(spd => (
                               <button
                                 key={spd}
                                 onClick={() => setVideoPlaybackSpeed(spd)}
                                 className={`px-1.5 py-0.5 rounded text-4xs font-mono ${
-                                  videoPlaybackSpeed === spd ? 'bg-[#C89B3C] text-slate-950 font-bold' : 'text-gray-400 hover:text-white hover:bg-white/10'
+                                  videoPlaybackSpeed === spd ? 'bg-gold-600 text-slate-950 font-bold' : 'text-neutral-400 hover:text-cream-100 hover:bg-cream-100/10'
                                 }`}
                               >
                                 {spd}x
@@ -1150,7 +1150,7 @@ export default function StudentPortal({
 
                       {/* Lesson Transcripts written segment for accessible studies */}
                       <div className={`p-5 rounded-2xl ${cardThemeClass}`}>
-                        <span className="text-[9px] font-mono text-[#C89B3C] font-black uppercase tracking-wider block border-b border-gray-100 dark:border-slate-700 pb-2">
+                        <span className="text-[9px] font-mono text-gold-600 font-black uppercase tracking-wider block border-b border-gray-100 dark:border-ink-800 pb-2">
                           Acessibilidade • Transcrição Segmentada Escrita
                         </span>
                         <p className="text-xs sm:text-sm text-gray-650 dark:text-gray-300 leading-relaxed font-sans italic pt-2 mb-0">
@@ -1188,12 +1188,12 @@ export default function StudentPortal({
                             placeholder={`Escreva anotação académica vinculada ao tempo atual (${Math.floor(videoPlaySec / 60)}:${(videoPlaySec % 60).toString().padStart(2, '0')})...`}
                             value={newNoteInput}
                             onChange={(e) => setNewNoteInput(e.target.value)}
-                            className="flex-1 px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 text-[#1C1C1C] dark:text-white focus:outline-none"
+                            className="flex-1 px-3 py-2 text-xs rounded-xl bg-cream-200 dark:bg-slate-800 border border-gray-200 text-[#1C1C1C] dark:text-cream-100 focus:outline-none"
                           />
                           <button
                             onClick={handleSaveNote}
                             disabled={!newNoteInput.trim()}
-                            className="px-4 py-2 bg-[#C89B3C] hover:bg-[#a67e2b] text-white hover:text-slate-900 border-0 text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer"
+                            className="px-4 py-2 bg-gold-600 hover:bg-[#a67e2b] text-cream-100 hover:text-slate-900 border-0 text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer"
                           >
                             Pinar Nota
                           </button>
@@ -1204,10 +1204,10 @@ export default function StudentPortal({
                           {notesList.map((n) => (
                             <div key={n.id} className="pt-2 flex justify-between gap-4 text-xs">
                               <div className="space-y-1">
-                                <p className="m-0 text-gray-700 dark:text-gray-200 leading-normal">{n.text}</p>
-                                <span className="block text-[8px] font-mono text-gray-400">{n.date}</span>
+                                <p className="m-0 text-neutral-400 dark:text-gray-200 leading-normal">{n.text}</p>
+                                <span className="block text-[8px] font-mono text-neutral-400">{n.date}</span>
                               </div>
-                              <span className="bg-[#0A2E5D]/5 text-[#C89B3C] font-mono text-[9px] font-bold px-2 py-0.5 rounded border border-[#0A2E5D]/10 text-center self-start shrink-0">
+                              <span className="bg-ink-900/5 text-gold-600 font-mono text-[9px] font-bold px-2 py-0.5 rounded border border-ink-900/10 text-center self-start shrink-0">
                                 ⏱ {Math.floor(n.timestamp / 60)}:{(n.timestamp % 60).toString().padStart(2, '0')}
                               </span>
                             </div>
@@ -1220,7 +1220,7 @@ export default function StudentPortal({
                     {/* Right column: Curricular lessons sequence tree list */}
                     <div className="lg:col-span-4">
                       <div className={`p-4 rounded-2xl flex flex-col h-full ${cardThemeClass}`}>
-                        <span className="text-[9px] font-mono text-gray-400 uppercase tracking-widest block border-b border-gray-100 dark:border-slate-700 pb-3 mb-3">
+                        <span className="text-[9px] font-mono text-neutral-400 uppercase tracking-widest block border-b border-gray-100 dark:border-ink-800 pb-3 mb-3">
                           CURSOGRAMA ACADÉMICO
                         </span>
 
@@ -1234,13 +1234,13 @@ export default function StudentPortal({
                               }}
                               className={`w-full text-left p-3 rounded-xl border transition-all text-xs flex justify-between gap-3 cursor-pointer ${
                                 activeLessonIdx === index
-                                  ? 'border-[#C89B3C] bg-[#0A2E5D]/5 dark:bg-slate-800 text-[#0A2E5D] dark:text-[#C89B3C]'
-                                  : 'border-gray-100 dark:border-slate-800 hover:border-gray-200'
+                                  ? 'border-gold-600 bg-ink-900/5 dark:bg-slate-800 text-ink-900 dark:text-gold-600'
+                                  : 'border-gray-100 dark:border-ink-800 hover:border-gray-200'
                               }`}
                             >
                               <div className="space-y-1 text-left flex-1 min-w-0">
                                 <h5 className="font-serif font-black m-0 leading-snug truncate">{syll.title}</h5>
-                                <p className="text-[10px] text-gray-400 m-0 flex items-center gap-1.5">
+                                <p className="text-[10px] text-neutral-400 m-0 flex items-center gap-1.5">
                                   {completedLessons.includes(syll.id) ? (
                                     <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono text-[9px] flex items-center gap-0.5">
                                       ✓ Concluída
@@ -1250,16 +1250,16 @@ export default function StudentPortal({
                                   )}
                                 </p>
                               </div>
-                              <span className="text-[#C89B3C] font-mono text-4xs shrink-0 self-center font-bold">
+                              <span className="text-gold-600 font-mono text-4xs shrink-0 self-center font-bold">
                                 {syll.duration}
                               </span>
                             </button>
                           ))}
                         </div>
 
-                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/40 p-3 rounded-xl text-center space-y-2">
-                          <span className="text-[9px] font-mono text-gray-400 uppercase tracking-wide block">TUTORIA DIRECTA</span>
-                          <p className="text-[10px] text-gray-500 m-0 leading-normal">
+                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-ink-800 bg-cream-200 dark:bg-slate-800/40 p-3 rounded-xl text-center space-y-2">
+                          <span className="text-[9px] font-mono text-neutral-400 uppercase tracking-wide block">TUTORIA DIRECTA</span>
+                          <p className="text-[10px] text-neutral-400 m-0 leading-normal">
                             Qualquer dúvida ortográfica, consulte o centro de mensagens para debater os rascunhos.
                           </p>
                         </div>
@@ -1278,19 +1278,19 @@ export default function StudentPortal({
                     
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                       <div>
-                        <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block mb-1">PROGRAMA DE EXAMES</span>
-                        <h3 className="text-lg font-serif font-black text-[#0A2E5D] dark:text-white m-0">Calendário Letivo de Debates</h3>
+                        <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block mb-1">PROGRAMA DE EXAMES</span>
+                        <h3 className="text-lg font-serif font-black text-ink-900 dark:text-cream-100 m-0">Calendário Letivo de Debates</h3>
                       </div>
 
                       <div className="flex items-center gap-2">
                         {/* Calendrier select view buttons */}
-                        <div className="flex items-center gap-1 border border-gray-100 p-1 bg-gray-50 dark:bg-slate-800 rounded-xl">
+                        <div className="flex items-center gap-1 border border-gray-100 p-1 bg-cream-200 dark:bg-slate-800 rounded-xl">
                           {(['MONTH', 'WEEK'] as const).map(v => (
                             <button
                               key={v}
                               onClick={() => setCalendarView(v)}
                               className={`px-3 py-1 rounded-lg text-3xs font-mono font-bold uppercase cursor-pointer border-0 ${
-                                calendarView === v ? 'bg-[#0A2E5D] text-white shadow-sm' : 'text-gray-400 hover:text-gray-700'
+                                calendarView === v ? 'bg-ink-900 text-cream-100 shadow-sm' : 'text-neutral-400 hover:text-neutral-400'
                               }`}
                             >
                               {v === 'MONTH' ? 'Mensal' : 'Semanal'}
@@ -1300,7 +1300,7 @@ export default function StudentPortal({
 
                         <button
                           onClick={handleSyncGoogleCalendar}
-                          className="px-3.5 py-1.5 bg-[#C89B3C] hover:bg-[#b08530] text-slate-950 font-mono text-3xs font-extrabold uppercase rounded-xl tracking-wider transition-all cursor-pointer border-0"
+                          className="px-3.5 py-1.5 bg-gold-600 hover:bg-[#b08530] text-slate-950 font-mono text-3xs font-extrabold uppercase rounded-xl tracking-wider transition-all cursor-pointer border-0"
                         >
                           {isGoogleSynced ? 'Sincronizado' : 'Sincronizar Google Calendar'}
                         </button>
@@ -1319,15 +1319,15 @@ export default function StudentPortal({
                           const meetUrl = 'https://meet.google.com/lookup/mock-multiplus';
 
                           return (
-                            <div key={session.id || index} className="p-4 rounded-xl border border-gray-150 bg-white dark:bg-slate-900 shadow-3xs space-y-3 relative overflow-hidden">
-                              <div className="absolute top-0 left-0 right-0 h-1 bg-[#C89B3C]" />
+                            <div key={session.id || index} className="p-4 rounded-xl border border-gray-150 bg-cream-100 dark:bg-ink-900 shadow-3xs space-y-3 relative overflow-hidden">
+                              <div className="absolute top-0 left-0 right-0 h-1 bg-gold-600" />
                               <div className="flex justify-between items-center text-2xs font-mono font-bold">
-                                <span className="text-[#C89B3C] uppercase truncate max-w-[150px]">{courseTitle}</span>
+                                <span className="text-gold-600 uppercase truncate max-w-[150px]">{courseTitle}</span>
                                 <span className="bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400 px-1.5 py-0.5 rounded">{timeVal}</span>
                               </div>
                               <div>
-                                <h4 className="text-xs font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C] leading-snug">{title}</h4>
-                                <p className="text-[10px] text-gray-500 mt-1">
+                                <h4 className="text-xs font-serif font-black text-ink-900 dark:text-gold-600 leading-snug">{title}</h4>
+                                <p className="text-[10px] text-neutral-400 mt-1">
                                   Aula agendada pelo seu professor titular para o dia {dateVal}.
                                 </p>
                               </div>
@@ -1335,7 +1335,7 @@ export default function StudentPortal({
                                 href={meetUrl}
                                 target="_blank"
                                 referrerPolicy="no-referrer"
-                                className="py-2.5 bg-[#0A2E5D] text-white text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-[#123C73] transition-colors"
+                                className="py-2.5 bg-ink-900 text-cream-100 text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-ink-900 transition-colors"
                               >
                                 Entrar na Aula Meet
                               </a>
@@ -1346,54 +1346,54 @@ export default function StudentPortal({
                         <>
                           {/* Fallback mock items if no real meetings are scheduled */}
                           {/* Session 1 card */}
-                          <div className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 dark:bg-slate-800/20 space-y-3">
+                          <div className="p-4 rounded-xl border border-gray-100 bg-cream-200/50 dark:bg-slate-800/20 space-y-3">
                             <div className="flex justify-between items-center text-2xs font-mono font-bold">
-                              <span className="text-[#C89B3C]">TERÇA-FEIRA</span>
+                              <span className="text-gold-600">TERÇA-FEIRA</span>
                               <span className="bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded">18h30 - 20h30</span>
                             </div>
                             <div>
-                              <h4 className="text-xs font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C]">Análise Linguística: Common Law vs. Civil Law</h4>
-                              <p className="text-[10px] text-gray-500 mt-1">Sessão em videoconferência síncrona com avaliação e debates.</p>
+                              <h4 className="text-xs font-serif font-black text-ink-900 dark:text-gold-600">Análise Linguística: Common Law vs. Civil Law</h4>
+                              <p className="text-[10px] text-neutral-400 mt-1">Sessão em videoconferência síncrona com avaliação e debates.</p>
                             </div>
                             <a 
                               href="https://meet.google.com/lookup/mock-multiplus"
                               target="_blank"
-                              className="py-2.5 bg-[#0A2E5D] text-white text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-[#123C73] transition-colors"
+                              className="py-2.5 bg-ink-900 text-cream-100 text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-ink-900 transition-colors"
                             >
                               Entrar na Aula Meet
                             </a>
                           </div>
 
                           {/* Session 2 card */}
-                          <div className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 dark:bg-slate-800/20 space-y-3">
+                          <div className="p-4 rounded-xl border border-gray-100 bg-cream-200/50 dark:bg-slate-800/20 space-y-3">
                             <div className="flex justify-between items-center text-2xs font-mono font-bold">
-                              <span className="text-[#C89B3C]">QUINTA-FEIRA</span>
+                              <span className="text-gold-600">QUINTA-FEIRA</span>
                               <span className="bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded">18h30 - 20h30</span>
                             </div>
                             <div>
-                              <h4 className="text-xs font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C]">Drafting: Cláusulas de Exclusão e Dolo</h4>
-                              <p className="text-[10px] text-gray-500 mt-1">Aplicação prática do Artigo 230 do Regulamento Angolano na redação internacional.</p>
+                              <h4 className="text-xs font-serif font-black text-ink-900 dark:text-gold-600">Drafting: Cláusulas de Exclusão e Dolo</h4>
+                              <p className="text-[10px] text-neutral-400 mt-1">Aplicação prática do Artigo 230 do Regulamento Angolano na redação internacional.</p>
                             </div>
                             <a 
                               href="https://meet.google.com/lookup/mock-multiplus"
                               target="_blank"
-                              className="py-2.5 bg-[#0A2E5D] text-white text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-[#123C73] transition-colors"
+                              className="py-2.5 bg-ink-900 text-cream-100 text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-ink-900 transition-colors"
                             >
                               Entrar na Aula Meet
                             </a>
                           </div>
 
                           {/* Session 3 card */}
-                          <div className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 dark:bg-slate-800/20 space-y-3">
+                          <div className="p-4 rounded-xl border border-gray-100 bg-cream-200/50 dark:bg-slate-800/20 space-y-3">
                             <div className="flex justify-between items-center text-2xs font-mono font-bold">
-                              <span className="text-[#C89B3C]">SÁBADO LETIVO</span>
-                              <span className="bg-amber-50 text-[#C89B3C] px-1.5 py-0.5 rounded">09h00 - 12h00</span>
+                              <span className="text-gold-600">SÁBADO LETIVO</span>
+                              <span className="bg-amber-50 text-gold-600 px-1.5 py-0.5 rounded">09h00 - 12h00</span>
                             </div>
                             <div>
-                              <h4 className="text-xs font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C]">Simulação de Corte Arbitral (Mock Arbitration)</h4>
-                              <p className="text-[10px] text-gray-500 mt-1">Encontro laboratorial presencial programado no campus regional do Huambo.</p>
+                              <h4 className="text-xs font-serif font-black text-ink-900 dark:text-gold-600">Simulação de Corte Arbitral (Mock Arbitration)</h4>
+                              <p className="text-[10px] text-neutral-400 mt-1">Encontro laboratorial presencial programado no campus regional do Huambo.</p>
                             </div>
-                            <span className="py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-500 text-center rounded-lg text-3xs font-mono font-bold uppercase block">
+                            <span className="py-2.5 bg-gray-100 dark:bg-slate-800 text-neutral-400 text-center rounded-lg text-3xs font-mono font-bold uppercase block">
                               Encontro Presencial
                             </span>
                           </div>
@@ -1440,16 +1440,16 @@ export default function StudentPortal({
                 <div className="space-y-6 text-left">
                   <div className={`p-6 rounded-3xl space-y-6 ${cardThemeClass}`}>
                     <div>
-                      <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block mb-1">Identidade Académica</span>
-                      <h3 className="text-lg font-serif font-black text-[#0A2E5D] dark:text-white m-0">Meu Perfil de Aluno</h3>
-                      <p className="text-xs text-gray-400 mt-1">Controle as informações cadastrais e canais de notificações preferidos.</p>
+                      <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block mb-1">Identidade Académica</span>
+                      <h3 className="text-lg font-serif font-black text-ink-900 dark:text-cream-100 m-0">Meu Perfil de Aluno</h3>
+                      <p className="text-xs text-neutral-400 mt-1">Controle as informações cadastrais e canais de notificações preferidos.</p>
                     </div>
 
                     {/* NEW EXPORT PDF WIDGET */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#0A2E5D]/5 dark:bg-slate-800/50 p-5 rounded-2xl border border-[#C89B3C]/35">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-ink-900/5 dark:bg-slate-800/50 p-5 rounded-2xl border border-gold-600/35">
                       <div className="space-y-1 text-left">
-                        <h4 className="text-sm font-serif font-black text-[#0A2E5D] dark:text-[#C89B3C] m-0">Exportar Meu Registo Académico (PDF)</h4>
-                        <p className="text-2xs text-gray-500 dark:text-gray-400 m-0 leading-normal font-sans">
+                        <h4 className="text-sm font-serif font-black text-ink-900 dark:text-gold-600 m-0">Exportar Meu Registo Académico (PDF)</h4>
+                        <p className="text-2xs text-neutral-400 dark:text-neutral-400 m-0 leading-normal font-sans">
                           Gere e descarrega um sumário oficial de aproveitamento de todos os cursos inscritos, carga horária e certificados obtidos com selo institucional de Angola.
                         </p>
                       </div>
@@ -1457,7 +1457,7 @@ export default function StudentPortal({
                         type="button"
                         onClick={handleExportPDF}
                         id="export-academic-record-btn"
-                        className="px-5 py-3 bg-[#0A2E5D] hover:bg-[#C89B3C] hover:text-slate-950 text-white rounded-xl text-3xs font-mono font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer border-0 shadow-sm transition-all shrink-0"
+                        className="px-5 py-3 bg-ink-900 hover:bg-gold-600 hover:text-slate-950 text-cream-100 rounded-xl text-3xs font-mono font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer border-0 shadow-sm transition-all shrink-0"
                       >
                         <Download size={13} />
                         <span>Exportar Registo</span>
@@ -1467,64 +1467,64 @@ export default function StudentPortal({
                     <form onSubmit={handleSaveProfile} className="space-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-[10px] font-mono text-gray-400 uppercase mb-1">Nome Próprio</label>
+                          <label className="block text-[10px] font-mono text-neutral-400 uppercase mb-1">Nome Próprio</label>
                           <input
                             type="text"
                             required
                             value={profileForm.firstName}
                             onChange={(e) => setProfileForm({...profileForm, firstName: e.target.value})}
-                            className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800/40 border border-gray-200 text-[#1C1C1C] dark:text-white focus:outline-none rounded-xl text-xs placeholder:text-gray-400"
+                            className="w-full px-3 py-2 bg-cream-200 dark:bg-slate-800/40 border border-gray-200 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-mono text-gray-400 uppercase mb-1">Apelido (Último nome)</label>
+                          <label className="block text-[10px] font-mono text-neutral-400 uppercase mb-1">Apelido (Último nome)</label>
                           <input
                             type="text"
                             required
                             value={profileForm.lastName}
                             onChange={(e) => setProfileForm({...profileForm, lastName: e.target.value})}
-                            className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800/40 border border-gray-200 text-[#1C1C1C] dark:text-white focus:outline-none rounded-xl text-xs placeholder:text-gray-400"
+                            className="w-full px-3 py-2 bg-cream-200 dark:bg-slate-800/40 border border-gray-200 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-[10px] font-mono text-gray-400 uppercase mb-1">Contacto Telefónico</label>
+                          <label className="block text-[10px] font-mono text-neutral-400 uppercase mb-1">Contacto Telefónico</label>
                           <input
                             type="text"
                             value={profileForm.phone}
                             onChange={(e) => setProfileForm({...profileForm, phone: e.target.value})}
-                            className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800/40 border border-gray-200 text-[#1C1C1C] dark:text-white focus:outline-none rounded-xl text-xs placeholder:text-gray-400"
+                            className="w-full px-3 py-2 bg-cream-200 dark:bg-slate-800/40 border border-gray-200 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-mono text-gray-400 uppercase mb-1">E-mail Registado</label>
+                          <label className="block text-[10px] font-mono text-neutral-400 uppercase mb-1">E-mail Registado</label>
                           <input
                             type="email"
                             required
                             value={profileForm.email}
                             onChange={(e) => setProfileForm({...profileForm, email: e.target.value})}
-                            className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800/40 border border-gray-200 text-[#1C1C1C] dark:text-white focus:outline-none rounded-xl text-xs placeholder:text-gray-400"
+                            className="w-full px-3 py-2 bg-cream-200 dark:bg-slate-800/40 border border-gray-200 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-sans">
                         <div>
-                          <label className="block text-[10px] font-mono text-gray-400 uppercase mb-1">País</label>
-                          <span className="block px-3 py-2 bg-gray-100 dark:bg-slate-800 text-gray-500 rounded-xl text-xs select-none">Angola</span>
+                          <label className="block text-[10px] font-mono text-neutral-400 uppercase mb-1">País</label>
+                          <span className="block px-3 py-2 bg-gray-100 dark:bg-slate-800 text-neutral-400 rounded-xl text-xs select-none">Angola</span>
                         </div>
                         <div>
-                          <label className="block text-[10px] font-mono text-gray-400 uppercase mb-1">Fluência Base</label>
-                          <span className="block px-3 py-2 bg-gray-100 dark:bg-slate-800 text-gray-500 rounded-xl text-xs select-none">Português / Inglês</span>
+                          <label className="block text-[10px] font-mono text-neutral-400 uppercase mb-1">Fluência Base</label>
+                          <span className="block px-3 py-2 bg-gray-100 dark:bg-slate-800 text-neutral-400 rounded-xl text-xs select-none">Português / Inglês</span>
                         </div>
                         <div>
-                          <label className="block text-[10px] font-mono text-gray-400 uppercase mb-1">Alertas Desejados</label>
+                          <label className="block text-[10px] font-mono text-neutral-400 uppercase mb-1">Alertas Desejados</label>
                           <select 
                             value={profileForm.preference}
                             onChange={(e) => setProfileForm({...profileForm, preference: e.target.value})}
-                            className="w-full px-3 py-1.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 text-xs text-gray-800 dark:text-white rounded-xl focus:outline-none"
+                            className="w-full px-3 py-1.5 bg-cream-200 dark:bg-slate-800 border border-gray-200 text-xs text-neutral-400 dark:text-cream-100 rounded-xl focus:outline-none"
                           >
                             <option>SMS & E-mail Automático</option>
                             <option>Somente E-mail</option>
@@ -1533,10 +1533,10 @@ export default function StudentPortal({
                         </div>
                       </div>
 
-                      <div className="pt-2 border-t border-gray-100 dark:border-slate-800 flex justify-end">
+                      <div className="pt-2 border-t border-gray-100 dark:border-ink-800 flex justify-end">
                         <button
                           type="submit"
-                          className="px-6 py-2.5 bg-[#C89B3C] text-white hover:bg-[#b08530] text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer border-0"
+                          className="px-6 py-2.5 bg-gold-600 text-cream-100 hover:bg-[#b08530] text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer border-0"
                         >
                           Guardar Coordenadas
                         </button>
@@ -1552,9 +1552,9 @@ export default function StudentPortal({
                 <div className="space-y-6 text-left">
                   <div className={`p-6 rounded-3xl space-y-6 ${cardThemeClass}`}>
                     <div>
-                      <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block mb-1">Sistema Integrado MPA</span>
-                      <h3 className="text-lg font-serif font-black text-[#0A2E5D] dark:text-white m-0">Acessibilidade & Visibilidade</h3>
-                      <p className="text-xs text-gray-400 mt-1">Personalize as métricas de contraste e o visual geral do Portal LMS para melhor conforto no Huambo.</p>
+                      <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block mb-1">Sistema Integrado MPA</span>
+                      <h3 className="text-lg font-serif font-black text-ink-900 dark:text-cream-100 m-0">Acessibilidade & Visibilidade</h3>
+                      <p className="text-xs text-neutral-400 mt-1">Personalize as métricas de contraste e o visual geral do Portal LMS para melhor conforto no Huambo.</p>
                     </div>
 
                     <div className="space-y-4 divide-y divide-gray-100 dark:divide-slate-800">
@@ -1562,14 +1562,14 @@ export default function StudentPortal({
                       {/* Theme colors toggler */}
                       <div className="pt-2 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                         <div>
-                          <h4 className="text-xs font-serif font-black text-[#0A2E5D] dark:text-white m-0">Esquema de Cores do Painel</h4>
-                          <p className="text-[10px] text-gray-500 m-0">Alternar entre telas claras e escuras anti-fadiga ocular.</p>
+                          <h4 className="text-xs font-serif font-black text-ink-900 dark:text-cream-100 m-0">Esquema de Cores do Painel</h4>
+                          <p className="text-[10px] text-neutral-400 m-0">Alternar entre telas claras e escuras anti-fadiga ocular.</p>
                         </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => { setThemeMode('light'); setIsHighContrast(false); }}
                             className={`px-4 py-2 text-2xs font-mono font-bold uppercase rounded-xl border transition-all cursor-pointer ${
-                              themeMode === 'light' && !isHighContrast ? 'bg-[#0A2E5D] text-white border-[#0A2E5D]' : 'bg-white text-gray-500 hover:bg-gray-50'
+                              themeMode === 'light' && !isHighContrast ? 'bg-ink-900 text-cream-100 border-ink-900' : 'bg-cream-100 text-neutral-400 hover:bg-cream-200'
                             }`}
                           >
                             Light Mode
@@ -1577,7 +1577,7 @@ export default function StudentPortal({
                           <button
                             onClick={() => { setThemeMode('dark'); setIsHighContrast(false); }}
                             className={`px-4 py-2 text-2xs font-mono font-bold uppercase rounded-xl border transition-all cursor-pointer ${
-                              themeMode === 'dark' && !isHighContrast ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-gray-500 hover:bg-gray-50'
+                              themeMode === 'dark' && !isHighContrast ? 'bg-slate-800 text-cream-100 border-slate-800' : 'bg-cream-100 text-neutral-400 hover:bg-cream-200'
                             }`}
                           >
                             Dark Mode
@@ -1588,8 +1588,8 @@ export default function StudentPortal({
                       {/* High Contrast Option */}
                       <div className="pt-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                         <div>
-                          <h4 className="text-xs font-serif font-black text-red-600 dark:text-red-400 m-0">Ecrã de Alto Contraste</h4>
-                          <p className="text-[10px] text-gray-500 m-0">Cores puras pretas e amarelas otimizadas para leitores de tela e deficiências visuais.</p>
+                          <h4 className="text-xs font-serif font-black text-danger-700 dark:text-danger-700 m-0">Ecrã de Alto Contraste</h4>
+                          <p className="text-[10px] text-neutral-400 m-0">Cores puras pretas e amarelas otimizadas para leitores de tela e deficiências visuais.</p>
                         </div>
                         <div>
                           <button
@@ -1597,7 +1597,7 @@ export default function StudentPortal({
                               setIsHighContrast(!isHighContrast);
                             }}
                             className={`px-4 py-2 text-2xs font-mono font-bold uppercase rounded-xl border transition-all cursor-pointer ${
-                              isHighContrast ? 'bg-yellow-500 text-black border-yellow-500 font-extrabold' : 'bg-white text-gray-500 hover:bg-gray-50'
+                              isHighContrast ? 'bg-yellow-500 text-black border-yellow-500 font-extrabold' : 'bg-cream-100 text-neutral-400 hover:bg-cream-200'
                             }`}
                           >
                             {isHighContrast ? 'Ativado ✓' : 'Ativar Contraste'}
@@ -1606,7 +1606,7 @@ export default function StudentPortal({
                       </div>
 
                       {/* Local limits warning */}
-                      <div className="pt-4 p-3 bg-gray-50 dark:bg-slate-800 text-[10px] text-gray-500 leading-normal rounded-xl">
+                      <div className="pt-4 p-3 bg-cream-200 dark:bg-slate-800 text-[10px] text-neutral-400 leading-normal rounded-xl">
                         <p className="m-0 select-none">
                           ℹ️ <strong>Métricas de Acessibilidade:</strong> A nossa plataforma respeita integralmente os critérios internacionais WCAG 2.1 e dispõe de suportes para transposição de texto em áudios síncronos na moderação linguística.
                         </p>

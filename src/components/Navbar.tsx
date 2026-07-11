@@ -162,7 +162,7 @@ export default function Navbar({
               <button
                 onClick={handleLogout}
                 title="Sair da Conta"
-                className="p-2 rounded-lg bg-cream-100/5 hover:bg-red-950/40 border border-cream-100/10 text-cream-100 hover:text-red-400 hover:border-red-900/50 transition-colors duration-200"
+                className="p-2 rounded-lg bg-cream-100/5 hover:bg-danger-700/40 border border-cream-100/10 text-cream-100 hover:text-danger-700 hover:border-red-900/50 transition-colors duration-200"
               >
                 <LogOut size={14} />
               </button>
@@ -257,7 +257,7 @@ export default function Navbar({
                       setMobileMenuOpen(false);
                       handleLogout();
                     }}
-                    className="w-full py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider text-center bg-red-950/20 text-red-400 border border-red-900/40"
+                    className="w-full py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider text-center bg-danger-700/20 text-danger-700 border border-red-900/40"
                   >
                     Terminar Sessão
                   </button>
