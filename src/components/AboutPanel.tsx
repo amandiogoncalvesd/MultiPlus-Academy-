@@ -1,13 +1,13 @@
 import { motion } from 'motion/react';
 import { PageId } from '../types';
 import { MAIN_INSTRUCTOR } from '../data';
+import { GlobeInteractive } from './ui/cobe-globe-interactive';
 import { 
   Compass, 
   Flag, 
   Scale, 
   Award, 
   GraduationCap, 
-  BookOpen, 
   ShieldCheck, 
   LineChart 
 } from 'lucide-react';
@@ -21,74 +21,74 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
   // Custom Academic Values
   const values = [
     {
-      icon: <Award className="w-6 h-6 text-gold-600" />,
+      icon: <Award className="w-6 h-6 text-[#C89B3C]" />,
       title: 'Rigor Académico',
       description: 'Ensinamos de acordo com os padrões técnicos de proficiência internacional aplicáveis de forma global.'
     },
     {
-      icon: <ShieldCheck className="w-6 h-6 text-gold-600" />,
+      icon: <ShieldCheck className="w-6 h-6 text-[#C89B3C]" />,
       title: 'Integridade Jurídica',
       description: 'Alinhamos a linguagem prática às normas vigentes, respeitando a ética em transações soberanas.'
     },
     {
-      icon: <Compass className="w-6 h-6 text-gold-600" />,
+      icon: <Compass className="w-6 h-6 text-[#C89B3C]" />,
       title: 'Foco no Aluno',
       description: 'Acompanhamento pessoal do crescimento linguístico de cada formando e workshops específicos.'
     },
     {
-      icon: <LineChart className="w-6 h-6 text-gold-600" />,
+      icon: <LineChart className="w-6 h-6 text-[#C89B3C]" />,
       title: 'Pragmatismo Comercial',
       description: 'Aulas moldadas em estudos de caso e elaboração de contratos comerciais de aplicação direta.'
     }
   ];
 
   return (
-    <div id="about-panel-root" className="bg-cream-100 text-[#1C1C1C] pt-24 pb-16">
+    <div id="about-panel-root" className="bg-white text-slate-800 pt-24 pb-16">
       
       {/* Editorial Header Section */}
-      <section className="py-20 relative bg-gradient-to-b from-ink-900 to-sky-950 text-cream-100 overflow-hidden">
+      <section className="py-20 relative bg-slate-50 border-b border-slate-100 overflow-hidden">
         
         {/* Abstract structural guidelines design background */}
-        <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(#BB8533_1.5px,transparent_1.5px)] [background-size:32px_32px]" />
-        <div className="absolute top-1/2 right-0 w-80 h-80 bg-gold-600/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(#C89B3C_1.5px,transparent_1.5px)] [background-size:32px_32px]" />
+        <div className="absolute top-1/2 right-0 w-80 h-80 bg-[#C89B3C]/5 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-4">
-          <span className="text-xs font-mono font-bold tracking-widest uppercase text-gold-600">Nossa Identidade</span>
+          <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C]">Nossa Identidade</span>
           
-          <h1 className="text-4xl sm:text-5xl font-serif font-black tracking-tight max-w-3xl mx-auto">
+          <h1 className="text-4xl sm:text-5xl font-serif font-black tracking-tight max-w-3xl mx-auto text-slate-900 leading-tight">
             Transformando Competências em Oportunidades Reais
           </h1>
           
-          <div className="w-16 h-1 bg-gold-600 mx-auto my-6 rounded" />
+          <div className="w-16 h-1 bg-[#C89B3C] mx-auto my-6 rounded" />
           
-          <p className="text-sm sm:text-base text-cream-100/70 max-w-2xl mx-auto leading-relaxed font-sans">
+          <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed font-sans">
             A MultiPlus Academy nasceu para fazer a ponte perfeita entre o conhecimento académico vernáculo e os cenários globais de negociação jurídica e corporativa em Angola.
           </p>
         </div>
       </section>
 
       {/* 2. HISTORY / ORIGIN (Alternate layout with precious negative space) */}
-      <section className="py-24 relative">
+      <section className="py-24 relative bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
             
             {/* Left side: Premium Image/Concept frame */}
             <div className="lg:col-span-5">
-              <div className="relative p-2 bg-cream-100 border border-gray-150 rounded-3xl shadow-sm overflow-hidden aspect-square flex flex-col justify-between">
-                <div className="flex-1 bg-gradient-to-tr from-ink-900 to-ink-900 rounded-2xl relative p-8 flex flex-col justify-between overflow-hidden">
+              <div className="relative p-2 bg-slate-50 border border-slate-200 rounded-3xl shadow-sm overflow-hidden aspect-square flex flex-col justify-between">
+                <div className="flex-1 bg-white rounded-2xl border border-slate-100 relative p-8 flex flex-col justify-between overflow-hidden">
                   
                   {/* Glowing background */}
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(200,155,60,0.15),transparent_50%)]" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(200,155,60,0.04),transparent_50%)]" />
                   
                   <div className="flex justify-between items-start relative z-10">
-                    <span className="text-xs font-mono tracking-widest text-gold-600 bg-cream-100/10 px-2.5 py-1 rounded-md uppercase font-bold">HISTÓRICO</span>
-                    <Scale size={20} className="text-gold-600" />
+                    <span className="text-xs font-mono tracking-widest text-[#C89B3C] bg-slate-50 px-2.5 py-1 rounded-md uppercase font-bold border border-slate-200/50">HISTÓRICO</span>
+                    <Scale size={20} className="text-[#C89B3C]" />
                   </div>
 
                   <div className="space-y-4 relative z-10">
-                    <span className="text-6xl font-serif font-bold text-cream-100/10 block leading-none">2026</span>
-                    <h3 className="text-xl font-serif font-semibold text-cream-100 leading-tight">Uma Visão Global em Solo Angolano</h3>
-                    <p className="text-xs text-cream-100/60 leading-relaxed font-sans">
+                    <span className="text-6xl font-serif font-bold text-slate-200 block leading-none">2026</span>
+                    <h3 className="text-xl font-serif font-semibold text-slate-900 leading-tight">Uma Visão Global em Solo Angolano</h3>
+                    <p className="text-xs text-slate-500 leading-relaxed font-sans">
                       Idealizada a partir da centralidade do Huambo para atender escritórios nacionais e transnacionais com suporte e rigor superiores.
                     </p>
                   </div>
@@ -99,10 +99,10 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
 
             {/* Right side: Prose text with high-end margins */}
             <div className="lg:col-span-7 space-y-6">
-              <span className="text-xs font-mono font-bold tracking-widest uppercase text-gold-600">As Origens</span>
-              <h2 className="text-3xl font-serif font-black text-ink-900">História da MultiPlus Academy</h2>
+              <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C]">As Origens</span>
+              <h2 className="text-3xl font-serif font-black text-slate-900">História da MultiPlus Academy</h2>
               
-              <div className="space-y-4 text-sm text-[#1C1C1C]/75 leading-relaxed font-sans">
+              <div className="space-y-4 text-sm text-slate-600 leading-relaxed font-sans">
                 <p>
                   O cenário de captação de investimento estrangeiro de Angola está a expandir-se substancialmente. O desenvolvimento do setor aduaneiro, a consolidação regulatória da exploração de minas e as transações de Conteúdo Local no ramo petrolífero desencadearam um novo paradigma profissional.
                 </p>
@@ -120,34 +120,34 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
       </section>
 
       {/* 3. MISSÃO, VISÃO E VALORES (Beautiful clean columns layout) */}
-      <section className="py-24 bg-gradient-to-b from-[#F2E5D7] to-[#ECECE8]">
+      <section className="py-24 bg-slate-50/50 border-t border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
             
             {/* Missão Card */}
-            <div className="neo-card p-10 rounded-3xl relative overflow-hidden flex flex-col justify-between">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gold-600/5 rounded-full pointer-events-none" />
+            <div className="bg-white p-10 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden flex flex-col justify-between">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#C89B3C]/5 rounded-full pointer-events-none" />
               <div className="space-y-6">
-                <div className="w-12 h-12 rounded-xl bg-ink-900/5 flex items-center justify-center text-gold-600">
+                <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#C89B3C]">
                   <Flag size={20} />
                 </div>
-                <h3 className="text-2xl font-serif font-bold text-ink-900">Nossa Missão</h3>
-                <p className="text-sm text-[#1C1C1C]/80 leading-relaxed font-sans">
+                <h3 className="text-2xl font-serif font-bold text-slate-900">Nossa Missão</h3>
+                <p className="text-sm text-slate-600 leading-relaxed font-sans">
                   Desenvolver e elevar as capacidades profissionais dos juristas, advogados e executivos em Angola através do ensino altamente rigoroso do Inglês Jurídico especializado, fomentando a inclusão de excelência do nosso mercado de trabalho no cenário diplomático e corporativo internacional.
                 </p>
               </div>
             </div>
 
             {/* Visão Card */}
-            <div className="neo-card p-10 rounded-3xl relative overflow-hidden flex flex-col justify-between">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-ink-900/5 rounded-full pointer-events-none" />
+            <div className="bg-white p-10 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden flex flex-col justify-between">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full pointer-events-none" />
               <div className="space-y-6">
-                <div className="w-12 h-12 rounded-xl bg-ink-900/5 flex items-center justify-center text-gold-600">
+                <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#C89B3C]">
                   <Compass size={20} />
                 </div>
-                <h3 className="text-2xl font-serif font-bold text-ink-900">Nossa Visão</h3>
-                <p className="text-sm text-[#1C1C1C]/80 leading-relaxed font-sans">
+                <h3 className="text-2xl font-serif font-bold text-slate-900">Nossa Visão</h3>
+                <p className="text-sm text-slate-600 leading-relaxed font-sans">
                   Ser reconhecida no mercado de Angola e das Nações de Expressão Portuguesa como a instituição de elite de referência máxima no ensino especializado de linguística aplicada ao direito comparado, estendendo a nossa operação para um sistema integrado de ensino LMS no futuro.
                 </p>
               </div>
@@ -157,19 +157,19 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
 
           {/* Section: Core Values */}
           <div className="text-center max-w-xl mx-auto mb-16 space-y-4">
-            <span className="text-xs font-mono font-bold tracking-widest uppercase text-gold-600">Pilares De Carreira</span>
-            <h3 className="text-2xl sm:text-3xl font-serif font-bold text-ink-900">Valores Fundamentais</h3>
+            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C]">Pilares De Carreira</span>
+            <h3 className="text-2xl sm:text-3xl font-serif font-bold text-slate-900">Valores Fundamentais</h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {values.map((v, i) => (
-              <div key={i} className="p-6 bg-cream-100 border border-gray-100 rounded-2xl shadow-sm text-left flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow">
-                <div className="w-10 h-10 rounded-lg bg-ink-900/5 flex items-center justify-center text-gold-600">
+              <div key={i} className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm text-left flex flex-col justify-between space-y-4 hover:shadow-md hover:border-[#C89B3C]/25 transition-all">
+                <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[#C89B3C]">
                   {v.icon}
                 </div>
                 <div>
-                  <h4 className="font-serif font-bold text-ink-900 text-base">{v.title}</h4>
-                  <p className="text-xs text-[#1C1C1C]/70 leading-relaxed font-sans mt-2">{v.description}</p>
+                  <h4 className="font-serif font-bold text-slate-900 text-base">{v.title}</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed font-sans mt-2">{v.description}</p>
                 </div>
               </div>
             ))}
@@ -178,15 +178,72 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
         </div>
       </section>
 
+      {/* INTERACTIVE GLOBAL REACH GLOBE */}
+      <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
+        {/* Subtle decorative gold light */}
+        <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#C89B3C]/10 rounded-full blur-[120px] pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+            
+            {/* Left Col: Globe component with customizable width */}
+            <div className="lg:col-span-6 flex justify-center items-center">
+              <div className="w-full max-w-[360px] sm:max-w-[420px] aspect-square rounded-full border border-slate-800/80 bg-slate-950/40 p-4 relative shadow-2xl">
+                <GlobeInteractive 
+                  markers={[
+                    { id: "huambo", location: [-12.7761, 15.7314], name: "Huambo Hub", users: 180 },
+                    { id: "luanda", location: [-8.839, 13.289], name: "Luanda Hub", users: 450 },
+                    { id: "lisbon", location: [38.722, -9.139], name: "Lisboa Hub", users: 210 },
+                    { id: "london", location: [51.507, -0.127], name: "Londres Link", users: 340 },
+                    { id: "houston", location: [29.760, -95.369], name: "Houston Link", users: 120 },
+                    { id: "beijing", location: [39.904, 116.407], name: "Pequim Link", users: 95 }
+                  ]}
+                  speed={0.004}
+                  className="w-full h-full"
+                />
+              </div>
+            </div>
+
+            {/* Right Col: Descriptive details */}
+            <div className="lg:col-span-6 space-y-6 text-left">
+              <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C] block">Estratégia e Conexões Transnacionais</span>
+              <h3 className="text-3xl sm:text-4xl font-serif font-black tracking-tight text-white leading-tight m-0">Nossas Pontes com os Grandes Hubs Globais</h3>
+              <p className="text-sm text-slate-400 font-sans leading-relaxed m-0">
+                A prática jurídica de elite em Angola não ocorre isoladamente. Ao dominar as estruturas linguísticas do inglês jurídico, o profissional de Angola ganha autoridade direta perante clientes e investidores sediados nos maiores polos corporativos mundiais.
+              </p>
+
+              <div className="space-y-4 pt-4 border-t border-slate-800">
+                <div className="flex gap-4 items-start">
+                  <div className="text-[#C89B3C] font-mono text-sm font-bold mt-0.5">01/</div>
+                  <div>
+                    <h4 className="text-sm font-serif font-bold text-white mb-1">Setor de Recursos e Mineração</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed font-sans m-0">Intercâmbio terminológico direto com as bolsas de valores de Londres e hubs petrolíferos de Houston.</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 items-start">
+                  <div className="text-[#C89B3C] font-mono text-sm font-bold mt-0.5">02/</div>
+                  <div>
+                    <h4 className="text-sm font-serif font-bold text-white mb-1">Conformidade Regulatória Sino-Angolana</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed font-sans m-0">Preparações rigorosas para lidar com joint-ventures financeiras e acordos bilaterais estruturados de infraestrutura.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* 4. EQUIPA ACADÉMICA / DIRECTORS */}
-      <section className="py-24 bg-cream-100">
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="max-w-3xl mx-auto text-center mb-20 space-y-4">
-            <span className="text-xs font-mono font-bold tracking-widest uppercase text-gold-600">Corpo Docente Coordenador</span>
-            <h3 className="text-3xl sm:text-4xl font-serif font-black text-ink-900">Nossa Equipa Científica</h3>
-            <p className="text-sm text-[#1C1C1C]/70 max-w-xl mx-auto font-sans">
-              Reunimos especialistas credenciados focado unicamente na transferência de saberes de alta sofisticação profissional.
+            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C]">Corpo Docente Coordenador</span>
+            <h3 className="text-3xl sm:text-4xl font-serif font-black text-slate-900">Nossa Equipa Científica</h3>
+            <p className="text-sm text-slate-600 max-w-xl mx-auto font-sans">
+              Reunimos especialistas credenciados focados unicamente na transferência de saberes de alta sofisticação profissional.
             </p>
           </div>
 
@@ -194,33 +251,33 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto items-stretch">
             
             {/* Member 1: Esmeralda Sumbelelo */}
-            <div className="bg-gradient-to-b from-gray-50 to-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
-              <div className="aspect-[4/3] bg-gradient-to-b from-ink-900 to-sky-950 relative overflow-hidden flex items-center justify-center pt-6">
+            <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:border-[#C89B3C]/20 transition-all flex flex-col">
+              <div className="aspect-[4/3] bg-slate-50 relative overflow-hidden flex items-center justify-center pt-6 border-b border-slate-100">
                 <img
                   src={MAIN_INSTRUCTOR.photo}
                   alt={MAIN_INSTRUCTOR.name}
-                  className="h-full w-full object-cover object-top grayscale hover:grayscale-0 transition-all duration-700 max-h-[300px]"
+                  className="h-full w-full object-cover object-top hover:scale-[1.02] transition-all duration-700 max-h-[300px]"
                 />
                 
-                <div className="absolute top-4 right-4 bg-gold-600 text-cream-100 font-mono text-[9px] font-bold px-2.5 py-1 rounded uppercase tracking-wider shadow">
+                <div className="absolute top-4 right-4 bg-[#0A2E5D] text-white font-mono text-[9px] font-bold px-2.5 py-1 rounded uppercase tracking-wider shadow border border-white/10">
                   Direção Letiva
                 </div>
               </div>
 
               <div className="p-8 flex-1 flex flex-col justify-between space-y-4">
                 <div>
-                  <h4 className="text-xl font-serif font-bold text-ink-900">{MAIN_INSTRUCTOR.name}</h4>
-                  <p className="text-xs text-gold-600 font-semibold tracking-wide uppercase font-mono mt-1">Diretora Pedagógica & Tradutora ATIA</p>
-                  <p className="text-xs text-[#1C1C1C]/75 font-sans mt-3 leading-relaxed">
+                  <h4 className="text-xl font-serif font-bold text-slate-900">{MAIN_INSTRUCTOR.name}</h4>
+                  <p className="text-xs text-[#C89B3C] font-bold tracking-wide uppercase font-mono mt-1">Diretora Pedagógica & Tradutora ATIA</p>
+                  <p className="text-xs text-slate-600 font-sans mt-3 leading-relaxed">
                     Com mais de 15 anos ensinando em renomadas instituições como FISK e ISCED, coordena as diretrizes científicas do curso de elite de Legal English em Angola.
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-gray-100 flex justify-between items-center text-xs">
-                  <span className="font-mono text-neutral-400">15+ Anos de Carreira</span>
+                <div className="pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
+                  <span className="font-mono text-slate-400">15+ Anos de Carreira</span>
                   <button 
                     onClick={() => setCurrentPage('instructors')} 
-                    className="text-ink-900 font-bold uppercase tracking-wider font-mono hover:text-gold-600 text-[10px] transition-colors"
+                    className="text-[#0A2E5D] font-bold uppercase tracking-wider font-mono hover:text-[#C89B3C] text-[10px] transition-colors"
                   >
                     Ver Portfolio completo
                   </button>
@@ -229,20 +286,20 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
             </div>
 
             {/* Member 2 Future placeholder slot */}
-            <div className="bg-gray-100/50 border border-dashed border-gray-200 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="w-20 h-20 rounded-full bg-gray-200/50 flex items-center justify-center border border-gray-300/30 text-gold-600">
+            <div className="bg-slate-50/50 border border-dashed border-slate-200 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-4">
+              <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center border border-slate-200 text-[#C89B3C] shadow-sm">
                 <GraduationCap size={32} />
               </div>
               <div className="space-y-2">
-                <h4 className="text-lg font-serif font-bold text-ink-900/60">Vaga letiva em aberto</h4>
-                <p className="text-xs text-[#1C1C1C]/50 max-w-[240px] leading-relaxed mx-auto">
+                <h4 className="text-lg font-serif font-bold text-slate-900/80">Vaga letiva em aberto</h4>
+                <p className="text-xs text-slate-500 max-w-[240px] leading-relaxed mx-auto">
                   A nossa assessoria académica está a selecionar formadores associados em Luanda e no Huambo, com certificações internacionais de Ensino Jurídico.
                 </p>
               </div>
               
               <button 
                 onClick={() => setCurrentPage('contact')} 
-                className="px-4 py-2 bg-cream-100 hover:bg-cream-200 text-ink-900 border border-gray-200 text-[10px] font-mono font-bold uppercase rounded-lg tracking-wider transition-all"
+                className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-[10px] font-mono font-bold uppercase rounded-lg tracking-wider transition-all shadow-sm"
               >
                 Candidatar Corpo Docente
               </button>
@@ -254,17 +311,17 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
       </section>
 
       {/* Call to Action Final */}
-      <section className="py-20 relative bg-gradient-to-br from-ink-900 to-ink-900 text-cream-100 text-center">
+      <section className="py-20 relative bg-[#0A2E5D] text-white text-center border-t border-slate-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <span className="text-xs font-mono font-bold tracking-widest text-gold-600 uppercase">Consolidação Letiva</span>
-          <h3 className="text-3xl font-serif font-bold text-cream-100">Preparado para Elevar o Seu Patamar Profissional?</h3>
-          <p className="text-sm text-cream-100/70 max-w-xl mx-auto leading-relaxed">
+          <span className="text-xs font-mono font-bold tracking-widest text-[#C89B3C] uppercase">Consolidação Letiva</span>
+          <h3 className="text-3xl font-serif font-bold text-white">Preparado para Elevar o Seu Patamar Profissional?</h3>
+          <p className="text-sm text-white/80 max-w-xl mx-auto leading-relaxed">
             As turmas para o curso inaugural de Inglês para o Setor Jurídico em Angola contam com assentos estritamente geridos. Registe o seu interesse pedagógico.
           </p>
           <div className="pt-4">
             <button
               onClick={() => { setCurrentPage('contact'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="px-8 py-3.5 bg-gold-600 hover:bg-gold-600 text-cream-100 rounded-xl uppercase tracking-wider text-xs font-bold transition-all shadow-[0_4px_12px_rgba(200,155,60,0.25)]"
+              className="px-8 py-3.5 bg-[#C89B3C] hover:bg-[#B3852C] text-white rounded-xl uppercase tracking-wider text-xs font-bold transition-all shadow-lg"
             >
               Iniciar Negociação de Vaga
             </button>

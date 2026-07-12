@@ -20,14 +20,14 @@ export default function Footer({ setCurrentPage }: FooterProps) {
   ];
 
   return (
-    <footer id="global-footer" className="bg-ink-900 text-cream-100 pt-20 pb-10 border-t border-gold-600/30 relative overflow-hidden">
+    <footer id="global-footer" className="bg-slate-50 text-slate-800 pt-20 pb-10 border-t border-slate-200 relative overflow-hidden">
       
       {/* Decorative luxury abstract radial highlights */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-gold-600/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-sky-950/20 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[#C89B3C]/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#0A2E5D]/5 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 pb-16 border-b border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 pb-16 border-b border-slate-200">
           
           {/* Column 1: Brand & Identity */}
           <div className="space-y-6">
@@ -38,27 +38,27 @@ export default function Footer({ setCurrentPage }: FooterProps) {
                 className="h-16 w-auto object-contain"
               />
             </div>
-            <p className="text-cream-100/70 text-sm leading-relaxed font-sans max-w-sm">
-              <span className="font-serif italic text-gold-600 font-medium mr-1">"Transformando Competências em Oportunidades"</span>
+            <p className="text-slate-600 text-sm leading-relaxed font-sans max-w-sm font-medium">
+              <span className="font-serif italic text-[#C89B3C] font-semibold mr-1">"Transformando Competências em Oportunidades"</span>
               <br />
               Referência no ensino do Inglês Jurídico adaptado ao mercado angolano de excelência comercial.
             </p>
             <div className="flex items-center gap-3">
-              <a href="#" className="p-2.5 rounded-full bg-cream-100/5 border border-white/10 hover:bg-gold-600/20 hover:border-gold-600 transition-all duration-300 group">
-                <Facebook size={16} className="text-cream-100/80 group-hover:text-cream-100" />
+              <a href="#" className="p-2.5 rounded-full bg-white border border-slate-200 hover:bg-[#C89B3C]/10 hover:border-[#C89B3C] transition-all duration-300 group">
+                <Facebook size={16} className="text-slate-600 group-hover:text-[#C89B3C]" />
               </a>
-              <a href="#" className="p-2.5 rounded-full bg-cream-100/5 border border-white/10 hover:bg-gold-600/20 hover:border-gold-600 transition-all duration-300 group">
-                <Instagram size={16} className="text-cream-100/80 group-hover:text-cream-100" />
+              <a href="#" className="p-2.5 rounded-full bg-white border border-slate-200 hover:bg-[#C89B3C]/10 hover:border-[#C89B3C] transition-all duration-300 group">
+                <Instagram size={16} className="text-slate-600 group-hover:text-[#C89B3C]" />
               </a>
-              <a href="#" className="p-2.5 rounded-full bg-cream-100/5 border border-white/10 hover:bg-gold-600/20 hover:border-gold-600 transition-all duration-300 group">
-                <Linkedin size={16} className="text-cream-100/80 group-hover:text-cream-100" />
+              <a href="#" className="p-2.5 rounded-full bg-white border border-slate-200 hover:bg-[#C89B3C]/10 hover:border-[#C89B3C] transition-all duration-300 group">
+                <Linkedin size={16} className="text-slate-600 group-hover:text-[#C89B3C]" />
               </a>
             </div>
           </div>
 
           {/* Column 2: Quick Links */}
           <div className="lg:pl-8">
-            <h4 className="text-sm font-bold tracking-wider uppercase text-gold-600 font-mono mb-6">Navegação</h4>
+            <h4 className="text-sm font-bold tracking-wider uppercase text-[#0A2E5D] font-mono mb-6">Navegação</h4>
             <ul className="space-y-3">
               {footerLinks.map((link, idx) => (
                 <li key={idx}>
@@ -67,7 +67,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
                       setCurrentPage(link.page);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="text-cream-100/70 hover:text-gold-600 text-sm tracking-wide transition-colors duration-200 text-left"
+                    className="text-slate-600 hover:text-[#C89B3C] text-sm tracking-wide transition-colors duration-200 text-left font-medium"
                   >
                     {link.label}
                   </button>
@@ -78,26 +78,26 @@ export default function Footer({ setCurrentPage }: FooterProps) {
 
           {/* Column 3: Contact & Info */}
           <div>
-            <h4 className="text-sm font-bold tracking-wider uppercase text-gold-600 font-mono mb-6">Contactos Oficiais</h4>
+            <h4 className="text-sm font-bold tracking-wider uppercase text-[#0A2E5D] font-mono mb-6">Contactos Oficiais</h4>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
-                <Phone size={16} className="text-gold-600 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-cream-100/80">
-                  <span className="block font-medium">+244 956 449 084</span>
-                  <span className="text-xs text-cream-100/50 font-mono">Atendimento Académico</span>
+                <Phone size={16} className="text-[#C89B3C] mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-slate-700">
+                  <span className="block font-semibold">+244 956 449 084</span>
+                  <span className="text-xs text-slate-500 font-mono">Atendimento Académico</span>
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <Mail size={16} className="text-gold-600 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-cream-100/80 break-all">
-                  <span className="block font-medium">multiplusacademy@gmail.com</span>
-                  <span className="text-xs text-cream-100/50 font-mono">Correio Eletrónico Geral</span>
+                <Mail size={16} className="text-[#C89B3C] mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-slate-700 break-all">
+                  <span className="block font-semibold">multiplusacademy@gmail.com</span>
+                  <span className="text-xs text-slate-500 font-mono">Correio Eletrónico Geral</span>
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <MapPin size={16} className="text-gold-600 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-cream-100/80">
-                  <span className="block font-medium">Huambo, Angola</span>
+                <MapPin size={16} className="text-[#C89B3C] mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-slate-700">
+                  <span className="block font-semibold font-serif">Huambo, Angola</span>
                 </div>
               </li>
             </ul>
@@ -105,8 +105,8 @@ export default function Footer({ setCurrentPage }: FooterProps) {
 
           {/* Column 4: Newsletter */}
           <div>
-            <h4 className="text-sm font-bold tracking-wider uppercase text-gold-600 font-mono mb-6">Informativos Académicos</h4>
-            <p className="text-xs text-cream-100/70 leading-relaxed mb-4">
+            <h4 className="text-sm font-bold tracking-wider uppercase text-[#0A2E5D] font-mono mb-6">Informativos Académicos</h4>
+            <p className="text-xs text-slate-600 leading-relaxed mb-4 font-medium">
               Subscreva para receber insights e as últimas novidades sobre o Inglês Jurídico e atualizações do mercado em Angola.
             </p>
             <form onSubmit={(e) => { e.preventDefault(); alert('Grato pelo interesse! O seu email foi registado para futuros informativos.'); (e.target as HTMLFormElement).reset(); }} className="space-y-3">
@@ -115,17 +115,17 @@ export default function Footer({ setCurrentPage }: FooterProps) {
                   type="email"
                   required
                   placeholder="Seu email institucional"
-                  className="w-full bg-cream-100/5 border border-white/10 rounded-lg py-2.5 pl-3 pr-10 text-xs text-cream-100 placeholder-white/40 focus:outline-none focus:border-gold-600 transition-colors"
+                  className="w-full bg-white border border-slate-200 rounded-lg py-2.5 pl-3 pr-10 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#C89B3C] transition-colors shadow-sm"
                 />
                 <button
                   type="submit"
-                  className="absolute right-1 top-1 bottom-1 px-2.5 rounded bg-gold-600 hover:bg-gold-600 text-cream-100 flex items-center justify-center transition-colors"
+                  className="absolute right-1 top-1 bottom-1 px-2.5 rounded bg-[#0A2E5D] hover:bg-[#123C73] text-white flex items-center justify-center transition-colors"
                   aria-label="Subscrever"
                 >
                   <Send size={12} />
                 </button>
               </div>
-              <span className="text-[10px] text-cream-100/40 block">Ao subscrever, concorda com a nossa política académica de privacidade.</span>
+              <span className="text-[10px] text-slate-500 block">Ao subscrever, concorda com a nossa política académica de privacidade.</span>
             </form>
           </div>
 
@@ -133,21 +133,21 @@ export default function Footer({ setCurrentPage }: FooterProps) {
 
         {/* Closing details & compliance copyrights */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-xs text-cream-100/50 text-center sm:text-left">
+          <div className="text-xs text-slate-500 text-center sm:text-left">
             <p>&copy; {new Date().getFullYear()} MultiPlus Academy. Todos os direitos reservados.</p>
-            <p className="mt-1 text-[10px] text-cream-100/35 font-mono">
+            <p className="mt-1 text-[10px] text-slate-400 font-mono">
               Designed dynamically for high prestige Legal & English Careers.
             </p>
           </div>
-          <div className="flex gap-6 text-xs text-cream-100/50">
-            <a href="#" className="hover:text-gold-600 transition-colors">Termos de Uso</a>
-            <a href="#" className="hover:text-gold-600 transition-colors">Política de Privacidade</a>
+          <div className="flex gap-6 text-xs text-slate-500">
+            <a href="#" className="hover:text-[#C89B3C] transition-colors font-medium">Termos de Uso</a>
+            <a href="#" className="hover:text-[#C89B3C] transition-colors font-medium">Política de Privacidade</a>
             <button
               onClick={handleScrollToTop}
-              className="flex items-center gap-1.5 p-2 px-3 rounded-lg bg-cream-100/5 hover:bg-cream-100/10 text-cream-100/70 transition-all font-mono text-2xs uppercase tracking-wider"
+              className="flex items-center gap-1.5 p-2 px-3 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all font-mono text-2xs uppercase tracking-wider shadow-sm"
             >
               Topo
-              <ArrowUp size={12} className="text-gold-600" />
+              <ArrowUp size={12} className="text-[#C89B3C]" />
             </button>
           </div>
         </div>
