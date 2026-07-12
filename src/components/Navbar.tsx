@@ -148,13 +148,13 @@ export default function Navbar({
               items={pillNavItems}
               activeHref={currentPage}
               baseColor="#0A2E5D"
-              pillColor="transparent"
+              pillColor="#0A2E5D"
               hoveredPillTextColor="#FFFFFF"
-              pillTextColor="#475569"
+              pillTextColor="#FAF9F6"
               containerBgColor="#FAF9F6"
               activeBgColor="#C89B3C"
               activeTextColor="#FFFFFF"
-              inactiveTextColor="#475569"
+              inactiveTextColor="#FAF9F6"
               hoverBgColor="#C89B3C"
               logoBgColor="#FFFFFF"
               hamburgerBgColor="#FFFFFF"

@@ -191,7 +191,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
               >
                 <div className="flex flex-col md:flex-row items-center gap-8 p-6 sm:p-8 rounded-3xl border border-slate-150 bg-slate-50/50 shadow-sm max-w-3xl">
                   {/* Globe Canvas Container with exact size as "Sobre nós" page */}
-                  <div className="w-full max-w-[360px] sm:max-w-[420px] aspect-square flex-shrink-0 rounded-full border border-slate-200 bg-white p-4 relative overflow-hidden shadow-lg">
+                  <div className="w-full max-w-[360px] sm:max-w-[420px] aspect-square flex-shrink-0 flex items-center justify-center rounded-full border border-slate-200 bg-slate-900 p-4 relative overflow-hidden shadow-lg">
                     <GlobeInteractive 
                       markers={[
                         { id: "huambo", location: [-12.7761, 15.7314], name: "Huambo Hub", users: 180 },

@@ -528,7 +528,7 @@ const PillNav: React.FC<PillNavProps> = ({
         className="md:hidden absolute top-[3em] left-4 right-4 rounded-[27px] shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-slate-200/80 z-[998] origin-top p-2"
         style={{
           ...cssVars,
-          background: 'var(--pill-bg, #ffffff)',
+          background: 'var(--container-bg, #ffffff)',
           visibility: 'hidden',
           pointerEvents: 'none'
         }}
@@ -537,7 +537,7 @@ const PillNav: React.FC<PillNavProps> = ({
             {items.map(item => {
               const isActive = activeHref === item.href;
               const defaultStyle: React.CSSProperties = {
-                background: isActive ? 'var(--active-bg, var(--base, #000))' : '#F3F4F6',
+                background: isActive ? 'var(--active-bg, var(--base, #000))' : 'var(--pill-bg, #F3F4F6)',
                 color: isActive ? 'var(--active-text, var(--hover-text, #fff))' : 'var(--inactive-text, var(--pill-text, #111))'
               };
               const hoverIn = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -548,7 +548,7 @@ const PillNav: React.FC<PillNavProps> = ({
               };
               const hoverOut = (e: React.MouseEvent<HTMLAnchorElement>) => {
                 if (!isActive) {
-                  e.currentTarget.style.background = '#F3F4F6';
+                  e.currentTarget.style.background = 'var(--pill-bg, #F3F4F6)';
                   e.currentTarget.style.color = 'var(--inactive-text, var(--pill-text, #111))';
                 }
               };
