@@ -10,14 +10,6 @@ import {
   AlertTriangle,
   MessageSquare
 } from 'lucide-react';
-import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
-
-const API_KEY =
-  process.env.GOOGLE_MAPS_PLATFORM_KEY ||
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
-  '';
-const hasValidKey = Boolean(API_KEY) && API_KEY !== 'YOUR_API_KEY';
 
 interface ContactPanelProps {
   setCurrentPage: (page: PageId) => void;
@@ -319,88 +311,6 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                 </div>
 
               </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* Interactive Map Section */}
-      <section className="py-12 border-t border-slate-200 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-2xs grid grid-cols-1 lg:grid-cols-12 text-left">
-            
-            {/* Left side text detail */}
-            <div className="lg:col-span-4 p-8 sm:p-10 flex flex-col justify-between bg-white">
-              <div className="space-y-4">
-                <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#C89B3C]">Presença Física</span>
-                <h3 className="text-2xl font-serif font-black text-slate-900 m-0 leading-tight">Sede Letiva</h3>
-                <p className="text-xs text-slate-500 font-sans leading-relaxed m-0 font-medium">
-                  A nossa academia está sediada no Huambo, Angola, de onde coordenamos todos os nossos programas formativos de excelência e as nossas imersões linguísticas híbridas.
-                </p>
-                <div className="pt-4 space-y-3">
-                  <div className="flex items-start gap-3 text-xs text-slate-800">
-                    <MapPin size={16} className="text-[#C89B3C] flex-shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="block font-semibold">Huambo, Angola</strong>
-                      <span className="text-slate-400 font-bold">Sede Administrativa e Letiva</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="pt-6 border-t border-slate-100 text-[10px] font-mono text-slate-400 font-bold">
-                <span>MULTIPLUS ACADEMY • HUAMBO HUB</span>
-              </div>
-            </div>
-
-            {/* Right side interactive map */}
-            <div className="lg:col-span-8 h-[400px] sm:h-[450px] relative bg-slate-100 border-l border-slate-100">
-              {hasValidKey ? (
-                <APIProvider apiKey={API_KEY} version="weekly">
-                  <Map
-                    defaultCenter={{ lat: -12.7761, lng: 15.7314 }}
-                    defaultZoom={14}
-                    mapId="multiplus_academy_map"
-                    internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
-                    style={{ width: '100%', height: '100%' }}
-                  >
-                    <AdvancedMarker position={{ lat: -12.7761, lng: 15.7314 }}>
-                      <Pin background="#0A2E5D" glyphColor="#C89B3C" borderColor="#C89B3C" />
-                    </AdvancedMarker>
-                  </Map>
-                </APIProvider>
-              ) : (
-                /* Premium Key Setup Instructions in Map Widget */
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 bg-slate-900 text-white">
-                  <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(#C89B3C_1.5px,transparent_1.5px)] [background-size:16px_16px]" />
-                  <div className="relative z-10 text-center max-w-sm space-y-4">
-                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mx-auto text-[#C89B3C] border border-white/10">
-                      <MapPin size={22} />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-serif font-bold text-white mb-1">Google Maps Interativo</h4>
-                      <p className="text-[11px] text-white/70 leading-relaxed font-sans font-medium">
-                        Insira a sua chave Google Maps API nas definições do AI Studio para ativar a visualização em tempo real do mapa de Huambo, Angola.
-                      </p>
-                    </div>
-
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-left text-xs space-y-2">
-                      <p className="font-semibold text-[#C89B3C] text-[10px] uppercase font-mono tracking-wider">Como configurar:</p>
-                      <ol className="list-decimal list-inside space-y-1 text-[11px] text-white/80 list-none pl-0 font-medium">
-                        <li><span className="text-[#C89B3C] font-mono font-bold">1.</span> Obtenha uma chave API na <a href="https://console.cloud.google.com/google/maps-apis/start?utm_campaign=gmp-code-assist-ais" target="_blank" rel="noopener noreferrer" className="text-[#C89B3C] underline hover:text-white transition-colors">Consola Cloud</a>.</li>
-                        <li><span className="text-[#C89B3C] font-mono font-bold">2.</span> Abra as <strong>Definições</strong> (ícone de engrenagem ⚙️ no canto superior direito).</li>
-                        <li><span className="text-[#C89B3C] font-mono font-bold">3.</span> Selecione <strong>Secrets</strong>.</li>
-                        <li><span className="text-[#C89B3C] font-mono font-bold">4.</span> Crie uma variável chamada <code>GOOGLE_MAPS_PLATFORM_KEY</code> e cole o seu token.</li>
-                      </ol>
-                    </div>
-
-                    <p className="text-[10px] font-mono text-white/40 tracking-wider font-bold">
-                      O WEBSITE SERÁ RECONSTRUÍDO AUTOMATICAMENTE
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
 
           </div>
