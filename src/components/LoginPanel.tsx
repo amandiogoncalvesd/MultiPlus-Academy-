@@ -21,40 +21,6 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
   const [userRole, setUserRole] = useState<UserRole>('STUDENT');
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
-  const [seedingStatus, setSeedingStatus] = useState('');
-
-  const handleTestUserClick = async (emailAddr: string, pass: string, name: string, role: 'ALUNO' | 'PROFESSOR' | 'ADMIN') => {
-    setErrorMsg('');
-    setSeedingStatus(`A verificar conta ${emailAddr}...`);
-    setLoading(true);
-    try {
-      // Try to sign in
-      try {
-        const authUser = await signIn(emailAddr, pass);
-        setSeedingStatus('');
-        routeAccordingToRole(authUser.role);
-      } catch (loginErr: any) {
-        console.log(`Test user ${emailAddr} not found or login failed. Attempting registration...`, loginErr);
-        setSeedingStatus(`A criar conta de teste para ${name}...`);
-        
-        await signUp(emailAddr, pass, name, role);
-        
-        // Wait 1.5s to let the database trigger complete user mapping
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        
-        setSeedingStatus(`A autenticar ${emailAddr}...`);
-        const authUser = await signIn(emailAddr, pass);
-        setSeedingStatus('');
-        routeAccordingToRole(authUser.role);
-      }
-    } catch (err: any) {
-      console.error('Error seeding test user:', err);
-      setErrorMsg(`Erro ao preparar ou aceder à conta de teste: ${err?.message || err}`);
-      setSeedingStatus('');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAuth = async (e: FormEvent) => {
     e.preventDefault();
@@ -251,81 +217,6 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
                 >
                   {isRegister ? 'Inicie Sessão' : 'Registar Conta'}
                 </button>
-              </div>
-
-              {/* Ambiente de Desenvolvimento: Contas de Teste */}
-              <div className="pt-6 border-t border-gray-150 space-y-4">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck size={16} className="text-gold-600" />
-                  <span className="text-[10px] font-mono uppercase font-bold text-neutral-400 tracking-wider">
-                    Ambiente de Testes / Desenvolvimento
-                  </span>
-                </div>
-                
-                <p className="text-[11px] text-neutral-400 leading-normal font-sans">
-                  Clique para aceder instantaneamente. Se a conta não existir no Supabase Auth, ela será criada e vinculada automaticamente com as permissões corretas.
-                </p>
-
-                {seedingStatus && (
-                  <div className="p-3 rounded-xl bg-ink-900/5 border border-ink-900/10 flex items-center gap-2 text-xs text-ink-900 font-mono">
-                    <RefreshCw size={12} className="animate-spin text-gold-600" />
-                    <span>{seedingStatus}</span>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 gap-2.5">
-                  {[
-                    {
-                      label: 'Administrador',
-                      email: 'admin@multiplusacademy.com',
-                      pass: 'Admin@123',
-                      name: 'Administrador Geral',
-                      role: 'ADMIN' as const,
-                      color: 'border-red-100 bg-red-50/10 text-red-700'
-                    },
-                    {
-                      label: 'Formador (Professor)',
-                      email: 'professor@multiplusacademy.com',
-                      pass: 'Professor@123',
-                      name: 'Professor MultiPlus',
-                      role: 'PROFESSOR' as const,
-                      color: 'border-blue-100 bg-blue-50/10 text-blue-700'
-                    },
-                    {
-                      label: 'Formando (Aluno)',
-                      email: 'aluno@multiplusacademy.com',
-                      pass: 'Aluno@123',
-                      name: 'Aluno de Elite',
-                      role: 'ALUNO' as const,
-                      color: 'border-emerald-100 bg-emerald-50/10 text-emerald-700'
-                    }
-                  ].map((testUser) => (
-                    <button
-                      key={testUser.email}
-                      type="button"
-                      disabled={loading}
-                      onClick={() => handleTestUserClick(testUser.email, testUser.pass, testUser.name, testUser.role)}
-                      className="w-full text-left p-3 rounded-xl border border-gray-150 hover:border-gold-600 hover:bg-cream-200 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 cursor-pointer disabled:opacity-50"
-                    >
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${testUser.color}`}>
-                            {testUser.label}
-                          </span>
-                          <span className="text-[10px] font-mono font-bold text-neutral-400">
-                            {testUser.pass}
-                          </span>
-                        </div>
-                        <div className="text-[11px] font-sans font-medium text-neutral-400">
-                          {testUser.email}
-                        </div>
-                      </div>
-                      <span className="text-[10px] font-mono font-bold uppercase text-gold-600 flex items-center gap-1 self-end sm:self-auto">
-                        Aceder <ArrowRight size={10} />
-                      </span>
-                    </button>
-                  ))}
-                </div>
               </div>
 
             </div>
