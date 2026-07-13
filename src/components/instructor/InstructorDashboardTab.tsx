@@ -49,10 +49,10 @@ export default function InstructorDashboardTab({
     <div className="space-y-6">
       
       {/* Greetings Block */}
-      <div className="bg-ink-900 text-cream-100 p-6 sm:p-8 rounded-3xl relative overflow-hidden border border-gold-600/25 shadow-sm text-left">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-gold-600/10 to-transparent rounded-full pointer-events-none" />
+      <div className="bg-[#0A2E5D] text-cream-100 p-6 sm:p-8 rounded-3xl relative overflow-hidden border border-[#C89B3C]/25 shadow-sm text-left">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#C89B3C]/10 to-transparent rounded-full pointer-events-none" />
         <div className="relative z-10">
-          <span className="text-[10px] font-mono tracking-widest text-gold-600 uppercase block mb-1">
+          <span className="text-[10px] font-mono tracking-widest text-[#C89B3C] uppercase block mb-1">
             Centro de Gestão Académica • Direção de Curso
           </span>
           <h2 className="text-2xl sm:text-3xl font-serif font-black m-0 text-cream-100">
