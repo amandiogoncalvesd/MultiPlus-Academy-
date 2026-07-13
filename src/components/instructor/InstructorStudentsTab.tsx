@@ -128,17 +128,19 @@ export default function InstructorStudentsTab({
   });
 
   return (
-    <div className="space-y-6 text-left">
+    <div className="space-y-6 text-left relative">
+      <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] bg-gradient-to-br from-gold-600/5 to-transparent rounded-full blur-[100px] pointer-events-none" />
       
       {/* Title section with quick stats */}
-      <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
+      <div className="bg-cream-100 dark:bg-ink-900 p-6 rounded-3xl border border-gray-150 dark:border-ink-800/60 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(200,155,60,0.04),transparent_60%)] pointer-events-none" />
+        <div className="relative z-10">
           <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block">Gestão Curricular</span>
-          <h3 className="text-xl font-serif font-black text-ink-900 m-0">Acompanhamento e Perfil de Alunos</h3>
+          <h3 className="text-xl font-serif font-black text-ink-900 dark:text-cream-100 m-0">Acompanhamento e Perfil de Alunos</h3>
           <p className="text-xs text-neutral-400 mt-1">Monitore rascunhos de contratos, controle frequências e emita diplomas sob as normas angolanas.</p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 relative z-10 shrink-0">
           <button
             onClick={() => {
               const csvData = students.map(s => `${s.firstName} ${s.lastName},${s.email},${s.status}`).join('\n');
@@ -149,7 +151,7 @@ export default function InstructorStudentsTab({
               a.setAttribute('download', 'LMS-Juristas-MultiPlus.csv');
               a.click();
             }}
-            className="px-3.5 py-2 border border-gray-200 hover:border-gold-600 text-gray-650 hover:text-slate-900 transition-all rounded-xl text-xs font-mono font-bold uppercase flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-2 bg-cream-200 dark:bg-ink-800 border border-gray-200 dark:border-ink-750 text-gray-650 dark:text-cream-100 hover:border-gold-600 dark:hover:border-gold-600/50 hover:text-slate-900 dark:hover:text-gold-600 transition-all rounded-xl text-xs font-mono font-bold uppercase flex items-center gap-1.5 cursor-pointer"
           >
             <FileDown size={14} />
             <span>Exportar Lista (.csv)</span>
@@ -158,7 +160,7 @@ export default function InstructorStudentsTab({
       </div>
 
       {/* Advanced filters bars panel */}
-      <div className="bg-cream-100 p-5 rounded-3xl border border-gray-150 space-y-4">
+      <div className="bg-cream-100 dark:bg-ink-900 p-5 rounded-3xl border border-gray-150 dark:border-ink-800/60 space-y-4 relative z-10">
         
         {/* Row 1 details lookup */}
         <div className="relative">
@@ -168,7 +170,7 @@ export default function InstructorStudentsTab({
             placeholder="Pesquisar por Dr./Dra. Nome, Correio Eletrónico ou Número Telefónico..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-cream-200/50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-gold-600"
+            className="w-full pl-10 pr-4 py-2.5 bg-cream-200/50 dark:bg-ink-800/40 border border-gray-200 dark:border-ink-750 rounded-xl text-xs text-ink-900 dark:text-cream-100 placeholder-neutral-400 focus:outline-none focus:border-gold-600 dark:focus:border-gold-600"
           />
         </div>
 
@@ -180,7 +182,7 @@ export default function InstructorStudentsTab({
             <select
               value={selectedCourseFilter}
               onChange={(e) => setSelectedCourseFilter(e.target.value)}
-              className="w-full text-2xs p-2 rounded-xl bg-cream-200 border border-gray-200 focus:outline-none text-slate-800"
+              className="w-full text-2xs p-2 rounded-xl bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 focus:outline-none text-slate-800 dark:text-cream-100"
             >
               <option value="all">Frequência Global (Todos)</option>
               {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
@@ -192,7 +194,7 @@ export default function InstructorStudentsTab({
             <select
               value={selectedProgressFilter}
               onChange={(e) => setSelectedProgressFilter(e.target.value)}
-              className="w-full text-2xs p-2 rounded-xl bg-cream-200 border border-gray-200 focus:outline-none text-slate-800"
+              className="w-full text-2xs p-2 rounded-xl bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 focus:outline-none text-slate-800 dark:text-cream-100"
             >
               <option value="all">Todas as Faixas de Retenção</option>
               <option value="low">Abaixo de 50% de Progresso</option>
@@ -206,7 +208,7 @@ export default function InstructorStudentsTab({
             <select
               value={selectedStatusFilter}
               onChange={(e) => setSelectedStatusFilter(e.target.value)}
-              className="w-full text-2xs p-2 rounded-xl bg-cream-200 border border-gray-200 focus:outline-none text-slate-800"
+              className="w-full text-2xs p-2 rounded-xl bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 focus:outline-none text-slate-800 dark:text-cream-100"
             >
               <option value="all">Ativo ou Suspenso</option>
               <option value="ACTIVE">Apenas Alunos Regulados (Ativo)</option>
@@ -219,11 +221,11 @@ export default function InstructorStudentsTab({
       </div>
 
       {/* Dynamic Results Grid/Table list */}
-      <div className="bg-cream-100 rounded-3xl overflow-hidden border border-gray-150 shadow-sm">
+      <div className="bg-cream-100 dark:bg-ink-900 rounded-3xl overflow-hidden border border-gray-150 dark:border-ink-800/60 shadow-sm relative z-10">
         <div className="overflow-x-auto">
           <table className="hidden md:table w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-ink-900/5 border-b border-gray-150 text-neutral-400 font-mono uppercase text-[9px] tracking-widest">
+              <tr className="bg-ink-900/5 dark:bg-ink-950/40 border-b border-gray-150 dark:border-ink-800 text-neutral-400 dark:text-cream-200/60 font-mono uppercase text-[9px] tracking-widest">
                 <th className="p-4 sm:p-5">Jurista Regulado</th>
                 <th className="p-4 sm:p-5">Curso & Progressogram</th>
                 <th className="p-4 sm:p-5">Rendimento (Média)</th>
@@ -231,10 +233,10 @@ export default function InstructorStudentsTab({
                 <th className="p-4 sm:p-5 text-right">Ação Rápida</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-105">
+            <tbody className="divide-y divide-cream-150 dark:divide-ink-800/40">
               {filteredList.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-10 text-center font-mono text-neutral-400">
+                  <td colSpan={5} className="p-10 text-center font-mono text-neutral-400 dark:text-cream-200/40">
                     Nenhum formando correspondente aos filtros de matrícula.
                   </td>
                 </tr>
@@ -245,20 +247,20 @@ export default function InstructorStudentsTab({
                   const activeMetric = metricsDB[student.id] || metricsDB['default'];
 
                   return (
-                    <tr key={student.id} className="hover:bg-cream-200/50 transition-colors">
-                      {/* Studen avatar & phone info */}
+                    <tr key={student.id} className="hover:bg-cream-200/50 dark:hover:bg-ink-800/40 transition-colors">
+                      {/* Student avatar & phone info */}
                       <td className="p-4 sm:p-5">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 text-left">
                           <img
-                            src={student.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150&h=150'}
+                            src={student.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256'}
                             alt={student.firstName}
-                            className="w-10 h-10 rounded-full object-cover border border-gray-100"
+                            className="w-10 h-10 rounded-full object-cover border border-gray-150 dark:border-ink-750"
                           />
                           <div>
-                            <span className="font-serif font-black text-sm text-ink-900 block">
+                            <span className="font-serif font-black text-sm text-ink-900 dark:text-cream-100 block">
                               Dr(a). {student.firstName} {student.lastName}
                             </span>
-                            <span className="text-[10px] font-mono text-neutral-400 block">{student.email}</span>
+                            <span className="text-[10px] font-mono text-neutral-400 dark:text-cream-200/60 block">{student.email}</span>
                             <span className="text-[9px] font-mono text-gold-600 font-semibold">{student.phone || '+244 9xx-xxx-xxx'}</span>
                           </div>
                         </div>
@@ -267,7 +269,7 @@ export default function InstructorStudentsTab({
                       {/* Math enrollment display */}
                       <td className="p-4 sm:p-5">
                         <div className="space-y-1.5 w-44">
-                          <span className="text-[9px] font-mono text-neutral-400 block uppercase truncate max-w-[170px]">
+                          <span className="text-[9px] font-mono text-neutral-400 dark:text-cream-200/60 block uppercase truncate max-w-[170px]">
                             {courses.find(c => c.id === enroll.courseId)?.title || 'English for the Legal Field'}
                           </span>
                           
@@ -279,10 +281,10 @@ export default function InstructorStudentsTab({
                               max="100"
                               value={enroll.progressPercent}
                               onChange={(e) => updateStudentProgress(student.id, Number(e.target.value))}
-                              className="w-full accent-[#BB8533] h-1 bg-gray-100 rounded-full cursor-pointer"
+                              className="w-full accent-[#C89B3C] h-1 bg-cream-250 dark:bg-ink-800 rounded-full cursor-pointer"
                               title="Ajuste manual de progresso para fins de simulação"
                             />
-                            <span className="text-[9px] font-mono font-bold text-neutral-400">{enroll.progressPercent}%</span>
+                            <span className="text-[9px] font-mono font-bold text-neutral-400 dark:text-cream-200/60">{enroll.progressPercent}%</span>
                           </div>
                         </div>
                       </td>
@@ -297,11 +299,11 @@ export default function InstructorStudentsTab({
                               max="100"
                               value={editScore}
                               onChange={(e) => setEditScore(Number(e.target.value))}
-                              className="w-14 p-1 text-2xs border bg-cream-100 rounded text-center text-slate-800"
+                              className="w-14 p-1 text-2xs border bg-cream-100 dark:bg-ink-800 border-gray-200 dark:border-ink-750 rounded text-center text-slate-800 dark:text-cream-100 focus:outline-none"
                             />
                             <button
                               onClick={() => saveGradeScore(student.id)}
-                              className="px-2 py-1 bg-emerald-600 text-cream-100 rounded text-4xs font-mono font-bold uppercase"
+                              className="px-2 py-1 bg-emerald-600 text-cream-100 rounded text-4xs font-mono font-bold uppercase cursor-pointer border-0"
                             >
                               ✓
                             </button>
@@ -312,34 +314,34 @@ export default function InstructorStudentsTab({
                               setEditingGradeStudentId(student.id);
                               setEditScore(activeMetric.grade);
                             }}
-                            className="bg-transparent border-0 p-0 text-left cursor-pointer hover:underline"
+                            className="bg-transparent border-0 p-0 text-left cursor-pointer hover:underline text-neutral-400 hover:text-gold-600 transition-colors"
                             title="Clique para redefinir nota final de exames"
                           >
-                            <span className="text-sm font-serif font-black text-ink-900">{activeMetric.grade}</span>
-                            <span className="text-[8px] font-mono text-neutral-400 block">/ 100 • EDITAR</span>
+                            <span className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 block">{activeMetric.grade}</span>
+                            <span className="text-[8px] font-mono text-neutral-400 dark:text-cream-200/60 block">/ 100 • EDITAR</span>
                           </button>
                         )}
                       </td>
 
                       {/* Attendance presence tracker */}
                       <td className="p-4 sm:p-5">
-                        <span className="text-sm font-serif font-black text-neutral-400 block">
+                        <span className="text-sm font-serif font-black text-neutral-400 dark:text-cream-200/60 block">
                           {activeMetric.presence}%
                         </span>
-                        <span className="text-[8px] font-mono text-emerald-600 font-bold uppercase tracking-wider block">
+                        <span className="text-[8px] font-mono text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider block">
                           REGULADO
                         </span>
                       </td>
 
                       {/* Quick access togglers */}
-                      <td className="p-4 sm:p-5 text-right space-x-2">
+                      <td className="p-4 sm:p-5 text-right space-x-2 shrink-0">
                         {/* Send urgent alert */}
                         <button
                           onClick={() => {
                             setAlertingStudentId(alertingStudentId === student.id ? null : student.id);
                             setCustomAlertText('');
                           }}
-                          className="px-2.5 py-1.5 border border-gray-150 hover:bg-cream-200 text-gray-650 hover:text-slate-900 rounded-lg text-3xs font-mono font-semibold uppercase transition-all whitespace-nowrap cursor-pointer"
+                          className="px-2.5 py-1.5 border border-gray-150 dark:border-ink-800 hover:bg-cream-200 dark:hover:bg-ink-800 text-gray-650 dark:text-cream-100 rounded-lg text-3xs font-mono font-semibold uppercase transition-all whitespace-nowrap cursor-pointer bg-transparent"
                         >
                           Chamar
                         </button>
@@ -348,8 +350,8 @@ export default function InstructorStudentsTab({
                           onClick={() => onToggleStatus(student.id, student.status)}
                           className={`p-1.5 rounded-lg border inline-flex items-center justify-center transition-all cursor-pointer ${
                             isBlocked 
-                              ? 'bg-red-50 hover:bg-red-100/50 border-red-200 text-red-650' 
-                              : 'bg-emerald-50 hover:bg-emerald-100/50 border-emerald-200 text-emerald-650'
+                              ? 'bg-red-50/20 dark:bg-red-950/20 border-red-200 dark:border-red-800/40 text-red-500' 
+                              : 'bg-emerald-50/20 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-emerald-500'
                           }`}
                           title={isBlocked ? 'Matrícula Bloqueada - Clique para libertar' : 'Matrícula Ativa - Clique para bloquear'}
                         >
@@ -357,13 +359,13 @@ export default function InstructorStudentsTab({
                         </button>
 
                         {enroll.status === 'COMPLETED' ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 text-emerald-800 text-[10px] font-mono font-bold uppercase rounded-xl border border-emerald-100">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-400 text-[10px] font-mono font-bold uppercase rounded-xl border border-emerald-100 dark:border-emerald-800/40">
                             Certificado✓
                           </span>
                         ) : (
                           <button
                             onClick={() => onEmitCertificate(student.id)}
-                            className="px-3 py-1.5 bg-gold-600 text-cream-100 hover:bg-slate-900 transition-all rounded-xl text-3xs font-mono font-bold uppercase whitespace-nowrap cursor-pointer"
+                            className="px-3 py-1.5 bg-gold-600 text-cream-100 hover:bg-[#b58b35] transition-all rounded-xl text-3xs font-mono font-bold uppercase whitespace-nowrap cursor-pointer border-0"
                           >
                             Outorgar
                           </button>
@@ -379,7 +381,7 @@ export default function InstructorStudentsTab({
           {/* Mobile view of stacked student cards */}
           <div className="block md:hidden space-y-4 p-4">
             {filteredList.length === 0 ? (
-              <div className="p-8 text-center border border-dashed border-gray-200 rounded-2xl font-mono text-gray-450 text-xs">
+              <div className="p-8 text-center border border-dashed border-gray-200 dark:border-ink-800/60 rounded-2xl font-mono text-gray-450 dark:text-cream-200/40 text-xs">
                 Nenhum formando correspondente aos filtros de matrícula.
               </div>
             ) : (
@@ -389,54 +391,54 @@ export default function InstructorStudentsTab({
                 const activeMetric = metricsDB[student.id] || metricsDB['default'];
 
                 return (
-                  <div key={student.id} className="bg-cream-100 p-4 rounded-2xl border border-gray-150 space-y-3 shadow-sm text-left">
+                  <div key={student.id} className="bg-cream-100 dark:bg-ink-900 p-4 rounded-2xl border border-gray-150 dark:border-ink-800/60 space-y-3 text-left">
                     <div className="flex items-center gap-3">
                       <img
-                        src={student.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150&h=150'}
+                        src={student.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256'}
                         alt={student.firstName}
-                        className="w-10 h-10 rounded-full object-cover border border-gray-100"
+                        className="w-10 h-10 rounded-full object-cover border border-gray-150 dark:border-ink-750"
                       />
                       <div className="min-w-0 flex-1">
-                        <span className="font-serif font-black text-xs text-ink-900 block">
+                        <span className="font-serif font-black text-xs text-ink-900 dark:text-cream-100 block">
                           Dr(a). {student.firstName} {student.lastName}
                         </span>
-                        <span className="text-[10px] text-neutral-400 block truncate">{student.email}</span>
+                        <span className="text-[10px] text-neutral-400 dark:text-cream-200/60 block truncate">{student.email}</span>
                         <span className="text-[9px] font-mono text-gold-600 font-semibold block">{student.phone || '+244 9xx-xxx-xxx'}</span>
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-gray-100 space-y-2 text-xs">
+                    <div className="pt-2 border-t border-gray-150 dark:border-ink-800/60 space-y-2 text-xs">
                       <div>
-                        <span className="text-[8px] font-mono text-neutral-400 block uppercase">Curso</span>
-                        <span className="font-semibold text-neutral-400 block text-[11px] truncate">
+                        <span className="text-[8px] font-mono text-neutral-400 dark:text-cream-200/60 block uppercase">Curso</span>
+                        <span className="font-semibold text-neutral-400 dark:text-cream-100 block text-[11px] truncate">
                           {courses.find(c => c.id === enroll.courseId)?.title || 'English for the Legal Field'}
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono bg-cream-200 p-2 rounded-xl">
+                      <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono bg-cream-200 dark:bg-ink-800 p-2 rounded-xl text-ink-900 dark:text-cream-100">
                         <div>
-                          <span className="block text-[8px] text-neutral-400 uppercase">Progresso</span>
-                          <span className="font-bold text-slate-700">{enroll.progressPercent}%</span>
+                          <span className="block text-[8px] text-neutral-400 dark:text-cream-200/60 uppercase">Progresso</span>
+                          <span className="font-bold">{enroll.progressPercent}%</span>
                         </div>
                         <div>
-                          <span className="block text-[8px] text-neutral-400 uppercase">Rendimento</span>
-                          <span className="font-bold text-ink-900">{activeMetric.grade}/100</span>
+                          <span className="block text-[8px] text-neutral-400 dark:text-cream-200/60 uppercase">Rendimento</span>
+                          <span className="font-bold">{activeMetric.grade}/100</span>
                         </div>
                         <div>
-                          <span className="block text-[8px] text-neutral-400 uppercase">Presença</span>
-                          <span className="font-bold text-slate-700">{activeMetric.presence}%</span>
+                          <span className="block text-[8px] text-neutral-400 dark:text-cream-200/60 uppercase">Presença</span>
+                          <span className="font-bold">{activeMetric.presence}%</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-gray-100 flex flex-wrap justify-between items-center gap-2">
+                    <div className="pt-2 border-t border-gray-150 dark:border-ink-800/60 flex flex-wrap justify-between items-center gap-2">
                       <div className="flex gap-1.5">
                         <button
                           onClick={() => {
                             setAlertingStudentId(alertingStudentId === student.id ? null : student.id);
                             setCustomAlertText('');
                           }}
-                          className="px-2.5 py-1.5 border border-gray-150 hover:bg-cream-200 text-gray-650 rounded-lg text-3xs font-mono font-semibold uppercase"
+                          className="px-2.5 py-1.5 border border-gray-150 dark:border-ink-800 hover:bg-cream-200 dark:hover:bg-ink-800 text-gray-650 dark:text-cream-100 rounded-lg text-3xs font-mono font-semibold uppercase bg-transparent"
                         >
                           Chamar
                         </button>
@@ -445,8 +447,8 @@ export default function InstructorStudentsTab({
                           onClick={() => onToggleStatus(student.id, student.status)}
                           className={`p-1.5 rounded-lg border inline-flex items-center justify-center transition-all cursor-pointer ${
                             isBlocked 
-                              ? 'bg-red-50 hover:bg-red-100/50 border-red-200 text-red-650' 
-                              : 'bg-emerald-50 hover:bg-emerald-100/50 border-emerald-200 text-emerald-650'
+                              ? 'bg-red-50/20 dark:bg-red-950/20 border-red-200 dark:border-red-800/40 text-red-500' 
+                              : 'bg-emerald-50/20 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-emerald-500'
                           }`}
                           title={isBlocked ? 'Matrícula Bloqueada - Clique para libertar' : 'Matrícula Ativa - Clique para bloquear'}
                         >
@@ -456,13 +458,13 @@ export default function InstructorStudentsTab({
 
                       <div>
                         {enroll.status === 'COMPLETED' ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 text-emerald-800 text-[9px] font-mono font-bold uppercase rounded-xl border border-emerald-100">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-400 text-[9px] font-mono font-bold uppercase rounded-xl border border-emerald-100 dark:border-emerald-800/40">
                             Certificado✓
                           </span>
                         ) : (
                           <button
                             onClick={() => onEmitCertificate(student.id)}
-                            className="px-3 py-1.5 bg-gold-600 text-cream-100 hover:bg-slate-900 transition-all rounded-xl text-3xs font-mono font-bold uppercase whitespace-nowrap cursor-pointer"
+                            className="px-3 py-1.5 bg-gold-600 text-cream-100 hover:bg-[#b58b35] transition-all rounded-xl text-3xs font-mono font-bold uppercase whitespace-nowrap cursor-pointer border-0"
                           >
                             Outorgar
                           </button>
@@ -479,19 +481,19 @@ export default function InstructorStudentsTab({
 
       {/* Send Urgent Alert popup modal drawer inside */}
       {alertingStudentId && (
-        <div className="p-5 bg-amber-50 rounded-2xl border border-gold-600/30 text-left space-y-3">
+        <div className="p-5 bg-amber-50 dark:bg-[#1a1712] rounded-2xl border border-gold-600/30 dark:border-gold-600/10 text-left space-y-3 relative z-20 shadow-lg">
           <div className="flex justify-between items-center">
             <span className="text-[9px] font-mono text-gold-600 font-black uppercase tracking-wider">
               🔔 CANAL DE CONTINGÊNCIA • DISPARO DE SMS & NOTIFICAÇÕES SEVERAS
             </span>
             <button 
               onClick={() => setAlertingStudentId(null)}
-              className="text-2xs font-mono text-neutral-400 hover:text-black border-0 bg-transparent cursor-pointer"
+              className="text-2xs font-mono text-neutral-400 hover:text-black dark:hover:text-cream-100 border-0 bg-transparent cursor-pointer"
             >
               Cancelar
             </button>
           </div>
-          <p className="text-2xs text-ink-900 leading-snug m-0">
+          <p className="text-2xs text-ink-900 dark:text-cream-100/80 leading-snug m-0">
             Envie alertas para orientar o jurista {students.find(s => s.id === alertingStudentId)?.firstName} a submeter e rascunhar o texto em falta na ementa.
           </p>
           <div className="flex gap-2">
@@ -500,11 +502,11 @@ export default function InstructorStudentsTab({
               placeholder="Escreva advertência formal (Ex: Por favor submeta o rascunho de isenções do módulo 2 até amanhã)..."
               value={customAlertText}
               onChange={(e) => setCustomAlertText(e.target.value)}
-              className="flex-grow p-2 text-xs bg-cream-100 rounded-xl border border-gray-200 focus:outline-none text-slate-800"
+              className="flex-grow p-2 text-xs bg-cream-100 dark:bg-ink-800 border border-gray-200 dark:border-ink-750 rounded-xl text-slate-800 dark:text-cream-100 focus:outline-none focus:border-gold-600 dark:focus:border-gold-600"
             />
             <button
               onClick={() => handleSendInstantAlert(alertingStudentId, students.find(s => s.id === alertingStudentId)?.firstName || 'Aluno')}
-              className="px-4 py-2 bg-ink-900 text-cream-100 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer border-0"
+              className="px-4 py-2 bg-gold-600 hover:bg-[#b58b35] text-ink-900 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer border-0 shadow-sm"
               disabled={!customAlertText.trim()}
             >
               Disparar Alerta

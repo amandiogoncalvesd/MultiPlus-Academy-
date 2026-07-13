@@ -105,36 +105,42 @@ The Pre-Contracting Party shall indemnify, defend, and hold harmless the Host En
   };
 
   return (
-    <div className="space-y-6 text-left">
+    <div className="space-y-6 text-left relative">
+      <div className="absolute top-[-5%] right-[-5%] w-[40%] h-[40%] bg-gradient-to-br from-gold-600/5 to-transparent rounded-full blur-[100px] pointer-events-none" />
       
       {/* Top selection navbar */}
-      <div className="flex justify-between items-center bg-cream-100 p-4 rounded-3xl border border-gray-150">
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-cream-100 dark:bg-ink-900 p-4 rounded-3xl border border-gray-150 dark:border-ink-800/60 relative z-10 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-gold-600/[0.01] to-transparent pointer-events-none" />
+        <div className="flex gap-2 relative z-10 shrink-0">
           <button
             onClick={() => setActiveSubTab('grade')}
-            className={`px-4 py-2 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer border-0 ${
-              activeSubTab === 'grade' ? 'bg-ink-900 text-cream-100 shadow' : 'text-neutral-400 hover:bg-cream-200'
+            className={`px-4 py-2 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer border-0 transition-all ${
+              activeSubTab === 'grade' 
+                ? 'bg-gold-600 text-ink-900 shadow-sm shadow-gold-600/20' 
+                : 'text-neutral-400 dark:text-cream-200/60 hover:bg-cream-200 dark:hover:bg-ink-800 bg-transparent'
             }`}
           >
-            Corrigir Trabalhos Sometidos
+            Corrigir Trabalhos Submetidos
           </button>
           
           <button
             onClick={() => setActiveSubTab('create')}
-            className={`px-4 py-2 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer border-0 ${
-              activeSubTab === 'create' ? 'bg-ink-900 text-cream-100 shadow' : 'text-neutral-400 hover:bg-cream-200'
+            className={`px-4 py-2 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer border-0 transition-all ${
+              activeSubTab === 'create' 
+                ? 'bg-gold-600 text-ink-900 shadow-sm shadow-gold-600/20' 
+                : 'text-neutral-400 dark:text-cream-200/60 hover:bg-cream-200 dark:hover:bg-ink-800 bg-transparent'
             }`}
           >
             Formular Nova Avaliação
           </button>
         </div>
 
-        <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase hidden md:inline">
+        <span className="text-[10px] font-mono text-neutral-400 dark:text-cream-200/60 font-bold uppercase hidden md:inline relative z-10">
           {submissions.filter(s => s.status === 'Pendente').length} JURISTAS AGUARDANDO NOTA
         </span>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch relative z-10">
         
         {/* LEFT WORKSPACE VIEW */}
         <div className="lg:col-span-8">
@@ -144,8 +150,8 @@ The Pre-Contracting Party shall indemnify, defend, and hold harmless the Host En
             <div className="space-y-6">
               
               {/* Select submission trigger */}
-              <div className="bg-cream-100 p-5 rounded-3xl border border-gray-150 space-y-4 text-left">
-                <span className="text-[9px] font-mono text-neutral-400 uppercase tracking-widest block font-bold border-b border-gray-100 pb-2">Seleccione o Rascunho Prático do Formando</span>
+              <div className="bg-cream-100 dark:bg-ink-900 p-5 rounded-3xl border border-gray-150 dark:border-ink-800/60 space-y-4 text-left">
+                <span className="text-[9px] font-mono text-neutral-400 dark:text-cream-200/60 uppercase tracking-widest block font-bold border-b border-gray-150 dark:border-ink-800/60 pb-2">Seleccione o Rascunho Prático do Formando</span>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {submissions.map((sub) => (
@@ -157,16 +163,18 @@ The Pre-Contracting Party shall indemnify, defend, and hold harmless the Host En
                       }}
                       className={`p-3 text-left rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
                         selectedSubmissionId === sub.id
-                          ? 'border-gold-600 bg-ink-900/5 text-ink-900'
-                          : 'border-gray-100 hover:border-gray-200 text-neutral-400'
+                          ? 'border-gold-600 bg-ink-900/5 dark:bg-gold-600/5 text-ink-900 dark:text-cream-100'
+                          : 'border-cream-150 dark:border-ink-800/80 bg-transparent hover:border-cream-250 dark:hover:border-ink-700 text-neutral-400'
                       }`}
                     >
                       <div>
-                        <h4 className="text-2xs font-serif font-black m-0 leading-tight">{sub.studentName}</h4>
-                        <span className="text-[9px] font-mono text-neutral-400 block mt-0.5">{sub.taskTitle}</span>
+                        <h4 className="text-2xs font-serif font-black m-0 leading-tight text-ink-900 dark:text-cream-100">{sub.studentName}</h4>
+                        <span className="text-[9px] font-mono text-neutral-400 dark:text-cream-200/60 block mt-0.5">{sub.taskTitle}</span>
                       </div>
                       <span className={`text-[8px] font-mono font-bold uppercase px-2 py-0.5 rounded mt-2.5 inline-block self-start ${
-                        sub.status === 'Pendente' ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                        sub.status === 'Pendente' 
+                          ? 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400' 
+                          : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/40'
                       }`}>
                         {sub.status}
                       </span>
@@ -182,50 +190,50 @@ The Pre-Contracting Party shall indemnify, defend, and hold harmless the Host En
                   if (!currentSub) return null;
 
                   return (
-                    <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 space-y-6 text-left">
-                      <div className="border-b border-gray-100 pb-4">
+                    <div className="bg-cream-100 dark:bg-ink-900 p-6 rounded-3xl border border-gray-150 dark:border-ink-800/60 space-y-6 text-left">
+                      <div className="border-b border-gray-150 dark:border-ink-800/60 pb-4">
                         <span className="text-[9px] font-mono text-gold-600 uppercase tracking-wider block font-bold">DRAFTING MANUSCRITO PARA DISCUSSÃO RECURSAL</span>
-                        <h4 className="text-md font-serif font-black text-ink-900 mt-1 m-0">{currentSub.taskTitle}</h4>
-                        <p className="text-2xs text-neutral-400 font-mono mt-0.5">ESTUDANTE: {currentSub.studentName} ({currentSub.studentEmail})</p>
+                        <h4 className="text-md font-serif font-black text-ink-900 dark:text-cream-100 mt-1 m-0">{currentSub.taskTitle}</h4>
+                        <p className="text-2xs text-neutral-400 dark:text-cream-200/60 font-mono mt-0.5">ESTUDANTE: {currentSub.studentName} ({currentSub.studentEmail})</p>
                       </div>
 
                       {/* Display paper paper skeuomorphic */}
-                      <div className="p-5 sm:p-7 bg-[#FAF9F5] border-l-4 border-gold-600 rounded-r-2xl font-mono text-xs text-neutral-400 leading-relaxed shadow-inner select-text">
+                      <div className="p-5 sm:p-7 bg-[#FAF9F5] dark:bg-ink-950/40 border-l-4 border-gold-600 rounded-r-2xl font-mono text-xs text-slate-800 dark:text-cream-100 leading-relaxed shadow-inner select-text">
                         {currentSub.submittedText}
                       </div>
 
                       {/* Manual Evaluation Score formulation */}
-                      <div className="bg-cream-200 p-5 rounded-2xl border border-gray-150 space-y-4">
-                        <span className="text-[9.5px] font-mono text-neutral-400 uppercase tracking-widest block font-bold">PARECER RECURSAL DO TUTOR</span>
+                      <div className="bg-cream-200 dark:bg-ink-850 p-5 rounded-2xl border border-gray-150 dark:border-ink-800/60 space-y-4">
+                        <span className="text-[9.5px] font-mono text-neutral-400 dark:text-cream-200/60 uppercase tracking-widest block font-bold">PARECER RECURSAL DO TUTOR</span>
                         
                         <div className="flex flex-col sm:flex-row gap-4 items-center">
                           <div className="w-full sm:w-1/3">
-                            <label className="block text-[8px] font-mono text-neutral-400 uppercase mb-1">Nota Quantitativa (0 - 100)</label>
+                            <label className="block text-[8px] font-mono text-neutral-400 dark:text-cream-200/60 uppercase mb-1">Nota Quantitativa (0 - 100)</label>
                             <input
                               type="number"
                               min="0"
                               max="100"
                               value={gradeValue}
                               onChange={(e) => setGradeValue(Number(e.target.value))}
-                              className="w-full p-2.5 text-xs bg-cream-100 rounded-xl border border-gray-200 font-serif font-black text-center text-slate-800"
+                              className="w-full p-2.5 text-xs bg-cream-100 dark:bg-ink-800 border border-gray-200 dark:border-ink-750 rounded-xl font-serif font-black text-center text-slate-800 dark:text-cream-100 focus:outline-none"
                             />
                           </div>
 
                           <div className="w-full sm:w-2/3">
-                            <label className="block text-[8px] font-mono text-neutral-400 uppercase mb-1">Feedback Corretivo Individual</label>
+                            <label className="block text-[8px] font-mono text-neutral-400 dark:text-cream-200/60 uppercase mb-1">Feedback Corretivo Individual</label>
                             <input
                               type="text"
                               value={individualFeedbackText}
                               onChange={(e) => setIndividualFeedbackText(e.target.value)}
                               placeholder="Ex: Excelente precisão vocabular ao citar as regras locais de Luanda..."
-                              className="w-full p-2.5 text-xs bg-cream-100 rounded-xl border border-gray-200 text-slate-800"
+                              className="w-full p-2.5 text-xs bg-cream-100 dark:bg-ink-800 border border-gray-200 dark:border-ink-750 rounded-xl text-slate-800 dark:text-cream-100 focus:outline-none focus:border-gold-600"
                             />
                           </div>
                         </div>
 
                         <button
                           onClick={() => handleGradeSubmit(currentSub.id)}
-                          className="w-full py-2.5 bg-ink-900 hover:bg-gold-600 hover:text-slate-900 border-0 text-cream-100 font-mono text-3xs font-black uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                          className="w-full py-2.5 bg-gold-600 hover:bg-[#b58b35] border-0 text-cream-100 text-ink-900 font-mono text-3xs font-black uppercase rounded-xl tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
                         >
                           <CheckCheck size={14} />
                           <span>Guardar Notas e Notificar Jurista por SMS</span>
@@ -238,10 +246,10 @@ The Pre-Contracting Party shall indemnify, defend, and hold harmless the Host En
               )}
 
               {/* Collective Feedback module */}
-              <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 space-y-4 text-left">
+              <div className="bg-cream-100 dark:bg-ink-900 p-6 rounded-3xl border border-gray-150 dark:border-ink-800/60 space-y-4 text-left">
                 <div>
-                  <h4 className="font-serif font-black text-ink-900 text-sm m-0">Feedback e Aviso Coletivo (Todas as Turmas)</h4>
-                  <p className="text-2xs text-neutral-400 font-mono mt-0.5 uppercase">MURAL DE NOTAS DE MODERAÇÃO</p>
+                  <h4 className="font-serif font-black text-ink-900 dark:text-cream-100 text-sm m-0">Feedback e Aviso Coletivo (Todas as Turmas)</h4>
+                  <p className="text-2xs text-neutral-400 dark:text-cream-200/60 font-mono mt-0.5 uppercase">MURAL DE NOTAS DE MODERAÇÃO</p>
                 </div>
 
                 <div className="space-y-3">
@@ -250,13 +258,13 @@ The Pre-Contracting Party shall indemnify, defend, and hold harmless the Host En
                     placeholder="Escreva orientações gerais válidas para todos (Ex: Lembrem-se que no Art. 230 do código civil angolano, ambiguidades se resolvem contra o redator)..."
                     value={collectiveBroadcastText}
                     onChange={(e) => setCollectiveBroadcastText(e.target.value)}
-                    className="w-full p-3 text-xs bg-cream-200 border border-gray-200 rounded-xl text-slate-800"
+                    className="w-full p-3 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-200 dark:border-ink-750 rounded-xl text-slate-800 dark:text-cream-100 focus:outline-none focus:border-gold-600"
                   />
 
                   <button
                     onClick={handleBroadcastCollectiveFeedback}
                     disabled={!collectiveBroadcastText.trim()}
-                    className="px-4 py-2 bg-gray-100 hover:bg-gold-600 text-neutral-400 hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer"
+                    className="px-4 py-2 bg-cream-200 dark:bg-ink-800 hover:bg-gold-600 dark:hover:bg-gold-600 text-neutral-400 dark:text-cream-200 hover:text-ink-900 dark:hover:text-ink-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer"
                   >
                     Transmitir Feedback Coletivo
                   </button>
@@ -268,33 +276,33 @@ The Pre-Contracting Party shall indemnify, defend, and hold harmless the Host En
 
           {/* TAB 2 - FORMULAR NOVA AVALIAÇÃO */}
           {activeSubTab === 'create' && (
-            <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 text-left space-y-6">
+            <div className="bg-cream-100 dark:bg-ink-900 p-6 rounded-3xl border border-gray-150 dark:border-ink-800/60 text-left space-y-6">
               <div>
-                <h4 className="font-serif font-black text-ink-900 text-lg m-0">Criar Novo Instrumento de Avaliação</h4>
-                <p className="text-xs text-neutral-400 font-mono mt-0.5">GERADOR DE SESSÕES EXAMINADORAS</p>
+                <h4 className="font-serif font-black text-ink-900 dark:text-cream-100 text-lg m-0">Criar Novo Instrumento de Avaliação</h4>
+                <p className="text-xs text-neutral-400 dark:text-cream-200/60 font-mono mt-0.5">GERADOR DE SESSÕES EXAMINADORAS</p>
               </div>
 
               <form onSubmit={handleRegisterAssessment} className="space-y-4">
                 
                 <div>
-                  <label className="block text-[9px] font-mono font-bold uppercase text-neutral-400 tracking-wider mb-1.5">Título Curricular da Prova</label>
+                  <label className="block text-[9px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">Título Curricular da Prova</label>
                   <input
                     type="text"
                     required
                     placeholder="Ex: Exame Escrito: Elaboração de Contratos de Concessão de Mineração"
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    className="w-full p-2.5 text-xs bg-cream-200 border border-gray-200 rounded-xl text-slate-800 focus:outline-none focus:border-gold-600"
+                    className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl text-slate-800 dark:text-cream-100 focus:outline-none focus:border-gold-600"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-[9px] font-mono font-bold uppercase text-neutral-400 tracking-wider mb-1.5">Tipo de Instrumento</label>
+                    <label className="block text-[9px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">Tipo de Instrumento</label>
                     <select
                       value={newType}
                       onChange={(e) => setNewType(e.target.value)}
-                      className="w-full p-2.5 text-2xs bg-cream-200 border border-gray-200 rounded-xl text-slate-800"
+                      className="w-full p-2.5 text-2xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl text-slate-800 dark:text-cream-100 focus:outline-none"
                     >
                       <option value="Questionário Rápido">Questionário Rápido (LMS)</option>
                       <option value="Trabalho de Pesquisa">Trabalho de Pesquisa / Documental</option>
@@ -303,23 +311,23 @@ The Pre-Contracting Party shall indemnify, defend, and hold harmless the Host En
                   </div>
 
                   <div>
-                    <label className="block text-[9px] font-mono font-bold uppercase text-neutral-400 tracking-wider mb-1.5 font-sans">Nota de Corte Mínima (0-100)</label>
+                    <label className="block text-[9px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">Nota de Corte Mínima (0-100)</label>
                     <input
                       type="number"
                       min="50"
                       max="100"
                       value={newMinGrade}
                       onChange={(e) => setNewMinGrade(Number(e.target.value))}
-                      className="w-full p-2.5 text-xs bg-cream-200 border border-gray-200 rounded-xl font-serif font-bold text-center text-slate-800"
+                      className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl font-serif font-bold text-center text-slate-800 dark:text-cream-100 focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[9px] font-mono font-bold uppercase text-neutral-400 tracking-wider mb-1.5">Vinculo de Módulo</label>
+                    <label className="block text-[9px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">Vínculo de Módulo</label>
                     <select
                       value={newScope}
                       onChange={(e) => setNewScope(e.target.value)}
-                      className="w-full p-2.5 text-2xs bg-cream-200 border border-gray-200 rounded-xl text-slate-800"
+                      className="w-full p-2.5 text-2xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl text-slate-800 dark:text-cream-100 focus:outline-none"
                     >
                       <option value="sistema-legal">Mês I: Common Law vs. Civil Law</option>
                       <option value="isencao-responsabilidade">Mês II: Condições de Prova e Isenção</option>
@@ -330,7 +338,7 @@ The Pre-Contracting Party shall indemnify, defend, and hold harmless the Host En
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-ink-900 hover:bg-gold-600 hover:text-slate-900 border-0 text-cream-100 font-mono text-3xs font-black uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                  className="w-full py-3 bg-gold-600 hover:bg-[#b58b35] border-0 text-cream-100 text-ink-900 font-mono text-3xs font-black uppercase rounded-xl tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
                 >
                   <PlusCircle size={14} />
                   <span>Publicar Avaliação no LMS das Turmas</span>
@@ -345,20 +353,20 @@ The Pre-Contracting Party shall indemnify, defend, and hold harmless the Host En
         {/* RIGHT ANALYTICS COLUMN BAR */}
         <div className="lg:col-span-4 space-y-6">
           
-          <div className="bg-cream-100 p-5 rounded-3xl border border-gray-150 text-left space-y-4">
-            <span className="text-[9px] font-mono text-neutral-400 uppercase tracking-widest block font-bold border-b border-gray-100 pb-2">Banco de Provas Vigentes</span>
+          <div className="bg-cream-100 dark:bg-ink-900 p-5 rounded-3xl border border-gray-150 dark:border-ink-800/60 text-left space-y-4">
+            <span className="text-[9px] font-mono text-neutral-400 dark:text-cream-200/60 uppercase tracking-widest block font-bold border-b border-gray-150 dark:border-ink-800/60 pb-2">Banco de Provas Vigentes</span>
             
             <div className="space-y-3.5">
               {quizzesList.map((quiz, idx) => (
-                <div key={idx} className="p-3 bg-cream-200/50 border border-gray-150 rounded-2xl text-left space-y-1">
+                <div key={idx} className="p-3 bg-cream-200/50 dark:bg-ink-800/40 border border-gray-150 dark:border-ink-800/60 rounded-2xl text-left space-y-1">
                   <div className="flex justify-between text-[8px] font-mono text-gold-600 font-bold">
                     <span>{quiz.type}</span>
-                    <span className="text-neutral-400 font-semibold">{quiz.weight}</span>
+                    <span className="text-neutral-400 dark:text-cream-200/40 font-semibold">{quiz.weight}</span>
                   </div>
-                  <h5 className="font-serif font-black text-ink-900 text-2xs m-0 leading-tight">
+                  <h5 className="font-serif font-black text-ink-900 dark:text-cream-100 text-2xs m-0 leading-tight">
                     {quiz.title}
                   </h5>
-                  <span className="block text-[8px] font-mono text-neutral-400">Pontuação Mínima: {quiz.minGrade}/100</span>
+                  <span className="block text-[8px] font-mono text-neutral-400 dark:text-cream-200/60">Pontuação Mínima: {quiz.minGrade}/100</span>
                 </div>
               ))}
             </div>

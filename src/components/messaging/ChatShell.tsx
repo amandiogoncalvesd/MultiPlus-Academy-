@@ -5,6 +5,8 @@ import { messageService, SupabaseMessage } from '../../services/supabase/message
 import NewConversationModal from './NewConversationModal';
 import BulkSendModal from './BulkSendModal';
 import { Send, Plus, Search, MessageSquare, Megaphone, User as UserIcon, Loader2 } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
+import StarBorder from '../ui/StarBorder';
 
 interface ChatShellProps {
   role: 'ADMIN' | 'PROFESSOR' | 'ALUNO';
@@ -216,12 +218,14 @@ export default function ChatShell({ role }: ChatShellProps) {
   );
 
   return (
-    <div id="chat-shell" className="flex bg-cream-100 rounded-3xl border border-cream-200 overflow-hidden shadow-sm h-[650px]">
+    <div id="chat-shell" className="flex bg-cream-100 dark:bg-ink-900 rounded-3xl border border-cream-200 dark:border-gold-600/10 overflow-hidden shadow-[0_20px_50px_rgba(10,46,93,0.08)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] h-[650px] relative">
       {/* Sidebar - list of partners */}
-      <div className={`w-full md:w-80 border-r border-cream-200 flex flex-col h-full bg-cream-100/40 ${activePartner ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-4 border-b border-cream-200 bg-cream-100 flex flex-col gap-3">
+      <div className={`w-full md:w-80 border-r border-cream-200 dark:border-ink-800 flex flex-col h-full bg-cream-100/40 dark:bg-ink-900/40 relative ${activePartner ? 'hidden md:flex' : 'flex'}`}>
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-600/30 to-transparent pointer-events-none" />
+        
+        <div className="p-4 border-b border-cream-200 dark:border-ink-800 bg-cream-100 dark:bg-ink-900 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-serif font-black tracking-tight text-ink-900 text-lg flex items-center gap-2">
+            <h3 className="font-serif font-black tracking-tight text-ink-900 dark:text-cream-100 text-lg flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-gold-600" />
               Mensagens
             </h3>
@@ -230,14 +234,14 @@ export default function ChatShell({ role }: ChatShellProps) {
                 <button
                   onClick={() => setShowBulkModal(true)}
                   title="Envio em massa"
-                  className="p-1.5 rounded-full hover:bg-cream-200 text-gold-600 transition-colors border border-gold-600/20 bg-transparent cursor-pointer"
+                  className="p-1.5 rounded-full hover:bg-cream-200 dark:hover:bg-ink-800 text-gold-600 transition-colors border border-gold-600/20 bg-transparent cursor-pointer"
                 >
                   <Megaphone className="w-4 h-4" />
                 </button>
               )}
               <button
                 onClick={() => setShowNewModal(true)}
-                className="p-1.5 rounded-full bg-gold-600 hover:bg-gold-600/90 text-white transition-colors border-0 cursor-pointer flex items-center justify-center"
+                className="p-1.5 rounded-full bg-gradient-to-r from-gold-600 to-[#E2B755] hover:shadow-md hover:scale-105 text-white transition-all border-0 cursor-pointer flex items-center justify-center"
                 title="Nova Conversa"
               >
                 <Plus className="w-4 h-4" />
@@ -246,13 +250,13 @@ export default function ChatShell({ role }: ChatShellProps) {
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-2 w-4 h-4 text-neutral-400" />
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-neutral-400" />
             <input
               type="text"
               placeholder="Pesquisar conversa..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-1.5 border border-cream-200 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-gold-600/20 focus:border-gold-600 bg-cream-200 text-ink-900"
+              className="w-full pl-9 pr-4 py-1.5 border border-cream-200 dark:border-slate-700 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-gold-600/20 focus:border-gold-600 bg-cream-200 dark:bg-ink-800 text-ink-900 dark:text-cream-100"
             />
           </div>
         </div>
@@ -283,8 +287,8 @@ export default function ChatShell({ role }: ChatShellProps) {
                   onClick={() => setActivePartner(p)}
                   className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all text-left border-0 cursor-pointer ${
                     isSelected
-                      ? 'bg-gold-600 text-white shadow-xs font-bold'
-                      : 'hover:bg-cream-200 bg-cream-100/70 border border-cream-200/50'
+                      ? 'bg-gradient-to-r from-gold-600 to-[#E2B755] text-white shadow-md font-bold'
+                      : 'hover:bg-cream-200 dark:hover:bg-ink-800 bg-cream-100/70 dark:bg-ink-900/30 border border-cream-200/50 dark:border-ink-800/50 text-ink-900 dark:text-cream-100'
                   }`}
                 >
                   {p.foto_perfil ? (
@@ -299,7 +303,7 @@ export default function ChatShell({ role }: ChatShellProps) {
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border text-sm ${
                         isSelected
                           ? 'bg-white/20 border-white/45 text-white'
-                          : 'bg-cream-200 border-gold-600/20 text-gold-600'
+                          : 'bg-cream-200 dark:bg-ink-800 border-gold-600/20 text-gold-600'
                       }`}
                     >
                       {p.nome_completo.charAt(0).toUpperCase()}
@@ -326,7 +330,7 @@ export default function ChatShell({ role }: ChatShellProps) {
                     </div>
                     <p
                       className={`text-xs truncate ${
-                        isSelected ? 'text-white/80' : 'text-neutral-400'
+                        isSelected ? 'text-white/80' : 'text-neutral-400 dark:text-cream-100/60'
                       }`}
                     >
                       {p.lastMessage ? p.lastMessage.texto : 'Comece a conversar!'}
@@ -346,11 +350,11 @@ export default function ChatShell({ role }: ChatShellProps) {
       </div>
 
       {/* Main chat window */}
-      <div className={`flex-1 flex flex-col h-full bg-cream-100 ${!activePartner ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`flex-1 flex flex-col h-full bg-cream-100 dark:bg-ink-900 ${!activePartner ? 'hidden md:flex' : 'flex'}`}>
         {activePartner ? (
           <>
             {/* Header */}
-            <div className="p-4 border-b border-cream-200 flex items-center gap-3 bg-cream-200/50">
+            <div className="p-4 border-b border-cream-200 dark:border-ink-800 flex items-center gap-3 bg-cream-200/50 dark:bg-ink-800/50 backdrop-blur-sm">
               <button
                 onClick={() => setActivePartner(null)}
                 className="md:hidden text-xs font-bold text-gold-600 hover:underline mr-1 bg-transparent border-0 cursor-pointer"
@@ -366,13 +370,13 @@ export default function ChatShell({ role }: ChatShellProps) {
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-cream-200 flex items-center justify-center text-gold-600 font-bold border border-gold-600/20">
+                <div className="w-10 h-10 rounded-full bg-cream-200 dark:bg-ink-800 flex items-center justify-center text-gold-600 font-bold border border-gold-600/20">
                   {activePartner.nome_completo.charAt(0).toUpperCase()}
                 </div>
               )}
 
               <div>
-                <h4 className="text-sm font-bold text-ink-900 leading-none mb-1">
+                <h4 className="text-sm font-bold text-ink-900 dark:text-cream-100 leading-none mb-1">
                   {activePartner.nome_completo}
                 </h4>
                 <p className="text-[10px] text-neutral-400 leading-none capitalize">
@@ -382,7 +386,7 @@ export default function ChatShell({ role }: ChatShellProps) {
             </div>
 
             {/* Conversation Window */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-cream-100/20">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-cream-100/20 dark:bg-ink-950/20">
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-neutral-400 gap-1.5">
                   <MessageSquare className="w-6 h-6 stroke-[1.5]" />
@@ -399,14 +403,14 @@ export default function ChatShell({ role }: ChatShellProps) {
                       <div
                         className={`max-w-[70%] p-3 rounded-2xl shadow-xs text-sm ${
                           isMe
-                            ? 'bg-gold-600 text-white rounded-tr-none'
-                            : 'bg-cream-200 text-ink-900 border border-cream-200/40 rounded-tl-none'
+                            ? 'bg-gradient-to-r from-gold-600 to-[#E2B755] text-white rounded-tr-none shadow-sm'
+                            : 'bg-cream-200 dark:bg-ink-800 text-ink-900 dark:text-cream-100 border border-cream-200/40 dark:border-ink-800/40 rounded-tl-none'
                         }`}
                       >
                         <p className="leading-snug break-words">{m.texto}</p>
                         <span
                           className={`text-[9px] block text-right mt-1 leading-none ${
-                            isMe ? 'text-white/60' : 'text-neutral-400'
+                            isMe ? 'text-white/60' : 'text-neutral-400/80 dark:text-cream-100/50'
                           }`}
                         >
                           {new Date(m.created_at).toLocaleTimeString([], {
@@ -423,19 +427,19 @@ export default function ChatShell({ role }: ChatShellProps) {
             </div>
 
             {/* Message input */}
-            <form onSubmit={handleSend} className="p-3 border-t border-cream-200 bg-cream-100 flex gap-2">
+            <form onSubmit={handleSend} className="p-3 border-t border-cream-200 dark:border-ink-800 bg-cream-100 dark:bg-ink-900 flex gap-2">
               <input
                 type="text"
                 required
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Escreva uma mensagem..."
-                className="flex-1 px-4 py-2 bg-cream-200 border border-cream-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gold-600/20 focus:border-gold-600 transition-all text-ink-900"
+                className="flex-1 px-4 py-2.5 bg-cream-200 dark:bg-ink-800 border border-cream-200 dark:border-slate-700 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gold-600/20 focus:border-gold-600 transition-all text-ink-900 dark:text-cream-100 placeholder:text-neutral-400"
               />
               <button
                 type="submit"
                 disabled={!inputText.trim() || sending}
-                className="p-2.5 rounded-full bg-gold-600 hover:bg-gold-600/90 text-white disabled:opacity-50 transition-colors shadow-xs border-0 cursor-pointer flex items-center justify-center"
+                className="p-2.5 rounded-full bg-gradient-to-r from-gold-600 to-[#E2B755] hover:shadow-lg hover:scale-105 text-white disabled:opacity-50 transition-colors shadow-xs border-0 cursor-pointer flex items-center justify-center"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -443,11 +447,13 @@ export default function ChatShell({ role }: ChatShellProps) {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-neutral-400 p-8">
-            <MessageSquare className="w-12 h-12 stroke-[1] text-neutral-400 mb-2" />
-            <p className="font-serif font-black tracking-tight text-ink-900">MultiPlus Chat Premium</p>
-            <p className="text-xs text-neutral-400 mt-1 max-w-xs text-center">
-              Selecione uma conversa na lista ou crie uma nova para falar em tempo real.
-            </p>
+            <StarBorder as="div" speed="8s" thickness={1.5} className="rounded-3xl overflow-hidden shadow-md" innerClassName="p-10 flex flex-col items-center justify-center text-center bg-cream-100 dark:bg-ink-900">
+              <MessageSquare className="w-12 h-12 stroke-[1] text-gold-600 mb-3" />
+              <p className="font-serif font-black tracking-tight text-ink-900 dark:text-cream-100 text-lg">MultiPlus Chat Premium</p>
+              <p className="text-xs text-neutral-400 mt-1 max-w-xs leading-relaxed">
+                Selecione uma conversa na lista ou crie uma nova para falar em tempo real.
+              </p>
+            </StarBorder>
           </div>
         )}
       </div>

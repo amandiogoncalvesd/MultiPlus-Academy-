@@ -50,3 +50,13 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(10, 46, 93, 0.4);
 }
+
+.dark ::-webkit-scrollbar-track {
+  background: #151D29;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(200, 155, 60, 0.3);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(200, 155, 60, 0.5);
+}

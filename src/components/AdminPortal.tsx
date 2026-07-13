@@ -907,7 +907,7 @@ export default function AdminPortal({
                 </div>
 
                 {/* Form to insert new account */}
-                <form onSubmit={handleCreateUser} className="bg-gray-55 dark:bg-ink-900/50 p-5 rounded-2xl border border-gray-200 dark:border-ink-800 grid grid-cols-1 md:grid-cols-5 gap-4 items-end text-xs">
+                <form onSubmit={handleCreateUser} className="bg-cream-200 dark:bg-ink-950/40 p-5 rounded-2xl border border-gray-250 dark:border-ink-800/60 grid grid-cols-1 md:grid-cols-5 gap-4 items-end text-xs text-slate-850 dark:text-cream-100">
                   <div>
                     <label className="block text-[9px] font-mono text-neutral-400 uppercase font-black mb-1">Nome Completo</label>
                     <input
@@ -1002,7 +1002,7 @@ export default function AdminPortal({
                 )}
 
                 {/* Users List with impersonation keys */}
-                <div className="overflow-x-auto border-0 md:border rounded-2xl">
+                <div className="overflow-x-auto border-0 md:border border-gray-150 dark:border-ink-800 rounded-2xl">
                   {dbUsers.filter(u => roleFilter === 'ALL' || u.role === roleFilter).length === 0 ? (
                     <div className="p-8 text-center border border-dashed border-gray-200 rounded-2xl font-mono text-gray-450 text-xs">
                       Nenhum utilizador registrado com esta função.
@@ -1011,16 +1011,16 @@ export default function AdminPortal({
                     <>
                       <table className="hidden md:table w-full text-left text-xs">
                         <thead>
-                          <tr className="bg-cream-200 dark:bg-ink-900/30 uppercase text-[9px] font-mono text-neutral-400 border-b">
+                          <tr className="bg-cream-200 dark:bg-ink-900/30 uppercase text-[9px] font-mono text-neutral-400 border-b border-gray-150 dark:border-ink-800">
                             <th className="p-3">Membro</th>
                             <th className="p-3">Função / RBAC</th>
                             <th className="p-3">Estado</th>
                             <th className="p-3 text-right">Ação</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-gray-100 dark:divide-ink-800">
                           {dbUsers.filter(u => roleFilter === 'ALL' || u.role === roleFilter).map(user => (
-                            <tr key={user.id} className="hover:bg-cream-200/60 transition-colors">
+                            <tr key={user.id} className="hover:bg-cream-200/60 dark:hover:bg-ink-800/40 transition-colors text-slate-850 dark:text-cream-100 border-b border-gray-100 dark:border-ink-850">
                               <td className="p-3 flex items-center gap-2.5">
                                 {(!user.avatarUrl || user.avatarUrl.includes('unsplash.com')) ? (
                                   <div className="w-7 h-7 rounded-full bg-gold-600 text-slate-950 font-bold flex items-center justify-center text-[10px] uppercase shrink-0">
@@ -1047,19 +1047,19 @@ export default function AdminPortal({
                               <td className="p-3 text-right space-x-2">
                                 <button
                                   onClick={() => handleToggleUserStatus(user.id)}
-                                  className="px-2 py-1 text-slate-600 border rounded hover:bg-gray-100 font-mono text-[9px]"
+                                  className="px-2 py-1 text-slate-600 dark:text-cream-200 border border-gray-250 dark:border-ink-750 rounded hover:bg-gray-100 dark:hover:bg-ink-800 font-mono text-[9px] bg-transparent cursor-pointer"
                                 >
                                   Suspender/Ativar
                                 </button>
                                 <button
                                   onClick={() => handleImpersonate(user)}
-                                  className="px-2.5 py-1 bg-ink-900 text-cream-100 hover:bg-gold-600 hover:text-slate-900 rounded font-mono text-[9px] inline-flex items-center gap-1"
+                                  className="px-2.5 py-1 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-ink-950 hover:bg-gold-600 hover:text-slate-900 dark:hover:bg-[#b58b35] rounded font-mono text-[9px] inline-flex items-center gap-1 cursor-pointer border-0"
                                 >
                                   <Eye size={10} /> Pre-visualizar
                                 </button>
                                 <button
                                   onClick={() => handleDeleteUser(user.id)}
-                                  className="p-1 text-danger-700 hover:text-red-700 hover:bg-red-50 rounded"
+                                  className="p-1 text-danger-700 hover:text-red-650 hover:bg-red-50/10 rounded cursor-pointer border-0 bg-transparent"
                                 >
                                   <Trash2 size={12} />
                                 </button>
@@ -1072,7 +1072,7 @@ export default function AdminPortal({
                       {/* Mobile view of stacked cards */}
                       <div className="block md:hidden space-y-4">
                         {dbUsers.filter(u => roleFilter === 'ALL' || u.role === roleFilter).map(user => (
-                          <div key={user.id} className="bg-cream-100 p-4 rounded-2xl border border-gray-150 space-y-3 shadow-sm text-left">
+                          <div key={user.id} className="bg-cream-100 dark:bg-ink-850 p-4 rounded-2xl border border-gray-150 dark:border-ink-800/60 space-y-3 shadow-sm text-left text-slate-850 dark:text-cream-100">
                             <div className="flex items-center gap-3">
                               {(!user.avatarUrl || user.avatarUrl.includes('unsplash.com')) ? (
                                 <div className="w-9 h-9 rounded-full bg-gold-600 text-slate-950 font-bold flex items-center justify-center text-xs uppercase shrink-0">
@@ -1091,24 +1091,24 @@ export default function AdminPortal({
                                 {user.status || 'ACTIVE'}
                               </span>
                             </div>
-                            <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                            <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-ink-800">
                               <span className="font-mono text-[10px] text-gold-600 font-extrabold">{user.role}</span>
                               <div className="flex gap-1.5">
                                 <button
                                   onClick={() => handleToggleUserStatus(user.id)}
-                                  className="px-2 py-1 text-slate-600 border rounded hover:bg-gray-100 font-mono text-[9px]"
+                                  className="px-2 py-1 text-slate-600 dark:text-cream-200 border border-gray-250 dark:border-ink-750 rounded hover:bg-gray-100 dark:hover:bg-ink-800 font-mono text-[9px] bg-transparent cursor-pointer"
                                 >
                                   Mudar Estado
                                 </button>
                                 <button
                                   onClick={() => handleImpersonate(user)}
-                                  className="px-2 py-1 bg-ink-900 text-cream-100 hover:bg-gold-600 hover:text-slate-900 rounded font-mono text-[9px] inline-flex items-center gap-1"
+                                  className="px-2 py-1 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-ink-950 hover:bg-gold-600 hover:text-slate-900 dark:hover:bg-[#b58b35] rounded font-mono text-[9px] inline-flex items-center gap-1 cursor-pointer border-0"
                                 >
                                   <Eye size={10} /> Pre-visualizar
                                 </button>
                                 <button
                                   onClick={() => handleDeleteUser(user.id)}
-                                  className="p-1 text-danger-700 hover:text-red-700 hover:bg-red-50 rounded"
+                                  className="p-1 text-danger-700 hover:text-red-650 hover:bg-red-50/10 rounded cursor-pointer border-0 bg-transparent"
                                 >
                                   <Trash2 size={12} />
                                 </button>
@@ -1179,7 +1179,7 @@ export default function AdminPortal({
                       addAuditLog("CRIAÇÃO CURSO", `Criado novo curso: ${courseTitle}`);
                       alert('Novo programa indexado com sucesso no Supabase!');
                     }
-                  }} className="p-4 bg-cream-200 dark:bg-ink-800 rounded-xl space-y-3">
+                  }} className="p-4 bg-cream-200 dark:bg-ink-950/40 rounded-xl space-y-3 border border-gray-200 dark:border-ink-800/60">
                     <p className="font-serif font-bold text-xs m-0 text-ink-900 dark:text-cream-100">Formulário do Novo Curso</p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-slate-800 dark:text-cream-100">
                       <input type="text" placeholder="Nome do Curso..." value={courseTitle} onChange={(e) => setCourseTitle(e.target.value)} required className="p-2 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded text-current" />
@@ -1187,7 +1187,7 @@ export default function AdminPortal({
                       <input type="text" placeholder="Oradora responsável..." value={courseInstructor} onChange={(e) => setCourseInstructor(e.target.value)} className="p-2 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded text-current" />
                     </div>
                     <div className="flex gap-2 justify-end">
-                      <button type="button" onClick={() => setIsCreatingCourse(false)} className="px-3 py-1 bg-gray-100 dark:bg-slate-800 text-slate-650 dark:text-cream-200 rounded">Cancelar</button>
+                      <button type="button" onClick={() => setIsCreatingCourse(false)} className="px-3 py-1 bg-cream-100 dark:bg-ink-850 text-slate-650 dark:text-cream-200 rounded border border-gray-250 dark:border-ink-750">Cancelar</button>
                       <button type="submit" className="px-3 py-1 bg-ink-900 text-cream-100 rounded">Salvar Curso</button>
                     </div>
                   </form>
@@ -1195,7 +1195,7 @@ export default function AdminPortal({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {courses.map(course => (
-                    <div key={course.id} className="p-4 bg-[#FAF9F6] dark:bg-ink-800 border border-gray-150 dark:border-ink-800 rounded-2xl flex flex-col justify-between text-left hover:border-gold-600/55">
+                    <div key={course.id} className="p-4 bg-cream-100 dark:bg-ink-850 border border-gray-150 dark:border-ink-800 rounded-2xl flex flex-col justify-between text-left hover:border-gold-600/55">
                       <div className="space-y-1">
                         <span className="text-[10px] font-mono text-gold-600 font-bold block">{course.duration} • {course.price}</span>
                         <h4 className="font-serif font-black text-sm text-ink-900 dark:text-cream-100 m-0">{course.title}</h4>
@@ -1234,7 +1234,7 @@ export default function AdminPortal({
                                 alert('Curso duplicado com sucesso no Supabase!');
                               }
                             }
-                          }} className="p-1 text-slate-650 bg-cream-100 dark:bg-slate-800 border dark:border-ink-800 hover:bg-gray-100 dark:hover:bg-slate-700 rounded text-xs">Duplicar</button>
+                          }} className="p-1 text-slate-650 dark:text-cream-200 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-750 hover:bg-cream-200 dark:hover:bg-ink-800 rounded text-xs transition-colors">Duplicar</button>
                           <button onClick={async () => {
                             if (confirm('Deseja realmente remover permanentemente este curso do Supabase?')) {
                               const { error } = await supabase.from('courses').delete().eq('id', course.id);
@@ -1246,7 +1246,7 @@ export default function AdminPortal({
                                 alert('Curso removido com sucesso!');
                               }
                             }
-                          }} className="p-1 text-red-650 hover:bg-red-50 rounded"><Trash2 size={12} /></button>
+                          }} className="p-1 text-red-650 hover:bg-red-50/10 rounded border-0 bg-transparent cursor-pointer"><Trash2 size={12} /></button>
                         </div>
                       </div>
                     </div>
@@ -1279,15 +1279,15 @@ export default function AdminPortal({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {certificates.map((cert, i) => (
-                    <div key={i} className="p-4 bg-cream-100 border-2 border-gold-600/40 rounded-2xl flex justify-between items-center text-left">
+                    <div key={i} className="p-4 bg-cream-100 dark:bg-ink-850 border-2 border-gold-600/40 rounded-2xl flex justify-between items-center text-left text-slate-850 dark:text-cream-100">
                       <div className="space-y-1">
                         <span className="text-[8px] font-mono text-gold-600 font-bold uppercase">Código: {cert.verificationCode}</span>
-                        <h4 className="font-serif font-black text-xs text-slate-700 m-0">{cert.recipientName}</h4>
+                        <h4 className="font-serif font-black text-xs text-slate-700 dark:text-cream-100 m-0">{cert.recipientName}</h4>
                         <p className="text-[10px] text-neutral-400 font-mono m-0">{cert.courseName}</p>
                         <span className="text-[9px] text-ink-900 block">Emitido em: {cert.completionDate}</span>
                       </div>
-                      <div className="p-1 border bg-cream-200 rounded">
-                        <QrCode className="text-slate-800" size={40} />
+                      <div className="p-1 border border-gray-200 dark:border-ink-750 bg-cream-200 dark:bg-ink-900 rounded shrink-0">
+                        <QrCode className="text-slate-800 dark:text-cream-200" size={40} />
                       </div>
                     </div>
                   ))}
@@ -1320,11 +1320,11 @@ export default function AdminPortal({
 
                 <div className="space-y-3">
                   {activeAlerts.map(alert => (
-                    <div key={alert.id} className="p-4 bg-red-50/50 border border-red-200/50 rounded-2xl flex gap-3 text-left">
+                    <div key={alert.id} className="p-4 bg-red-50/50 dark:bg-danger-700/10 border border-red-200/50 dark:border-danger-700/30 rounded-2xl flex gap-3 text-left">
                       <AlertTriangle className="text-red-650 shrink-0 mt-0.5" size={16} />
                       <div>
                         <span className="text-[8px] font-mono text-red-700 font-extrabold uppercase bg-red-100/50 px-2 py-0.5 rounded">{alert.type}</span>
-                        <p className="text-xs font-semibold text-slate-700 mt-1.5 leading-normal m-0">{alert.msg}</p>
+                        <p className="text-xs font-semibold text-slate-700 dark:text-cream-100 mt-1.5 leading-normal m-0">{alert.msg}</p>
                       </div>
                     </div>
                   ))}
@@ -1379,15 +1379,15 @@ export default function AdminPortal({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-left">
                   <div className="space-y-1">
                     <label className="block text-[8px] font-mono text-neutral-400 uppercase font-black">Nome da Instituição</label>
-                    <input type="text" value={instName} onChange={(e) => setInstName(e.target.value)} className="w-full p-2.5 bg-[#FAF9F6] border rounded-xl font-serif font-extrabold" />
+                    <input type="text" value={instName} onChange={(e) => setInstName(e.target.value)} className="w-full p-2.5 bg-cream-100 dark:bg-ink-850 border border-gray-250 dark:border-ink-750 text-slate-800 dark:text-cream-100 rounded-xl font-serif font-extrabold focus:outline-none focus:border-gold-600" />
                   </div>
                   <div className="space-y-1">
                     <label className="block text-[8px] font-mono text-neutral-400 uppercase font-black">Domínio de Internet</label>
-                    <input type="text" value={instDomain} onChange={(e) => setInstDomain(e.target.value)} className="w-full p-2.5 bg-[#FAF9F6] border rounded-xl font-mono" />
+                    <input type="text" value={instDomain} onChange={(e) => setInstDomain(e.target.value)} className="w-full p-2.5 bg-cream-100 dark:bg-ink-850 border border-gray-250 dark:border-ink-750 text-slate-850 dark:text-cream-100 rounded-xl font-mono focus:outline-none focus:border-gold-600" />
                   </div>
                   <div className="space-y-1 md:col-span-2">
                     <label className="block text-[8px] font-mono text-neutral-400 uppercase font-black">Contacto de Emergência</label>
-                    <input type="text" value={instPhone} onChange={(e) => setInstPhone(e.target.value)} className="w-full p-2.5 bg-[#FAF9F6] border rounded-xl" />
+                    <input type="text" value={instPhone} onChange={(e) => setInstPhone(e.target.value)} className="w-full p-2.5 bg-cream-100 dark:bg-ink-850 border border-gray-250 dark:border-ink-750 text-slate-850 dark:text-cream-100 rounded-xl focus:outline-none focus:border-gold-600" />
                   </div>
                 </div>
 
@@ -1455,7 +1455,7 @@ export default function AdminPortal({
                   </div>
                 </div>
 
-                <div className="p-4 bg-gray-55 dark:bg-ink-900/50 border dark:border-ink-800 rounded-2xl text-xs space-y-3 leading-normal">
+                <div className="p-4 bg-cream-200 dark:bg-ink-950/40 border border-gray-200 dark:border-ink-800/60 rounded-2xl text-xs space-y-3 leading-normal">
                   <p><strong>Cargo Hierárquico:</strong> Super Administrador</p>
                   <p><strong>E-mail de Login:</strong> {currentUser?.email || 'admin@multiplus.ao'}</p>
                   <p><strong>Permissão RBAC:</strong> Acesso Pleno de Administração (Gestão de utilizadores, emissão de certificados e auditoria completa do sistema).</p>
@@ -1472,7 +1472,7 @@ export default function AdminPortal({
                         type="text" 
                         value={adminName} 
                         onChange={(e) => setAdminName(e.target.value)} 
-                        className="w-full p-2.5 bg-[#FAF9F6] dark:bg-ink-800 border dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600" 
+                        className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -1481,7 +1481,7 @@ export default function AdminPortal({
                         type="text" 
                         value={adminPhone} 
                         onChange={(e) => setAdminPhone(e.target.value)} 
-                        className="w-full p-2.5 bg-[#FAF9F6] dark:bg-ink-800 border dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600" 
+                        className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600" 
                       />
                     </div>
                     <div className="space-y-1 md:col-span-2">
@@ -1490,7 +1490,7 @@ export default function AdminPortal({
                         value={adminBio} 
                         onChange={(e) => setAdminBio(e.target.value)} 
                         rows={3}
-                        className="w-full p-2.5 bg-[#FAF9F6] dark:bg-ink-800 border dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
+                        className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
                         placeholder="Escreva uma breve biografia ou introdução para o perfil do portal..."
                       />
                     </div>

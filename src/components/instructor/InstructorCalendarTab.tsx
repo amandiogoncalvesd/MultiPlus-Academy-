@@ -155,23 +155,27 @@ export default function InstructorCalendarTab({
   ];
 
   return (
-    <div className="space-y-6 text-left animate-fade-in">
+    <div className="space-y-6 text-left animate-fade-in relative">
+      <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] bg-gradient-to-br from-gold-600/5 to-transparent rounded-full blur-[100px] pointer-events-none" />
       
       {/* View Selector top navigation header */}
-      <div className="bg-cream-100 p-5 rounded-3xl border border-gray-150 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
+      <div className="bg-cream-100 dark:bg-ink-900 p-5 rounded-3xl border border-gray-150 dark:border-ink-800/60 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-gold-600/[0.01] to-transparent pointer-events-none" />
+        <div className="relative z-10">
           <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block mb-1">Canais Síncronos</span>
-          <h3 className="text-lg font-serif font-black text-ink-900 m-0">Aulas ao Vivo & Agendamento Real</h3>
+          <h3 className="text-lg font-serif font-black text-ink-900 dark:text-cream-100 m-0">Aulas ao Vivo & Agendamento Real</h3>
           <p className="text-xs text-neutral-400 mt-1">Gere reuniões exclusivas agendando aulas no Supabase em tempo real.</p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 relative z-10 shrink-0">
           {['month', 'week', 'day'].map((view) => (
             <button
               key={view}
               onClick={() => setCalendarView(view as any)}
-              className={`px-3 py-1.5 rounded-lg border text-3xs font-mono font-bold uppercase cursor-pointer ${
-                calendarView === view ? 'bg-ink-900 text-cream-100' : 'text-neutral-400 bg-transparent hover:bg-cream-200 hover:text-slate-900'
+              className={`px-3 py-1.5 rounded-lg border-0 text-3xs font-mono font-bold uppercase cursor-pointer transition-all ${
+                calendarView === view 
+                  ? 'bg-gold-600 text-ink-900 shadow-sm shadow-gold-600/20' 
+                  : 'text-neutral-400 dark:text-cream-200/60 bg-cream-200 dark:bg-ink-800 hover:bg-cream-250 dark:hover:bg-ink-750'
               }`}
             >
               {view === 'month' ? 'Mensal' : view === 'week' ? 'Semanal' : 'Diário'}
@@ -180,17 +184,17 @@ export default function InstructorCalendarTab({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch relative z-10">
         
         {/* LEFT COLUMN: LIVE STREAM MEETING GENERATOR */}
         <div className="lg:col-span-8 space-y-6">
           
-          <div className="bg-cream-100 p-6 rounded-3xl border border-gold-600/20 text-left space-y-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gold-600/5 rounded-bl-full pointer-events-none" />
+          <div className="bg-cream-100 dark:bg-ink-900 p-6 rounded-3xl border border-gray-150 dark:border-ink-800/60 text-left space-y-6 relative overflow-hidden shadow-xs">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gold-600/[0.02] rounded-bl-full pointer-events-none" />
             
-            <div className="border-b border-gray-100 pb-3">
+            <div className="border-b border-gray-150 dark:border-ink-800/60 pb-3">
               <span className="text-[9px] font-mono text-gold-600 font-black tracking-widest block uppercase">CRIAÇÃO DE SESSÕES DINÂMICAS</span>
-              <h4 className="font-serif font-black text-ink-900 text-sm leading-snug mt-1">Agendar Aula Síncrona para Aluno Alvo</h4>
+              <h4 className="font-serif font-black text-ink-900 dark:text-cream-100 text-sm leading-snug mt-1">Agendar Aula Síncrona para Aluno Alvo</h4>
             </div>
 
             <form onSubmit={handleCreateMeeting} className="space-y-4">
@@ -198,11 +202,11 @@ export default function InstructorCalendarTab({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Course Selection */}
                 <div>
-                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 tracking-wider mb-1.5">1. Selecionar Curso</label>
+                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">1. Selecionar Curso</label>
                   <select
                     value={selectedMeetingCourse}
                     onChange={(e) => setSelectedMeetingCourse(e.target.value)}
-                    className="w-full p-2.5 text-xs bg-cream-200 border border-gray-200 rounded-xl focus:outline-none focus:border-gold-600 text-slate-850"
+                    className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl focus:outline-none focus:border-gold-600 text-slate-850 dark:text-cream-100"
                   >
                     <option value="">-- Selecione o Curso --</option>
                     {courses.map(c => (
@@ -213,11 +217,11 @@ export default function InstructorCalendarTab({
 
                 {/* Student Selection */}
                 <div>
-                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 tracking-wider mb-1.5">2. Selecionar Aluno</label>
+                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">2. Selecionar Aluno</label>
                   <select
                     value={selectedStudent}
                     onChange={(e) => setSelectedStudent(e.target.value)}
-                    className="w-full p-2.5 text-xs bg-cream-200 border border-gray-200 rounded-xl focus:outline-none focus:border-gold-600 text-slate-850"
+                    className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl focus:outline-none focus:border-gold-600 text-slate-850 dark:text-cream-100"
                   >
                     <option value="">-- Selecione o Aluno --</option>
                     {studentDropdownList.map(s => (
@@ -230,9 +234,9 @@ export default function InstructorCalendarTab({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Lesson Selection */}
                 <div className="md:col-span-1">
-                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 tracking-wider mb-1.5">3. Selecionar Lição</label>
+                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">3. Selecionar Lição</label>
                   {loadingLessons ? (
-                    <div className="p-2.5 bg-cream-200 border border-gray-200 rounded-xl flex items-center justify-center gap-1.5">
+                    <div className="p-2.5 bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl flex items-center justify-center gap-1.5">
                       <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" />
                       <span className="text-3xs text-neutral-400">A obter lições...</span>
                     </div>
@@ -240,7 +244,7 @@ export default function InstructorCalendarTab({
                     <select
                       value={selectedLesson}
                       onChange={(e) => setSelectedLesson(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-cream-200 border border-gray-200 rounded-xl focus:outline-none focus:border-gold-600 text-slate-850"
+                      className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl focus:outline-none focus:border-gold-600 text-slate-850 dark:text-cream-100"
                     >
                       {dbLessons.length === 0 ? (
                         <>
@@ -259,23 +263,23 @@ export default function InstructorCalendarTab({
 
                 {/* Meeting Date */}
                 <div>
-                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 tracking-wider mb-1.5">4. Data Agendada</label>
+                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">4. Data Agendada</label>
                   <input
                     type="date"
                     value={meetingDate}
                     onChange={(e) => setMeetingDate(e.target.value)}
-                    className="w-full p-2.5 text-xs bg-cream-200 border border-gray-200 rounded-xl focus:outline-none focus:border-gold-600 text-slate-800"
+                    className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl focus:outline-none focus:border-gold-600 text-slate-800 dark:text-cream-100"
                   />
                 </div>
 
                 {/* Meeting Time */}
                 <div>
-                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 tracking-wider mb-1.5">5. Hora Prevista</label>
+                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">5. Hora Prevista</label>
                   <input
                     type="time"
                     value={meetingTime}
                     onChange={(e) => setMeetingTime(e.target.value)}
-                    className="w-full p-2.5 text-xs bg-cream-200 border border-gray-200 rounded-xl focus:outline-none focus:border-gold-600 text-slate-800"
+                    className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl focus:outline-none focus:border-gold-600 text-slate-800 dark:text-cream-100"
                   />
                 </div>
               </div>
@@ -283,7 +287,7 @@ export default function InstructorCalendarTab({
               <button
                 type="submit"
                 disabled={scheduling || loadingLessons}
-                className="w-full py-3 bg-ink-900 hover:bg-gold-600 hover:text-slate-900 border-0 text-cream-100 font-mono text-3xs font-black uppercase rounded-xl tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                className="w-full py-3 bg-gold-600 hover:bg-[#b58b35] border-0 text-cream-100 text-ink-900 font-mono text-3xs font-black uppercase rounded-xl tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50 shadow-sm"
               >
                 {scheduling ? (
                   <>
@@ -308,7 +312,7 @@ export default function InstructorCalendarTab({
             </span>
             
             {scheduledLessons.length === 0 ? (
-              <div className="bg-cream-100 p-6 rounded-3xl border border-gray-150 text-center py-8">
+              <div className="bg-cream-100 dark:bg-ink-900 p-6 rounded-3xl border border-gray-150 dark:border-ink-800/60 text-center py-8">
                 <p className="text-xs text-neutral-400 m-0">Nenhuma aula síncrona agendada no momento. Utilize o formulário acima para criar novos agendamentos reais.</p>
               </div>
             ) : (
@@ -323,22 +327,22 @@ export default function InstructorCalendarTab({
                   const meetUrl = 'https://meet.google.com/lookup/mock-multiplus';
 
                   return (
-                    <div key={session.id || index} className="bg-cream-100 p-5 rounded-3xl border border-gray-150 relative overflow-hidden hover:shadow transition-all space-y-4 flex flex-col justify-between">
+                    <div key={session.id || index} className="bg-cream-100 dark:bg-ink-900 p-5 rounded-3xl border border-gray-150 dark:border-ink-800/60 relative overflow-hidden hover:shadow transition-all space-y-4 flex flex-col justify-between">
                       <div>
                         <div className="flex justify-between items-start text-[8px] font-mono font-extrabold text-gold-600">
                           <span className="uppercase truncate max-w-[150px]">{courseName}</span>
-                          <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded uppercase">● Agendamento Ativo</span>
+                          <span className="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded uppercase font-bold border border-emerald-100 dark:border-emerald-800/40">● Agendamento Ativo</span>
                         </div>
 
-                        <h5 className="font-serif font-black text-ink-900 text-xs leading-tight mt-1.5 m-0">
+                        <h5 className="font-serif font-black text-ink-900 dark:text-cream-100 text-xs leading-tight mt-1.5 m-0">
                           {title}
                         </h5>
 
-                        <p className="text-[9px] text-neutral-400 font-mono mt-1 m-0">
-                          Aluno Alvo: <strong className="text-neutral-400">{studentName}</strong>
+                        <p className="text-[9px] text-neutral-400 dark:text-cream-200/60 font-mono mt-1 m-0">
+                          Aluno Alvo: <strong className="text-neutral-400 dark:text-cream-100">{studentName}</strong>
                         </p>
 
-                        <div className="flex gap-4 text-3xs text-neutral-400 font-mono mt-3">
+                        <div className="flex gap-4 text-3xs text-neutral-400 dark:text-cream-200/60 font-mono mt-3">
                           <span className="flex items-center gap-1">
                             <Clock size={11} />
                             {dateVal} • {timeVal}
@@ -350,17 +354,17 @@ export default function InstructorCalendarTab({
                         </div>
                       </div>
 
-                      <div className="border-t border-gray-100 pt-3.5 space-y-2">
+                      <div className="border-t border-gray-150 dark:border-ink-800/60 pt-3.5 space-y-2">
                         <div className="flex gap-2">
                           <input
                             type="text"
                             readOnly
                             value={meetUrl}
-                            className="flex-grow p-1.5 text-4xs font-mono bg-cream-200 border border-gray-150 rounded text-slate-500 text-center"
+                            className="flex-grow p-1.5 text-4xs font-mono bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded text-slate-500 dark:text-cream-200/80 text-center"
                           />
                           <button
                             onClick={() => handleCopyLink(meetUrl)}
-                            className="p-1 text-slate-500 hover:text-gold-600 border-0 bg-transparent cursor-pointer"
+                            className="p-1 text-slate-500 dark:text-cream-200/80 hover:text-gold-600 border-0 bg-transparent cursor-pointer shrink-0"
                             title="Copiar Link de Convite"
                           >
                             <Copy size={13} />
@@ -378,17 +382,17 @@ export default function InstructorCalendarTab({
         </div>
 
         {/* RIGHT COLUMN: CALENDAR VISUAL VIEW GRID */}
-        <div className="lg:col-span-4 bg-cream-100 p-5 rounded-3xl border border-gray-150 flex flex-col justify-between">
+        <div className="lg:col-span-4 bg-cream-100 dark:bg-ink-900 p-5 rounded-3xl border border-gray-150 dark:border-ink-800/60 flex flex-col justify-between shadow-xs">
           <div className="space-y-4">
-            <div className="border-b border-gray-100 pb-2">
-              <span className="text-[9px] font-mono text-neutral-400 uppercase tracking-widest block font-bold">Calendário Académico</span>
-              <h4 className="text-sm font-serif font-black text-ink-900 m-0 leading-tight">Mês Coerente (Junho 2026)</h4>
+            <div className="border-b border-gray-150 dark:border-ink-800/60 pb-2">
+              <span className="text-[9px] font-mono text-neutral-400 dark:text-cream-200/60 uppercase tracking-widest block font-bold">Calendário Académico</span>
+              <h4 className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 m-0 leading-tight">Mês Coerente (Junho 2026)</h4>
             </div>
 
             {/* Custom Monthly Render Grid Map */}
             <div className="grid grid-cols-7 gap-1 text-center text-4xs font-mono mb-2">
               {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, dIdx) => (
-                <div key={dIdx} className="font-extrabold text-ink-900 text-[9px] uppercase pb-1">{day}</div>
+                <div key={dIdx} className="font-extrabold text-ink-900 dark:text-cream-100 text-[9px] uppercase pb-1">{day}</div>
               ))}
               {Array.from({ length: 4 }).map((_, emptyIdx) => (
                 <div key={`empty-${emptyIdx}`} className="p-2 text-gray-300"></div>
@@ -402,8 +406,8 @@ export default function InstructorCalendarTab({
                     key={dayNum} 
                     className={`p-2.5 rounded-lg text-2xs flex flex-col items-center justify-center relative cursor-help select-none ${
                       matchesEvent 
-                        ? 'bg-gold-600/10 text-gold-600 font-black border border-gold-600/30' 
-                        : 'hover:bg-cream-200 text-slate-700'
+                        ? 'bg-gold-600/15 text-gold-600 dark:text-gold-500 font-black border border-gold-600/30' 
+                        : 'hover:bg-cream-200 dark:hover:bg-ink-800 text-slate-700 dark:text-cream-200/80'
                     }`}
                     title={matchesEvent ? combinedEvents.find(e => e.date === formattedDate)?.title : `Sem compromisso no dia ${dayNum}`}
                   >
@@ -415,16 +419,16 @@ export default function InstructorCalendarTab({
             </div>
 
             {/* Listed events of the month */}
-            <div className="space-y-2 max-h-52 overflow-y-auto pt-2.5 border-t border-gray-150">
-              <span className="text-[8px] font-mono font-bold text-gray-450 uppercase block">Lista Metas Cronológicas</span>
+            <div className="space-y-2 max-h-52 overflow-y-auto pt-2.5 border-t border-gray-150 dark:border-ink-800/60">
+              <span className="text-[8px] font-mono font-bold text-neutral-400 dark:text-cream-200/40 uppercase block text-left">Lista Metas Cronológicas</span>
               
               {combinedEvents.map((evt, idx) => (
-                <div key={evt.id || idx} className="p-2.5 bg-cream-200/60 rounded-xl border border-gray-150 flex justify-between items-center text-left">
+                <div key={evt.id || idx} className="p-2.5 bg-cream-200/60 dark:bg-ink-800/40 rounded-xl border border-gray-150 dark:border-ink-800/60 flex justify-between items-center text-left">
                   <div className="flex-1 min-w-0 pr-2">
-                    <h6 className="font-serif font-black text-slate-700 text-[10px] m-0 leading-tight truncate">{evt.title}</h6>
-                    <span className="text-[8px] font-mono text-neutral-400 block mt-0.5">{evt.date} • {evt.time}</span>
+                    <h6 className="font-serif font-black text-slate-700 dark:text-cream-100 text-[10px] m-0 leading-tight truncate">{evt.title}</h6>
+                    <span className="text-[8px] font-mono text-neutral-400 dark:text-cream-200/60 block mt-0.5">{evt.date} • {evt.time}</span>
                   </div>
-                  <span className="text-[7.5px] font-mono uppercase bg-amber-50 text-gold-600 px-1.5 py-0.5 rounded font-black tracking-wider shrink-0">
+                  <span className="text-[7.5px] font-mono uppercase bg-amber-50 dark:bg-amber-950/20 text-gold-600 dark:text-gold-500 px-1.5 py-0.5 rounded font-black tracking-wider shrink-0">
                     {evt.type}
                   </span>
                 </div>
@@ -433,9 +437,9 @@ export default function InstructorCalendarTab({
 
           </div>
 
-          <div className="bg-ink-900/5 p-3 rounded-2xl border border-ink-900/10 text-left mt-4">
-            <span className="text-[8px] font-mono text-ink-900 font-bold block uppercase mb-1">GOOGLE SYNC ACTIVE</span>
-            <p className="text-4xs text-neutral-400 leading-normal m-0 leading-relaxed">
+          <div className="bg-ink-900/5 dark:bg-ink-950/40 p-3 rounded-2xl border border-ink-900/10 dark:border-ink-800/60 text-left mt-4">
+            <span className="text-[8px] font-mono text-ink-900 dark:text-cream-100 font-bold block uppercase mb-1">GOOGLE SYNC ACTIVE</span>
+            <p className="text-4xs text-neutral-400 dark:text-cream-200/40 leading-relaxed m-0">
               Quaisquer alterações registadas serão replicadas e espelhadas para contas Microsoft Exchange ligadas de outros diretores e secretários de Luanda e Huambo.
             </p>
           </div>
