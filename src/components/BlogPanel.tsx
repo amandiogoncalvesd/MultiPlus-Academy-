@@ -2,6 +2,7 @@ import { useState, MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BLOG_POSTS } from '../data';
 import { BlogPost, PageId } from '../types';
+import StarBorder from './ui/StarBorder';
 import { 
   ArrowLeft, 
   Clock, 
@@ -97,25 +98,33 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
             <div className="flex items-center gap-2 overflow-x-auto pb-4 border-b border-slate-100 scrollbar-none">
               <span className="text-xs text-slate-400 font-mono uppercase tracking-wider mr-2 whitespace-nowrap">Categorias:</span>
               {categoriesList.map((cat, idx) => (
-                <button
+                <StarBorder
                   key={idx}
+                  as="button"
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all capitalize whitespace-nowrap ${
+                  speed="8s"
+                  thickness={1}
+                  className="rounded-full overflow-hidden cursor-pointer"
+                  innerClassName={`relative z-1 px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all capitalize whitespace-nowrap ${
                     activeCategory === cat
-                      ? 'bg-[#0A2E5D] text-white border border-[#0A2E5D] shadow-sm'
-                      : 'hover:bg-slate-100 text-slate-600 bg-white border border-slate-200'
+                      ? 'bg-[#0A2E5D] text-white'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
                   }`}
                 >
                   {cat === 'all' ? 'Ver Todos' : cat}
-                </button>
+                </StarBorder>
               ))}
             </div>
 
             {/* Featured Post (Highlighted above the grid) */}
             {filteredPosts.length > 0 && searchTerm === '' && activeCategory === 'all' && (
-              <div 
+              <StarBorder
+                as="div"
+                speed="8s"
+                thickness={2}
+                className="w-full rounded-3xl overflow-hidden shadow-xs cursor-pointer text-left"
+                innerClassName="relative z-1 grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white rounded-3xl overflow-hidden w-full"
                 onClick={() => setSelectedPost(filteredPosts[0])}
-                className="bg-white rounded-3xl overflow-hidden cursor-pointer grid grid-cols-1 lg:grid-cols-12 gap-0 border border-slate-200 transition-all hover:border-[#C89B3C]/35 hover:shadow-md shadow-xs text-left"
               >
                 <div className="lg:col-span-7 h-64 lg:h-auto overflow-hidden relative border-r border-slate-100">
                   <img
@@ -143,18 +152,22 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
                     <span className="text-[#0A2E5D] font-bold uppercase tracking-wider font-mono text-[10px] hover:text-[#C89B3C] transition-colors">Ler Artigo</span>
                   </div>
                 </div>
-              </div>
+              </StarBorder>
             )}
 
             {/* Grid of Other Posts */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-6">
               {filteredPosts.map((post) => (
-                <article
+                <StarBorder
                   key={post.id}
+                  as="article"
                   onClick={() => setSelectedPost(post)}
-                  className="bg-white rounded-2xl overflow-hidden cursor-pointer flex flex-col justify-between border border-slate-200 text-left hover:border-[#C89B3C]/35 hover:shadow-md transition-all h-full shadow-2xs"
+                  speed="8s"
+                  thickness={1.5}
+                  className="rounded-2xl overflow-hidden cursor-pointer shadow-2xs text-left"
+                  innerClassName="relative z-1 flex flex-col justify-between bg-white rounded-2xl overflow-hidden w-full h-full text-left"
                 >
-                  <div>
+                  <div className="w-full">
                     <div className="h-48 overflow-hidden relative border-b border-slate-100">
                       <img
                         src={post.image}
@@ -178,31 +191,39 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
                   </div>
 
                   {/* Operational Footer within cards */}
-                  <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+                  <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs font-mono w-full">
                     <span className="text-slate-500 font-semibold">{post.readTime}</span>
                     
                     <div className="flex gap-2">
-                      <button
+                      <StarBorder
+                        as="button"
                         onClick={(e) => toggleBookmark(post.id, e)}
-                        className={`p-1.5 rounded bg-white border border-slate-200 hover:bg-slate-50 transition-colors ${
-                          bookmarkedIds.includes(post.id) ? 'text-[#C89B3C] border-[#C89B3C]/30 bg-[#C89B3C]/5' : 'text-slate-400'
+                        speed="4s"
+                        thickness={1}
+                        className="rounded overflow-hidden cursor-pointer"
+                        innerClassName={`p-1.5 rounded bg-white transition-colors flex items-center justify-center ${
+                          bookmarkedIds.includes(post.id) ? 'text-[#C89B3C] bg-[#C89B3C]/5' : 'text-slate-400'
                         }`}
                         title="Guardar artigo"
                       >
                         <Bookmark size={13} fill={bookmarkedIds.includes(post.id) ? 'currentColor' : 'none'} />
-                      </button>
+                      </StarBorder>
 
-                      <button
+                      <StarBorder
+                        as="button"
                         onClick={(e) => handleShare(post.title, e)}
-                        className="p-1.5 rounded bg-white border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-slate-700 transition-colors"
+                        speed="4s"
+                        thickness={1}
+                        className="rounded overflow-hidden cursor-pointer"
+                        innerClassName="p-1.5 rounded bg-white text-slate-400 hover:text-slate-700 transition-colors flex items-center justify-center"
                         title="Partilhar artigo"
                       >
                         <Share2 size={13} />
-                      </button>
+                      </StarBorder>
                     </div>
                   </div>
 
-                </article>
+                </StarBorder>
               ))}
             </div>
 
@@ -236,21 +257,33 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
           >
             
             {/* Back to Blog directory trigger */}
-            <button
-              onClick={() => setSelectedPost(null)}
-              className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest uppercase text-[#0A2E5D] hover:text-[#C89B3C] mb-8 transition-colors border border-slate-200 bg-slate-50 px-3.5 py-2 rounded-lg shadow-2xs"
-            >
-              <ArrowLeft size={14} />
-              Voltar ao Diretório do Blog
-            </button>
+            <div className="mb-8">
+              <StarBorder
+                as="button"
+                onClick={() => setSelectedPost(null)}
+                speed="6s"
+                thickness={1.5}
+                className="rounded-lg overflow-hidden cursor-pointer"
+                innerClassName="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest uppercase text-[#0A2E5D] hover:text-[#C89B3C] bg-slate-50 px-3.5 py-2"
+              >
+                <ArrowLeft size={14} />
+                Voltar ao Diretório do Blog
+              </StarBorder>
+            </div>
 
             {/* Document Header */}
             <div className="space-y-6">
               
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded bg-slate-50 text-xs text-[#0A2E5D] border border-slate-200 font-bold uppercase font-mono tracking-wide">
+                <StarBorder
+                  as="span"
+                  speed="5s"
+                  thickness={1}
+                  className="rounded-lg overflow-hidden"
+                  innerClassName="px-2.5 py-1 bg-slate-50 text-xs text-[#0A2E5D] font-bold uppercase font-mono tracking-wide"
+                >
                   {selectedPost.category}
-                </span>
+                </StarBorder>
                 <span className="text-xs text-slate-400 font-mono font-bold">• {selectedPost.date}</span>
               </div>
 
@@ -259,7 +292,13 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
               </h1>
 
               {/* Author and Reading Info */}
-              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200">
+              <StarBorder
+                as="div"
+                speed="8s"
+                thickness={1.5}
+                className="rounded-2xl overflow-hidden shadow-xs"
+                innerClassName="relative z-1 flex items-center justify-between p-4 bg-slate-50 rounded-2xl w-full text-left"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full border border-slate-200 overflow-hidden bg-white flex items-center justify-center">
                     <User size={18} className="text-[#C89B3C]" />
@@ -274,17 +313,25 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
                   <Clock size={12} className="text-[#C89B3C]" />
                   <span>{selectedPost.readTime}</span>
                 </div>
-              </div>
+              </StarBorder>
 
             </div>
 
             {/* Display Image of post */}
-            <div className="my-8 rounded-3xl overflow-hidden aspect-[16/9] border border-slate-200 bg-slate-50 shadow-sm">
-              <img
-                src={selectedPost.image}
-                alt={selectedPost.title}
-                className="w-full h-full object-cover"
-              />
+            <div className="my-8">
+              <StarBorder
+                as="div"
+                speed="10s"
+                thickness={2}
+                className="rounded-3xl overflow-hidden shadow-sm"
+                innerClassName="relative z-1 aspect-[16/9] bg-slate-50 rounded-3xl overflow-hidden w-full h-full"
+              >
+                <img
+                  src={selectedPost.image}
+                  alt={selectedPost.title}
+                  className="w-full h-full object-cover"
+                />
+              </StarBorder>
             </div>
 
             {/* Body contents prose */}
@@ -313,12 +360,16 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
                 <span className="text-xs text-slate-500 font-sans font-semibold">MultiPlus Insights — Autenticidade e Excelência Académica.</span>
               </div>
 
-              <button
+              <StarBorder
+                as="button"
                 onClick={() => setSelectedPost(null)}
-                className="px-6 py-3 border border-slate-200 rounded-xl text-xs font-mono font-bold uppercase bg-white hover:bg-slate-50 text-slate-800 transition-colors shadow-xs"
+                speed="5s"
+                thickness={1}
+                className="rounded-xl overflow-hidden cursor-pointer"
+                innerClassName="px-6 py-3 text-xs font-mono font-bold uppercase bg-white hover:bg-slate-50 text-slate-800 transition-colors shadow-xs"
               >
                 Voltar aos Artigos
-              </button>
+              </StarBorder>
             </div>
 
           </motion.article>

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useRef, useCallback, useState } from "react"
+import React, { useEffect, useRef, useCallback } from "react"
 import createGlobe from "cobe"
 
 interface InteractiveMarker {
@@ -16,13 +16,18 @@ interface GlobeInteractiveProps {
   speed?: number
 }
 
+const LUANDA: [number, number] = [-8.839, 13.289]
+const LISBOA: [number, number] = [38.722, -9.139]
+const LONDRES: [number, number] = [51.507, -0.127]
+const MAPUTO: [number, number] = [-25.966, 32.583]
+const PRAIA: [number, number] = [14.933, -23.513]
+
 const defaultMarkers: InteractiveMarker[] = [
-  { id: "hq", location: [37.78, -122.44], name: "HQ", users: 1420 },
-  { id: "eu", location: [52.52, 13.41], name: "EU", users: 892 },
-  { id: "asia", location: [35.68, 139.65], name: "Asia", users: 2103 },
-  { id: "latam", location: [-23.55, -46.63], name: "LATAM", users: 567 },
-  { id: "mena", location: [25.2, 55.27], name: "MENA", users: 734 },
-  { id: "oceania", location: [-33.87, 151.21], name: "APAC", users: 445 },
+  { id: "luanda", location: LUANDA, name: "Luanda", users: 1 },
+  { id: "lisboa", location: LISBOA, name: "Lisboa", users: 1 },
+  { id: "londres", location: LONDRES, name: "Londres", users: 1 },
+  { id: "maputo", location: MAPUTO, name: "Maputo", users: 1 },
+  { id: "praia", location: PRAIA, name: "Praia", users: 1 },
 ]
 
 export function GlobeInteractive({
@@ -36,7 +41,6 @@ export function GlobeInteractive({
   const phiOffsetRef = useRef(0)
   const thetaOffsetRef = useRef(0)
   const isPausedRef = useRef(false)
-  const [expanded, setExpanded] = useState<string | null>(null)
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     pointerInteracting.current = { x: e.clientX, y: e.clientY }
@@ -90,11 +94,17 @@ export function GlobeInteractive({
         phi: 0, theta: 0.2, dark: 0, diffuse: 1.5,
         mapSamples: 16000, mapBrightness: 10,
         baseColor: [1, 1, 1],
-        markerColor: [0.1, 0.2, 0.45],
+        markerColor: [0.73, 0.52, 0.2], // Using a matching gold color for markers too
         glowColor: [0.94, 0.93, 0.91],
         markerElevation: 0,
-        markers: markers.map((m) => ({ location: m.location, size: 0.025, id: m.id })),
-        arcs: [], arcColor: [0.15, 0.3, 0.55],
+        markers: markers.map((m) => ({ location: m.location, size: 0.03, id: m.id })),
+        arcs: [
+          { from: LUANDA, to: LISBOA },
+          { from: LUANDA, to: LONDRES },
+          { from: LUANDA, to: MAPUTO },
+          { from: LUANDA, to: PRAIA },
+        ],
+        arcColor: [0.73, 0.52, 0.2], // Dourado gold-600
         arcWidth: 0.5, arcHeight: 0.25, opacity: 0.7,
       })
 
@@ -130,12 +140,6 @@ export function GlobeInteractive({
 
   return (
     <div className={`relative aspect-square select-none ${className}`}>
-      <style>{`
-        @keyframes fade-slide-in {
-          from { opacity: 0; transform: translateY(-4px); }
-          to { opacity: 0.8; transform: translateY(0); }
-        }
-      `}</style>
       <canvas
         ref={canvasRef}
         onPointerDown={handlePointerDown}
@@ -144,47 +148,6 @@ export function GlobeInteractive({
           transition: "opacity 1.2s ease", borderRadius: "50%", touchAction: "none",
         }}
       />
-      {markers.map((m) => (
-        <div
-          key={m.id}
-          onClick={() => setExpanded(expanded === m.id ? null : m.id)}
-          style={{
-            position: "absolute",
-            positionAnchor: `--cobe-${m.id}`,
-            bottom: "anchor(top)",
-            left: "anchor(center)",
-            translate: "-50% 0",
-            marginBottom: 6,
-            display: "flex",
-            flexDirection: "column" as const,
-            alignItems: "center",
-            padding: expanded === m.id ? "0.4rem 0.6rem" : "0.3rem 0.5rem",
-            background: "#1a1a2e",
-            color: "#fff",
-            borderRadius: 3,
-            cursor: "pointer",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-            opacity: `var(--cobe-visible-${m.id}, 0)`,
-            filter: `blur(calc((1 - var(--cobe-visible-${m.id}, 0)) * 8px))`,
-            transition: "opacity 0.4s, filter 0.4s, transform 0.2s, padding 0.2s",
-            zoom: expanded === m.id ? 1.05 : 1,
-          }}
-        >
-          <span style={{
-            fontFamily: "monospace", fontSize: "0.6rem", fontWeight: 600,
-            letterSpacing: "0.08em", textTransform: "uppercase" as const,
-          }}>{m.name}</span>
-          {expanded === m.id && (
-            <span style={{
-              fontFamily: "system-ui, sans-serif", fontSize: "0.55rem",
-              opacity: 0.8, marginTop: "0.15rem",
-              animation: "fade-slide-in 0.2s ease-out",
-            }}>
-              {m.users.toLocaleString()} users
-            </span>
-          )}
-        </div>
-      ))}
     </div>
   )
 }

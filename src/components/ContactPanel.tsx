@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ContactMessage, PageId } from '../types';
+import StarBorder from './ui/StarBorder';
 import { 
   Phone, 
   Mail, 
@@ -80,7 +81,13 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
               <div className="space-y-4">
                 
                 {/* 1. Telefone */}
-                <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-white shadow-3xs">
+                <StarBorder
+                  as="div"
+                  speed="6s"
+                  thickness={1.5}
+                  className="rounded-xl overflow-hidden shadow-3xs"
+                  innerClassName="relative z-1 flex items-center gap-4 p-4 bg-white w-full text-left"
+                >
                   <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 text-[#C89B3C]">
                     <Phone size={18} />
                   </div>
@@ -90,10 +97,16 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                       +244 956 449 084
                     </a>
                   </div>
-                </div>
+                </StarBorder>
 
                 {/* 2. Email */}
-                <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-white shadow-3xs">
+                <StarBorder
+                  as="div"
+                  speed="7s"
+                  thickness={1.5}
+                  className="rounded-xl overflow-hidden shadow-3xs"
+                  innerClassName="relative z-1 flex items-center gap-4 p-4 bg-white w-full text-left"
+                >
                   <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 text-[#C89B3C]">
                     <Mail size={18} />
                   </div>
@@ -103,10 +116,16 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                       multiplusacademy@gmail.com
                     </a>
                   </div>
-                </div>
+                </StarBorder>
 
                 {/* 3. Localização */}
-                <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-white shadow-3xs">
+                <StarBorder
+                  as="div"
+                  speed="8s"
+                  thickness={1.5}
+                  className="rounded-xl overflow-hidden shadow-3xs"
+                  innerClassName="relative z-1 flex items-center gap-4 p-4 bg-white w-full text-left"
+                >
                   <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 text-[#C89B3C]">
                     <MapPin size={18} />
                   </div>
@@ -114,36 +133,52 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                     <span className="block text-[9px] font-mono uppercase tracking-wider text-slate-400 font-bold">Sede Letiva Regional</span>
                     <span className="text-xs sm:text-sm font-extrabold text-slate-900">Huambo, Angola</span>
                   </div>
-                </div>
+                </StarBorder>
 
               </div>
 
               {/* Direct WhatsApp Call banner for user satisfaction */}
-              <div className="p-6 rounded-2xl bg-[#0A2E5D] text-white space-y-4 relative overflow-hidden shadow-md">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full" />
+              <StarBorder
+                as="div"
+                speed="10s"
+                thickness={2}
+                className="rounded-2xl overflow-hidden shadow-md"
+                innerClassName="relative z-1 p-6 bg-[#0A2E5D] text-white space-y-4 overflow-hidden w-full h-full text-left"
+              >
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full pointer-events-none" />
                 
                 <h4 className="text-base font-serif font-bold text-white m-0">Canal de Chat Expresso</h4>
                 <p className="text-xs text-white/80 font-sans leading-relaxed m-0 font-medium">
                   Necessita de uma resposta imediata sobre as datas e workshops no Huambo? Inicie uma conversa imediata com a diretora pelo WhatsApp oficial.
                 </p>
                 
-                <button
+                <StarBorder
+                  as="button"
                   onClick={handleWhatsAppDirect}
-                  className="w-full py-2.5 bg-[#C89B3C] text-white hover:bg-[#B3852C] font-bold text-xs uppercase rounded-lg tracking-wider flex items-center justify-center gap-2 transition-all shadow-md"
+                  speed="5s"
+                  thickness={1.5}
+                  className="w-full rounded-lg overflow-hidden cursor-pointer shadow-md"
+                  innerClassName="relative z-1 w-full py-2.5 bg-[#C89B3C] text-white hover:bg-[#B3852C] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2"
                 >
                   <MessageSquare size={14} />
                   Iniciar Conversa no WhatsApp
-                </button>
-              </div>
+                </StarBorder>
+              </StarBorder>
 
             </div>
 
             {/* Right Column: Full tactile Contact Form */}
             <div className="lg:col-span-7 flex flex-col justify-stretch">
               
-              <div className="p-8 sm:p-10 rounded-3xl bg-white border border-slate-200 shadow-sm flex-1 flex flex-col justify-between">
+              <StarBorder
+                as="div"
+                speed="12s"
+                thickness={2}
+                className="rounded-3xl overflow-hidden shadow-sm flex-1 flex flex-col justify-stretch"
+                innerClassName="relative z-1 p-8 sm:p-10 bg-white rounded-3xl overflow-hidden flex-1 flex flex-col justify-between w-full h-full"
+              >
                 
-                <div className="space-y-6">
+                <div className="space-y-6 w-full">
                   
                   <div className="flex justify-between items-center pb-4 border-b border-slate-100">
                     <div>
@@ -170,18 +205,22 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                         <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed font-medium">
                           Agradecemos o seu envio. O formulário foi capturado e está pré-mapeado para submissão ao formulário de dados corporativo do Google Forms. A coordenação letiva retornará em até 24 horas úteis.
                         </p>
-                        <button
+                        <StarBorder
+                          as="button"
                           onClick={() => setSubmitStatus('idle')}
-                          className="px-6 py-2.5 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-mono uppercase tracking-wider font-bold rounded-lg mt-4 shadow-sm"
+                          speed="5s"
+                          thickness={1.5}
+                          className="rounded-lg overflow-hidden cursor-pointer mt-4"
+                          innerClassName="px-6 py-2.5 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-mono uppercase tracking-wider font-bold shadow-sm"
                         >
                           Escrever Nova Mensagem
-                        </button>
+                        </StarBorder>
                       </motion.div>
 
                     ) : (
 
                       /* FORM FIELDS */
-                      <form onSubmit={handleSubmit} className="space-y-4 text-left">
+                      <form onSubmit={handleSubmit} className="space-y-4 text-left w-full">
                         
                         {/* Name Field */}
                         <div>
@@ -285,10 +324,14 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
 
                         {/* Submit Button */}
                         <div className="pt-2">
-                          <button
+                          <StarBorder
+                            as="button"
                             type="submit"
                             disabled={submitStatus === 'loading'}
-                            className="w-full py-3.5 rounded-xl uppercase tracking-wider text-xs font-bold bg-[#0A2E5D] hover:bg-[#123C73] text-white flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 transition-colors shadow-md"
+                            speed="4s"
+                            thickness={2}
+                            className="w-full rounded-xl overflow-hidden cursor-pointer"
+                            innerClassName="relative z-1 w-full py-3.5 rounded-xl uppercase tracking-wider text-xs font-bold bg-[#0A2E5D] hover:bg-[#123C73] text-white flex items-center justify-center gap-2 disabled:opacity-50 transition-colors shadow-md"
                           >
                             {submitStatus === 'loading' ? (
                               <>
@@ -301,7 +344,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                                 Submeter Proposta de Candidatura
                               </>
                             )}
-                          </button>
+                          </StarBorder>
                         </div>
 
                       </form>
@@ -310,7 +353,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
 
                 </div>
 
-              </div>
+              </StarBorder>
             </div>
 
           </div>

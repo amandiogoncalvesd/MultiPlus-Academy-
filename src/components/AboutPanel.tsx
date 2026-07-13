@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { PageId } from '../types';
 import { MAIN_INSTRUCTOR } from '../data';
 import { GlobeInteractive } from './ui/cobe-globe-interactive';
+import StarBorder from './ui/StarBorder';
 import { 
   Compass, 
   Flag, 
@@ -74,7 +75,13 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
             
             {/* Left side: Premium Image/Concept frame */}
             <div className="lg:col-span-5">
-              <div className="relative p-2 bg-slate-50 border border-slate-200 rounded-3xl shadow-sm overflow-hidden aspect-square flex flex-col justify-between">
+              <StarBorder
+                as="div"
+                speed="8s"
+                thickness={2}
+                className="w-full rounded-3xl overflow-hidden shadow-sm"
+                innerClassName="relative z-1 p-2 bg-slate-50 rounded-3xl overflow-hidden aspect-square flex flex-col justify-between w-full"
+              >
                 <div className="flex-1 bg-white rounded-2xl border border-slate-100 relative p-8 flex flex-col justify-between overflow-hidden">
                   
                   {/* Glowing background */}
@@ -94,7 +101,7 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
                   </div>
 
                 </div>
-              </div>
+              </StarBorder>
             </div>
 
             {/* Right side: Prose text with high-end margins */}
@@ -126,7 +133,13 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
             
             {/* Missão Card */}
-            <div className="bg-white p-10 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden flex flex-col justify-between">
+            <StarBorder
+              as="div"
+              speed="6s"
+              thickness={1.5}
+              className="rounded-3xl overflow-hidden shadow-sm"
+              innerClassName="relative z-1 bg-white p-10 rounded-3xl overflow-hidden flex flex-col justify-between w-full h-full"
+            >
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#C89B3C]/5 rounded-full pointer-events-none" />
               <div className="space-y-6">
                 <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#C89B3C]">
@@ -137,10 +150,16 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
                   Desenvolver e elevar as capacidades profissionais dos juristas, advogados e executivos em Angola através do ensino altamente rigoroso do Inglês Jurídico especializado, fomentando a inclusão de excelência do nosso mercado de trabalho no cenário diplomático e corporativo internacional.
                 </p>
               </div>
-            </div>
+            </StarBorder>
 
             {/* Visão Card */}
-            <div className="bg-white p-10 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden flex flex-col justify-between">
+            <StarBorder
+              as="div"
+              speed="7s"
+              thickness={1.5}
+              className="rounded-3xl overflow-hidden shadow-sm"
+              innerClassName="relative z-1 bg-white p-10 rounded-3xl overflow-hidden flex flex-col justify-between w-full h-full"
+            >
               <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full pointer-events-none" />
               <div className="space-y-6">
                 <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#C89B3C]">
@@ -151,7 +170,7 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
                   Ser reconhecida no mercado de Angola e das Nações de Expressão Portuguesa como a instituição de elite de referência máxima no ensino especializado de linguística aplicada ao direito comparado, estendendo a nossa operação para um sistema integrado de ensino LMS no futuro.
                 </p>
               </div>
-            </div>
+            </StarBorder>
 
           </div>
 
@@ -163,7 +182,14 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {values.map((v, i) => (
-              <div key={i} className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm text-left flex flex-col justify-between space-y-4 hover:shadow-md hover:border-[#C89B3C]/25 transition-all">
+              <StarBorder
+                key={i}
+                as="div"
+                speed={`${6 + i}s`}
+                thickness={1}
+                className="rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all"
+                innerClassName="relative z-1 p-6 bg-white rounded-2xl overflow-hidden text-left flex flex-col justify-between space-y-4 w-full h-full"
+              >
                 <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[#C89B3C]">
                   {v.icon}
                 </div>
@@ -171,7 +197,7 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
                   <h4 className="font-serif font-bold text-slate-900 text-base">{v.title}</h4>
                   <p className="text-xs text-slate-500 leading-relaxed font-sans mt-2">{v.description}</p>
                 </div>
-              </div>
+              </StarBorder>
             ))}
           </div>
 
@@ -190,14 +216,6 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
             <div className="lg:col-span-6 flex justify-center items-center">
               <div className="w-full max-w-[360px] sm:max-w-[420px] aspect-square rounded-full border border-slate-800/80 bg-slate-950/40 p-4 relative shadow-2xl">
                 <GlobeInteractive 
-                  markers={[
-                    { id: "huambo", location: [-12.7761, 15.7314], name: "Huambo Hub", users: 180 },
-                    { id: "luanda", location: [-8.839, 13.289], name: "Luanda Hub", users: 450 },
-                    { id: "lisbon", location: [38.722, -9.139], name: "Lisboa Hub", users: 210 },
-                    { id: "london", location: [51.507, -0.127], name: "Londres Link", users: 340 },
-                    { id: "houston", location: [29.760, -95.369], name: "Houston Link", users: 120 },
-                    { id: "beijing", location: [39.904, 116.407], name: "Pequim Link", users: 95 }
-                  ]}
                   speed={0.004}
                   className="w-full h-full"
                 />
@@ -251,7 +269,13 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto items-stretch">
             
             {/* Member 1: Esmeralda Sumbelelo */}
-            <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:border-[#C89B3C]/20 transition-all flex flex-col">
+            <StarBorder
+              as="div"
+              speed="8s"
+              thickness={1.5}
+              className="rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col"
+              innerClassName="relative z-1 bg-white rounded-3xl overflow-hidden flex flex-col w-full h-full text-left"
+            >
               <div className="aspect-[4/3] bg-slate-50 relative overflow-hidden flex items-center justify-center pt-6 border-b border-slate-100">
                 <img
                   src={MAIN_INSTRUCTOR.photo}
@@ -283,10 +307,16 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
                   </button>
                 </div>
               </div>
-            </div>
+            </StarBorder>
 
             {/* Member 2 Future placeholder slot */}
-            <div className="bg-slate-50/50 border border-dashed border-slate-200 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-4">
+            <StarBorder
+              as="div"
+              speed="10s"
+              thickness={1.5}
+              className="rounded-3xl overflow-hidden"
+              innerClassName="relative z-1 bg-slate-50/50 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-4 w-full h-full"
+            >
               <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center border border-slate-200 text-[#C89B3C] shadow-sm">
                 <GraduationCap size={32} />
               </div>
@@ -297,13 +327,17 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
                 </p>
               </div>
               
-              <button 
-                onClick={() => setCurrentPage('contact')} 
-                className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-[10px] font-mono font-bold uppercase rounded-lg tracking-wider transition-all shadow-sm"
+              <StarBorder
+                as="button"
+                onClick={() => setCurrentPage('contact')}
+                speed="6s"
+                thickness={1.5}
+                className="rounded-lg overflow-hidden cursor-pointer"
+                innerClassName="relative z-1 px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-[10px] font-mono font-bold uppercase rounded-lg tracking-wider transition-all shadow-sm"
               >
                 Candidatar Corpo Docente
-              </button>
-            </div>
+              </StarBorder>
+            </StarBorder>
 
           </div>
 
@@ -318,13 +352,17 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
           <p className="text-sm text-white/80 max-w-xl mx-auto leading-relaxed">
             As turmas para o curso inaugural de Inglês para o Setor Jurídico em Angola contam com assentos estritamente geridos. Registe o seu interesse pedagógico.
           </p>
-          <div className="pt-4">
-            <button
+          <div className="pt-4 flex justify-center">
+            <StarBorder
+              as="button"
               onClick={() => { setCurrentPage('contact'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="px-8 py-3.5 bg-[#C89B3C] hover:bg-[#B3852C] text-white rounded-xl uppercase tracking-wider text-xs font-bold transition-all shadow-lg"
+              speed="5s"
+              thickness={2.5}
+              className="rounded-xl overflow-hidden cursor-pointer"
+              innerClassName="relative z-1 px-8 py-3.5 bg-[#C89B3C] hover:bg-[#B3852C] text-white rounded-xl uppercase tracking-wider text-xs font-bold transition-all"
             >
               Iniciar Negociação de Vaga
-            </button>
+            </StarBorder>
           </div>
         </div>
       </section>

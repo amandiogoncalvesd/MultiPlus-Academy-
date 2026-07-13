@@ -68,21 +68,26 @@ export default function VerifyCertificatePanel({
       <div className="max-w-xl w-full px-4 text-left">
         
         {/* Navigation Indicator */}
-        <button
-          onClick={() => {
-            setVerificationCode('');
-            setCurrentPage('home');
-          }}
-          className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest uppercase text-[#0A2E5D] hover:text-[#C89B3C] mb-8 transition-colors border border-slate-200 bg-slate-50 px-3.5 py-2 rounded-lg shadow-2xs"
-        >
-          <ArrowLeft size={14} />
-          Voltar à Página Principal
-        </button>
+        <div className="mb-8">
+          <StarBorder
+            as="button"
+            onClick={() => {
+              setVerificationCode('');
+              setCurrentPage('home');
+            }}
+            speed="6s"
+            thickness={1.5}
+            className="rounded-lg overflow-hidden cursor-pointer"
+            innerClassName="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest uppercase text-[#0A2E5D] hover:text-[#C89B3C] bg-slate-50 px-3.5 py-2"
+          >
+            <ArrowLeft size={14} />
+            Voltar à Página Principal
+          </StarBorder>
+        </div>
 
         {/* Dynamic Card */}
         <StarBorder
           as="div"
-          color="#C89B3C"
           speed="6s"
           thickness={2}
           className="w-full rounded-3xl overflow-hidden shadow-sm"
@@ -111,12 +116,18 @@ export default function VerifyCertificatePanel({
               />
             </div>
             
-            <button
-              type="submit"
-              className="w-full py-3.5 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors shadow-md cursor-pointer"
-            >
-              Consultar Autenticidade
-            </button>
+            <div className="pt-2">
+              <StarBorder
+                as="button"
+                type="submit"
+                speed="4s"
+                thickness={2}
+                className="w-full rounded-xl overflow-hidden cursor-pointer shadow-md"
+                innerClassName="relative z-1 w-full py-3.5 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-mono font-bold uppercase rounded-xl tracking-wider flex items-center justify-center"
+              >
+                Consultar Autenticidade
+              </StarBorder>
+            </div>
           </form>
 
           {/* Verification Result */}
@@ -128,8 +139,14 @@ export default function VerifyCertificatePanel({
             >
               {result ? (
                 /* TRUE VALID CERTIFICATE */
-                <div className="p-5 rounded-2xl bg-emerald-50/50 border border-emerald-200 space-y-4">
-                  <div className="flex items-center gap-3 border-b border-emerald-200 pb-3">
+                <StarBorder
+                  as="div"
+                  speed="7s"
+                  thickness={1.5}
+                  className="rounded-2xl overflow-hidden shadow-2xs"
+                  innerClassName="relative z-1 p-5 bg-emerald-50/50 rounded-2xl w-full text-left space-y-4"
+                >
+                  <div className="flex items-center gap-3 border-b border-emerald-200 pb-3 w-full">
                     <ShieldCheck className="text-emerald-600 flex-shrink-0 animate-pulse" size={24} />
                     <div>
                       <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-800 font-bold block">
@@ -139,7 +156,7 @@ export default function VerifyCertificatePanel({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 text-xs font-medium text-slate-600">
+                  <div className="grid grid-cols-2 gap-4 text-xs font-medium text-slate-600 w-full">
                     <div>
                       <span className="block text-[9px] font-mono text-slate-400 uppercase tracking-wider font-bold">Titular do Diploma</span>
                       <span className="font-serif font-black text-slate-900 text-sm block leading-tight mt-0.5">{result.recipientName}</span>
@@ -171,13 +188,19 @@ export default function VerifyCertificatePanel({
                     </div>
                   </div>
 
-                  <div className="text-2xs text-center text-emerald-700 font-mono pt-3 border-t border-emerald-100 font-bold">
+                  <div className="text-2xs text-center text-emerald-700 font-mono pt-3 border-t border-emerald-100 font-bold w-full">
                     Selo Digital MultiPlus • Processado sob Certificação Segura
                   </div>
-                </div>
+                </StarBorder>
               ) : (
                 /* INEXISTENT CODE ERROR */
-                <div className="p-5 rounded-2xl bg-rose-50 border border-rose-150 flex gap-3">
+                <StarBorder
+                  as="div"
+                  speed="5s"
+                  thickness={1.5}
+                  className="rounded-2xl overflow-hidden shadow-3xs"
+                  innerClassName="relative z-1 p-5 bg-rose-50 rounded-2xl flex gap-3 text-left w-full"
+                >
                   <ShieldAlert className="text-rose-600 flex-shrink-0 mt-0.5" size={20} />
                   <div className="space-y-1">
                     <h4 className="text-sm font-serif font-bold text-rose-800 m-0">Código Não Encontrado</h4>
@@ -185,7 +208,7 @@ export default function VerifyCertificatePanel({
                       O código inserido <strong>"{code}"</strong> não corresponde a nenhum registo educativo no nosso banco de dados. Por favor verifique e tente novamente ou contacte a nossa diretoria.
                     </p>
                   </div>
-                </div>
+                </StarBorder>
               )}
             </motion.div>
           )}

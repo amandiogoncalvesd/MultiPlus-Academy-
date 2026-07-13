@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
+import { Sun, Moon } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export type PillNavItem = {
   label: string;
@@ -70,6 +72,7 @@ const PillNav: React.FC<PillNavProps> = ({
   hamburgerBgColor,
   hamburgerLineColor
 }) => {
+  const { isDarkMode, toggleTheme } = useTheme();
   const resolvedPillTextColor = pillTextColor ?? baseColor;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const circleRefs = useRef<Array<HTMLSpanElement | null>>([]);
@@ -494,12 +497,27 @@ const PillNav: React.FC<PillNavProps> = ({
           </ul>
         </div>
 
+        {/* Theme Toggle Button (visible both desktop and mobile, positioned right before/beside the menu trigger) */}
+        <button
+          onClick={toggleTheme}
+          aria-label={isDarkMode ? 'Ativar modo claro' : 'Ativar modo escuro'}
+          className="rounded-full border border-slate-200/60 dark:border-slate-800 shadow-sm flex items-center justify-center cursor-pointer p-0 mr-1 ml-auto md:ml-3 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors shrink-0 z-10"
+          style={{
+            width: 'calc(var(--nav-h) - 6px)',
+            height: 'calc(var(--nav-h) - 6px)',
+            background: 'var(--container-bg, #ffffff)',
+            color: isDarkMode ? '#C89B3C' : '#0A2E5D',
+          }}
+        >
+          {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
+        </button>
+
         <button
           ref={hamburgerRef}
           onClick={toggleMobileMenu}
           aria-label="Toggle menu"
           aria-expanded={isMobileMenuOpen}
-          className="md:hidden rounded-full border border-slate-200/60 shadow-sm flex flex-col items-center justify-center gap-1 cursor-pointer p-0 relative ml-auto"
+          className="md:hidden rounded-full border border-slate-200/60 shadow-sm flex flex-col items-center justify-center gap-1 cursor-pointer p-0 relative ml-1.5"
           style={{
             width: 'var(--nav-h)',
             height: 'var(--nav-h)',

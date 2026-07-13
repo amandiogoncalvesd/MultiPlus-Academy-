@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { MAIN_INSTRUCTOR } from '../data';
 import { PageId } from '../types';
+import StarBorder from './ui/StarBorder';
 import { 
   Award, 
   MapPin, 
@@ -58,8 +59,13 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
             
             {/* Column Left: Visual Premium Frame */}
             <div className="lg:col-span-5 space-y-6">
-              
-              <div className="p-4 rounded-3xl bg-slate-50 border border-slate-200 shadow-xs">
+                     <StarBorder
+                as="div"
+                speed="8s"
+                thickness={2}
+                className="rounded-3xl overflow-hidden shadow-xs"
+                innerClassName="relative z-1 p-4 bg-slate-50 rounded-3xl overflow-hidden w-full h-full"
+              >
                 <div className="aspect-[4/5] rounded-2xl bg-slate-100 overflow-hidden relative border border-slate-200/50">
                   <img
                     src={currentTeacher.photo}
@@ -80,18 +86,28 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
                       </span>
                     </div>
 
-                    <button
+                    <StarBorder
+                      as="button"
                       onClick={handleWhatsApp}
-                      className="px-3 py-1.5 bg-[#C89B3C] text-white text-[9px] font-bold rounded-lg hover:bg-[#B3852C] transition-colors uppercase tracking-wider shadow-sm"
+                      speed="5s"
+                      thickness={1.5}
+                      className="rounded-lg overflow-hidden cursor-pointer"
+                      innerClassName="relative z-1 px-3 py-1.5 bg-[#C89B3C] text-white text-[9px] font-bold rounded-lg hover:bg-[#B3852C] transition-colors uppercase tracking-wider"
                     >
                       Consultar
-                    </button>
+                    </StarBorder>
                   </div>
                 </div>
-              </div>
+              </StarBorder>
 
               {/* Endorsements / Metrics frame */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 flex items-center justify-between shadow-sm">
+              <StarBorder
+                as="div"
+                speed="10s"
+                thickness={1.5}
+                className="rounded-2xl overflow-hidden shadow-sm"
+                innerClassName="relative z-1 bg-white p-6 rounded-2xl overflow-hidden flex items-center justify-between w-full h-full"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#C89B3C]">
                     <Clock size={18} />
@@ -102,19 +118,22 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
                   </div>
                 </div>
 
-                <button
+                <StarBorder
+                  as="button"
                   onClick={handleLike}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all shadow-xs ${
+                  speed="5s"
+                  thickness={1}
+                  className="rounded-lg overflow-hidden cursor-pointer"
+                  innerClassName={`relative z-1 flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
                     liked 
-                      ? 'bg-rose-50 text-rose-600 border border-rose-100'
-                      : 'bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200'
+                      ? 'bg-rose-50 text-rose-600'
+                      : 'bg-slate-50 hover:bg-slate-100 text-slate-500'
                   }`}
                 >
                   <Heart size={14} fill={liked ? 'currentColor' : 'none'} className={liked ? 'scale-110' : ''} />
                   Recomendado ({likeCount})
-                </button>
-              </div>
-
+                </StarBorder>
+              </StarBorder>
             </div>
 
             {/* Column Right: Complete Curriculum Credentials Narrative */}
@@ -142,12 +161,16 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
                 <span className="block font-mono font-bold uppercase text-[10px] tracking-widest text-[#C89B3C]">Especializações Pedagógicas</span>
                 <div className="flex flex-wrap gap-2">
                   {currentTeacher.specializations.map((spec, idx) => (
-                    <span
+                    <StarBorder
                       key={idx}
-                      className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-800 font-bold font-sans shadow-2xs"
+                      as="span"
+                      speed="6s"
+                      thickness={1}
+                      className="rounded-lg overflow-hidden shadow-2xs"
+                      innerClassName="relative z-1 px-3 py-1.5 bg-slate-50 text-xs text-slate-800 font-bold font-sans"
                     >
                       {spec}
-                    </span>
+                    </StarBorder>
                   ))}
                 </div>
               </div>
@@ -158,12 +181,19 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
                 
                 <div className="space-y-3">
                   {currentTeacher.credentials.map((cred, idx) => (
-                    <div key={idx} className="flex items-start gap-3 text-sm text-slate-600 bg-white p-4 rounded-xl border border-slate-200 shadow-2xs hover:border-[#C89B3C]/30 transition-all">
+                    <StarBorder
+                      key={idx}
+                      as="div"
+                      speed="8s"
+                      thickness={1}
+                      className="rounded-xl overflow-hidden shadow-2xs"
+                      innerClassName="relative z-1 flex items-start gap-3 text-sm text-slate-600 bg-white p-4 rounded-xl hover:border-[#C89B3C]/30 transition-all w-full text-left"
+                    >
                       <CheckCircle size={16} className="text-[#C89B3C] mt-0.5 flex-shrink-0" />
                       <div>
                         <span className="font-sans leading-relaxed block font-semibold text-slate-700">{cred}</span>
                       </div>
-                    </div>
+                    </StarBorder>
                   ))}
                 </div>
               </div>
@@ -173,10 +203,17 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
                 <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-2 font-bold">Presença Letiva e Académica Associada</span>
                 <div className="flex flex-wrap gap-4 text-xs font-mono text-slate-500 font-bold">
                   {currentTeacher.institutions.map((inst, idx) => (
-                    <span key={idx} className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded border border-slate-200 shadow-3xs">
+                    <StarBorder
+                      key={idx}
+                      as="span"
+                      speed="10s"
+                      thickness={1}
+                      className="rounded border border-slate-200 shadow-3xs overflow-hidden"
+                      innerClassName="relative z-1 flex items-center gap-1.5 bg-slate-50 px-2.5 py-1"
+                    >
                       <BookOpen size={12} className="text-[#C89B3C]" />
                       {inst}
-                    </span>
+                    </StarBorder>
                   ))}
                 </div>
               </div>
@@ -197,12 +234,18 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
             Personalizamos a grade curricular do idioma jurídico de acordo com as transações ou auditorias correntes do seu escritório. Agende uma consultoria com a coordenação.
           </p>
           
-          <button
-            onClick={() => { setCurrentPage('contact'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            className="px-8 py-3.5 bg-[#0A2E5D] hover:bg-[#123C73] text-white rounded-xl uppercase tracking-wider text-xs font-bold transition-all shadow-md"
-          >
-            Formular Requisito In-Company
-          </button>
+          <div className="flex justify-center">
+            <StarBorder
+              as="button"
+              onClick={() => { setCurrentPage('contact'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              speed="5s"
+              thickness={2.5}
+              className="rounded-xl overflow-hidden cursor-pointer"
+              innerClassName="relative z-1 px-8 py-3.5 bg-[#0A2E5D] hover:bg-[#123C73] text-white rounded-xl uppercase tracking-wider text-xs font-bold transition-all shadow-md"
+            >
+              Formular Requisito In-Company
+            </StarBorder>
+          </div>
         </div>
       </section>
 

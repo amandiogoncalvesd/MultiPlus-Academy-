@@ -1,13 +1,24 @@
+import { useState, FormEvent } from 'react';
 import { PageId } from '../types';
 import { Phone, Mail, MapPin, Globe, ArrowUp, Send, Facebook, Instagram, Linkedin } from 'lucide-react';
+import StarBorder from './ui/StarBorder';
 
 interface FooterProps {
   setCurrentPage: (page: PageId) => void;
 }
 
 export default function Footer({ setCurrentPage }: FooterProps) {
+  const [subscribed, setSubscribed] = useState(false);
+
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNewsletter = (e: FormEvent) => {
+    e.preventDefault();
+    setSubscribed(true);
+    const form = e.target as HTMLFormElement;
+    form.reset();
   };
 
   const footerLinks = [
@@ -30,7 +41,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 pb-16 border-b border-slate-200">
           
           {/* Column 1: Brand & Identity */}
-          <div className="space-y-6">
+          <div className="space-y-6 text-left">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => setCurrentPage('home')}>
               <img
                 src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png"
@@ -44,20 +55,41 @@ export default function Footer({ setCurrentPage }: FooterProps) {
               Referência no ensino do Inglês Jurídico adaptado ao mercado angolano de excelência comercial.
             </p>
             <div className="flex items-center gap-3">
-              <a href="#" className="p-2.5 rounded-full bg-white border border-slate-200 hover:bg-[#C89B3C]/10 hover:border-[#C89B3C] transition-all duration-300 group">
-                <Facebook size={16} className="text-slate-600 group-hover:text-[#C89B3C]" />
-              </a>
-              <a href="#" className="p-2.5 rounded-full bg-white border border-slate-200 hover:bg-[#C89B3C]/10 hover:border-[#C89B3C] transition-all duration-300 group">
-                <Instagram size={16} className="text-slate-600 group-hover:text-[#C89B3C]" />
-              </a>
-              <a href="#" className="p-2.5 rounded-full bg-white border border-slate-200 hover:bg-[#C89B3C]/10 hover:border-[#C89B3C] transition-all duration-300 group">
-                <Linkedin size={16} className="text-slate-600 group-hover:text-[#C89B3C]" />
-              </a>
+              <StarBorder
+                as="a"
+                href="#"
+                speed="4s"
+                thickness={1}
+                className="rounded-full overflow-hidden"
+                innerClassName="p-2.5 bg-white flex items-center justify-center text-slate-600 hover:text-[#C89B3C] transition-colors"
+              >
+                <Facebook size={16} />
+              </StarBorder>
+              <StarBorder
+                as="a"
+                href="#"
+                speed="4s"
+                thickness={1}
+                className="rounded-full overflow-hidden"
+                innerClassName="p-2.5 bg-white flex items-center justify-center text-slate-600 hover:text-[#C89B3C] transition-colors"
+              >
+                <Instagram size={16} />
+              </StarBorder>
+              <StarBorder
+                as="a"
+                href="#"
+                speed="4s"
+                thickness={1}
+                className="rounded-full overflow-hidden"
+                innerClassName="p-2.5 bg-white flex items-center justify-center text-slate-600 hover:text-[#C89B3C] transition-colors"
+              >
+                <Linkedin size={16} />
+              </StarBorder>
             </div>
           </div>
 
           {/* Column 2: Quick Links */}
-          <div className="lg:pl-8">
+          <div className="lg:pl-8 text-left">
             <h4 className="text-sm font-bold tracking-wider uppercase text-[#0A2E5D] font-mono mb-6">Navegação</h4>
             <ul className="space-y-3">
               {footerLinks.map((link, idx) => (
@@ -67,7 +99,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
                       setCurrentPage(link.page);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="text-slate-600 hover:text-[#C89B3C] text-sm tracking-wide transition-colors duration-200 text-left font-medium"
+                    className="text-slate-600 hover:text-[#C89B3C] text-sm tracking-wide transition-colors duration-200 text-left font-medium cursor-pointer"
                   >
                     {link.label}
                   </button>
@@ -77,7 +109,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
           </div>
 
           {/* Column 3: Contact & Info */}
-          <div>
+          <div className="text-left">
             <h4 className="text-sm font-bold tracking-wider uppercase text-[#0A2E5D] font-mono mb-6">Contactos Oficiais</h4>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
@@ -104,29 +136,35 @@ export default function Footer({ setCurrentPage }: FooterProps) {
           </div>
 
           {/* Column 4: Newsletter */}
-          <div>
+          <div className="text-left">
             <h4 className="text-sm font-bold tracking-wider uppercase text-[#0A2E5D] font-mono mb-6">Informativos Académicos</h4>
             <p className="text-xs text-slate-600 leading-relaxed mb-4 font-medium">
               Subscreva para receber insights e as últimas novidades sobre o Inglês Jurídico e atualizações do mercado em Angola.
             </p>
-            <form onSubmit={(e) => { e.preventDefault(); alert('Grato pelo interesse! O seu email foi registado para futuros informativos.'); (e.target as HTMLFormElement).reset(); }} className="space-y-3">
-              <div className="relative">
-                <input
-                  type="email"
-                  required
-                  placeholder="Seu email institucional"
-                  className="w-full bg-white border border-slate-200 rounded-lg py-2.5 pl-3 pr-10 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#C89B3C] transition-colors shadow-sm"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-1 top-1 bottom-1 px-2.5 rounded bg-[#0A2E5D] hover:bg-[#123C73] text-white flex items-center justify-center transition-colors"
-                  aria-label="Subscrever"
-                >
-                  <Send size={12} />
-                </button>
+            {subscribed ? (
+              <div className="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold font-sans">
+                ✓ Grato pelo interesse! O seu email foi registado para futuros informativos.
               </div>
-              <span className="text-[10px] text-slate-500 block">Ao subscrever, concorda com a nossa política académica de privacidade.</span>
-            </form>
+            ) : (
+              <form onSubmit={handleNewsletter} className="space-y-3">
+                <div className="relative">
+                  <input
+                    type="email"
+                    required
+                    placeholder="Seu email institucional"
+                    className="w-full bg-white border border-slate-200 rounded-lg py-2.5 pl-3 pr-10 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#C89B3C] transition-colors shadow-sm"
+                  />
+                  <button
+                    type="submit"
+                    className="absolute right-1 top-1 bottom-1 px-2.5 rounded bg-[#0A2E5D] hover:bg-[#123C73] text-white flex items-center justify-center transition-colors cursor-pointer"
+                    aria-label="Subscrever"
+                  >
+                    <Send size={12} />
+                  </button>
+                </div>
+                <span className="text-[10px] text-slate-500 block">Ao subscrever, concorda com a nossa política académica de privacidade.</span>
+              </form>
+            )}
           </div>
 
         </div>
@@ -139,16 +177,20 @@ export default function Footer({ setCurrentPage }: FooterProps) {
               Designed dynamically for high prestige Legal & English Careers.
             </p>
           </div>
-          <div className="flex gap-6 text-xs text-slate-500">
+          <div className="flex gap-6 items-center text-xs text-slate-500">
             <a href="#" className="hover:text-[#C89B3C] transition-colors font-medium">Termos de Uso</a>
             <a href="#" className="hover:text-[#C89B3C] transition-colors font-medium">Política de Privacidade</a>
-            <button
+            <StarBorder
+              as="button"
               onClick={handleScrollToTop}
-              className="flex items-center gap-1.5 p-2 px-3 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all font-mono text-2xs uppercase tracking-wider shadow-sm"
+              speed="5s"
+              thickness={1.5}
+              className="rounded-lg overflow-hidden cursor-pointer shadow-sm"
+              innerClassName="flex items-center gap-1.5 p-2 px-3 bg-white text-slate-700 font-mono text-2xs uppercase tracking-wider"
             >
               Topo
               <ArrowUp size={12} className="text-[#C89B3C]" />
-            </button>
+            </StarBorder>
           </div>
         </div>
 

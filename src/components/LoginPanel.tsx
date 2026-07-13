@@ -82,7 +82,6 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
         <div className="lg:col-span-6 flex flex-col justify-center">
           <StarBorder
             as="div"
-            color="#C89B3C"
             speed="6s"
             thickness={2}
             className="w-full rounded-3xl overflow-hidden shadow-sm"
@@ -194,23 +193,29 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
                   </div>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3.5 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-6 shadow-md"
-                >
-                  {loading ? (
-                    <>
-                      <RefreshCw size={14} className="animate-spin" />
-                      A Autenticar no Supabase Auth...
-                    </>
-                  ) : (
-                    <>
-                      {isRegister ? <UserPlus size={14} /> : <UserCheck size={14} />}
-                      {isRegister ? 'Criar Conta de Membro' : 'Aceder à Minha Vaga'}
-                    </>
-                  )}
-                </button>
+                <div className="pt-2">
+                  <StarBorder
+                    as="button"
+                    type="submit"
+                    disabled={loading}
+                    speed="4s"
+                    thickness={2}
+                    className="w-full rounded-xl overflow-hidden cursor-pointer shadow-md"
+                    innerClassName="relative z-1 w-full py-3.5 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-mono font-bold uppercase rounded-xl tracking-wider flex items-center justify-center gap-2"
+                  >
+                    {loading ? (
+                      <>
+                        <RefreshCw size={14} className="animate-spin" />
+                        A Autenticar no Supabase Auth...
+                      </>
+                    ) : (
+                      <>
+                        {isRegister ? <UserPlus size={14} /> : <UserCheck size={14} />}
+                        {isRegister ? 'Criar Conta de Membro' : 'Aceder à Minha Vaga'}
+                      </>
+                    )}
+                  </StarBorder>
+                </div>
               </form>
 
               {/* Toggle Trigger */}
@@ -258,9 +263,13 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
                 icon: <ShieldCheck size={18} className="text-[#C89B3C]" />
               }
             ].map((feature, idx) => (
-              <div
+              <StarBorder
                 key={idx}
-                className="bg-white border border-slate-200 p-5 rounded-2xl shadow-3xs flex items-start gap-4 text-left"
+                as="div"
+                speed="8s"
+                thickness={1.5}
+                className="rounded-2xl overflow-hidden shadow-3xs text-left"
+                innerClassName="relative z-1 bg-white p-5 rounded-2xl flex items-start gap-4 w-full h-full text-left"
               >
                 <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex-shrink-0 text-[#C89B3C]">
                   {feature.icon}
@@ -269,16 +278,22 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
                   <h4 className="font-serif font-black text-slate-900 text-sm m-0 leading-tight">{feature.title}</h4>
                   <p className="text-xs text-slate-500 leading-relaxed font-sans m-0 font-medium">{feature.desc}</p>
                 </div>
-              </div>
+              </StarBorder>
             ))}
           </div>
 
-          <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-start gap-2.5 text-xs text-slate-500 leading-normal">
+          <StarBorder
+            as="div"
+            speed="12s"
+            thickness={1.5}
+            className="rounded-2xl overflow-hidden"
+            innerClassName="relative z-1 p-4 bg-slate-50 rounded-2xl flex items-start gap-2.5 text-xs text-slate-500 leading-normal text-left w-full"
+          >
             <Key size={14} className="text-[#C89B3C] mt-0.5 flex-shrink-0" />
             <span className="font-medium">
               <strong>Padrão de Segurança Estrito:</strong> A plataforma utiliza criptografia ponta a ponta e Row Level Security (RLS) PostgreSQL para manter os dados de estudantes e formadores 100% privados e em conformidade corporativa.
             </span>
-          </div>
+          </StarBorder>
 
         </div>
 

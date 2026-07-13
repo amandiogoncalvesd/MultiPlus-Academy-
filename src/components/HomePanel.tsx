@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { PRINCIPAL_COURSE, TESTIMONIALS_PLACEHOLDERS, MAIN_INSTRUCTOR, BLOG_POSTS } from '../data';
 import { PageId } from '../types';
 import StarBorder from './ui/StarBorder';
+import TextType from './ui/TextType';
 import Carousel from './ui/Carousel';
 import { GlobeInteractive } from './ui/cobe-globe-interactive';
 import { 
@@ -122,7 +123,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0A2E5D]/5 border border-[#0A2E5D]/10 text-xs font-mono text-[#C89B3C] font-semibold tracking-widest uppercase"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#0A2E5D]/5 border border-[#C89B3C]/15 rounded-full text-xs font-mono text-[#C89B3C] font-semibold tracking-widest uppercase"
               >
                 <span className="flex h-2 w-2 rounded-full bg-[#C89B3C] animate-pulse"></span>
                 Portal Institucional Oficial • MultiPlus Academy
@@ -137,8 +138,18 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 >
                   Transformando <br />
                   Competências em <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C89B3C] to-[#E2B755]">
-                    Oportunidades.
+                  <span className="inline-block min-h-[1.2em]">
+                    <TextType
+                      as="span"
+                      text={["Oportunidades.", "Resultados.", "Sucesso.", "Liderança."]}
+                      typingSpeed={80}
+                      deletingSpeed={40}
+                      pauseDuration={2500}
+                      showCursor={true}
+                      cursorCharacter="|"
+                      className="text-transparent bg-clip-text bg-gradient-to-r from-[#C89B3C] to-[#E2B755]"
+                      cursorClassName="text-[#C89B3C] font-sans ml-1 text-3xl sm:text-4xl lg:text-5xl"
+                    />
                   </span>
                 </motion.h1>
                 
@@ -165,7 +176,6 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                     setCurrentPage('courses');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  color="#C89B3C"
                   speed="4s"
                   thickness={2}
                   className="w-full sm:w-auto hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 rounded-xl overflow-hidden hover:shadow-[0_8px_32px_rgba(200,155,60,0.15)] cursor-pointer"
@@ -174,12 +184,16 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   Explorar Cursos
                   <ArrowRight size={16} className="text-[#C89B3C]" />
                 </StarBorder>
-                <button
+                <StarBorder
+                  as="button"
                   onClick={() => scrollToSection('sobre-section')}
-                  className="px-8 py-4 rounded-xl text-sm font-bold tracking-wider uppercase transition-all duration-300 text-center border border-slate-200 text-[#0A2E5D] bg-[#0A2E5D]/5 hover:bg-[#0A2E5D]/10 hover:border-[#C89B3C]/50"
+                  speed="5s"
+                  thickness={1.5}
+                  className="w-full sm:w-auto rounded-xl overflow-hidden cursor-pointer"
+                  innerClassName="px-8 py-4 text-sm font-bold tracking-wider uppercase transition-all duration-300 text-center text-[#0A2E5D] bg-[#0A2E5D]/5 hover:bg-[#0A2E5D]/10 w-full"
                 >
                   Saber Mais
-                </button>
+                </StarBorder>
               </motion.div>
 
               {/* Interactive Cobe Globe Component */}
@@ -187,42 +201,21 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.4 }}
-                className="pt-6 pb-6"
+                className="pt-6 pb-6 flex justify-center lg:justify-start"
               >
-                <div className="flex flex-col md:flex-row items-center gap-8 p-6 sm:p-8 rounded-3xl border border-slate-150 bg-slate-50/50 shadow-sm max-w-3xl">
-                  {/* Globe Canvas Container with exact size as "Sobre nós" page */}
-                  <div className="w-full max-w-[360px] sm:max-w-[420px] aspect-square flex-shrink-0 flex items-center justify-center rounded-full border border-slate-200 bg-slate-900 p-4 relative overflow-hidden shadow-lg">
-                    <GlobeInteractive 
-                      markers={[
-                        { id: "huambo", location: [-12.7761, 15.7314], name: "Huambo Hub", users: 180 },
-                        { id: "luanda", location: [-8.839, 13.289], name: "Luanda Hub", users: 450 },
-                        { id: "lisbon", location: [38.722, -9.139], name: "Lisboa Hub", users: 210 },
-                        { id: "london", location: [51.507, -0.127], name: "Londres Link", users: 340 }
-                      ]}
-                      speed={0.005}
-                      className="w-full h-full"
-                    />
-                  </div>
-
-                  {/* Description next to the globe */}
-                  <div className="text-left space-y-3 flex-1">
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-[#C89B3C]/10 text-[#C89B3C] font-mono text-xs uppercase tracking-wider font-bold">
-                      Conetividade Global
-                    </span>
-                    <h4 className="text-xl sm:text-2xl font-serif font-black text-[#0A2E5D] leading-tight m-0">
-                      Conectando o Huambo ao Mundo Corporativo
-                    </h4>
-                    <p className="text-sm text-slate-600 leading-relaxed m-0 font-sans">
-                      Arraste e interaja com o nosso globo interativo para visualizar as conexões e as pontes de comunicação direta que construímos com os maiores centros profissionais e financeiros mundiais.
-                    </p>
-                    <div className="pt-2 flex flex-wrap gap-2">
-                      <span className="text-[10px] font-mono bg-slate-200/60 px-2.5 py-1 rounded text-slate-700 font-semibold">Huambo</span>
-                      <span className="text-[10px] font-mono bg-[#0A2E5D]/10 px-2.5 py-1 rounded text-[#0A2E5D] font-bold">Luanda</span>
-                      <span className="text-[10px] font-mono bg-amber-100 px-2.5 py-1 rounded text-amber-800 font-bold">Lisboa</span>
-                      <span className="text-[10px] font-mono bg-slate-800 px-2.5 py-1 rounded text-white font-semibold">Londres</span>
-                    </div>
-                  </div>
-                </div>
+                {/* Globe Canvas Container showing ONLY the globe */}
+                <StarBorder
+                  as="div"
+                  speed="8s"
+                  thickness={2}
+                  className="rounded-full overflow-hidden shadow-lg"
+                  innerClassName="w-full max-w-[360px] sm:max-w-[420px] aspect-square flex-shrink-0 flex items-center justify-center bg-slate-900 p-4 relative overflow-hidden"
+                >
+                  <GlobeInteractive 
+                    speed={0.005}
+                    className="w-full h-full"
+                  />
+                </StarBorder>
               </motion.div>
 
               {/* Trust badges indicators */}
@@ -276,7 +269,13 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 <div className="flex-1 flex flex-col justify-center py-6 space-y-6 relative z-10 text-left">
                   
                   {/* Digital Live Progress Indicator inside e-Learning preview */}
-                  <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3 relative overflow-hidden">
+                  <StarBorder
+                    as="div"
+                    speed="6s"
+                    thickness={1.5}
+                    className="rounded-2xl overflow-hidden shadow-3xs"
+                    innerClassName="w-full bg-slate-50 p-4 space-y-3 relative overflow-hidden"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -307,48 +306,66 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                         <div className="h-full bg-gradient-to-r from-[#C89B3C] to-[#E2B755] rounded-full" style={{ width: '75%' }} />
                       </div>
                     </div>
-                  </div>
+                  </StarBorder>
 
                   {/* High fidelity stats cards block */}
                   <div className="grid grid-cols-2 gap-4">
                     
-                    <div className="bg-slate-50 border border-slate-100 rounded-2xl p-3.5 space-y-2 text-left">
+                    <StarBorder
+                      as="div"
+                      speed="5s"
+                      thickness={1}
+                      className="rounded-2xl overflow-hidden shadow-3xs"
+                      innerClassName="w-full bg-slate-50 p-3.5 space-y-2 text-left"
+                    >
                       <div className="p-1 px-2.5 rounded bg-[#C89B3C]/10 text-[#C89B3C] font-mono text-[9px] uppercase font-bold tracking-wider float-right">
                         EXCELÊNCIA
                       </div>
                       <BookMarked size={16} className="text-[#C89B3C]" />
                       <p className="text-[9px] font-mono text-slate-400 uppercase font-black truncate">REDE CURRICULAR</p>
                       <p className="text-xs font-serif font-bold text-slate-800 mt-1">Multi-Programas</p>
-                    </div>
+                    </StarBorder>
 
-                    <div className="bg-slate-50 border border-slate-100 rounded-2xl p-3.5 space-y-2 text-left">
+                    <StarBorder
+                      as="div"
+                      speed="5s"
+                      thickness={1}
+                      className="rounded-2xl overflow-hidden shadow-3xs"
+                      innerClassName="w-full bg-slate-50 p-3.5 space-y-2 text-left"
+                    >
                       <div className="p-1 px-2 rounded bg-[#0A2E5D]/10 text-[#0A2E5D] font-mono text-[9px] uppercase font-bold tracking-wider float-right">
                         GLOBAL
                       </div>
                       <Globe size={16} className="text-[#C89B3C]" />
                       <p className="text-[9px] font-mono text-slate-400 uppercase font-black truncate">CONETIVIDADE</p>
                       <p className="text-xs font-serif font-bold text-slate-800 mt-1">Línguas Internacionais</p>
-                    </div>
+                    </StarBorder>
 
                   </div>
 
                   {/* Logo Center Brand Visual representation */}
-                  <div className="border border-slate-100 bg-slate-50 rounded-2xl p-4 flex items-center justify-between">
+                  <StarBorder
+                    as="div"
+                    speed="6s"
+                    thickness={1}
+                    className="rounded-2xl overflow-hidden shadow-3xs"
+                    innerClassName="w-full bg-slate-50 p-4 flex items-center justify-between text-left"
+                  >
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-[#0A2E5D] border border-[#C89B3C]/30 rounded-lg">
+                      <div className="p-2 bg-[#0A2E5D] border border-[#C89B3C]/30 rounded-lg flex items-center justify-center">
                         <img 
                           src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png" 
                           alt="Logo MultiPlus" 
-                          className="h-8 w-auto object-contain"
+                          className="h-8 w-auto object-contain block"
                         />
                       </div>
                       <div className="text-left">
-                        <p className="text-xs font-serif font-bold text-slate-900">MultiPlus Academy</p>
-                        <p className="text-[10px] font-mono text-[#C89B3C] tracking-wide mt-0.5">EST. 2026</p>
+                        <p className="text-xs font-serif font-bold text-slate-900 m-0">MultiPlus Academy</p>
+                        <p className="text-[10px] font-mono text-[#C89B3C] tracking-wide mt-0.5 m-0">EST. 2026</p>
                       </div>
                     </div>
                     <span className="text-[10px] text-slate-400 font-mono">EN - AO</span>
-                  </div>
+                  </StarBorder>
 
                 </div>
 
@@ -372,32 +389,38 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
             
             {/* Left side: Premium Image/Concept frame */}
             <div className="lg:col-span-5 relative">
-              <div className="relative p-2 bg-slate-50 border border-gray-200 rounded-3xl shadow-sm overflow-hidden aspect-square flex flex-col justify-between">
-                <div className="flex-1 bg-white border border-slate-200/80 rounded-2xl relative p-8 flex flex-col justify-between overflow-hidden">
+              <StarBorder
+                as="div"
+                speed="7s"
+                thickness={2}
+                className="rounded-3xl overflow-hidden aspect-square shadow-sm"
+                innerClassName="relative p-2 bg-slate-50 w-full h-full flex flex-col justify-between"
+              >
+                <div className="flex-1 bg-white border border-slate-200/80 rounded-2xl relative p-8 flex flex-col justify-between overflow-hidden h-full w-full">
                   
                   {/* Glowing background */}
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(200,155,60,0.05),transparent_60%)]" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(200,155,60,0.05),transparent_60%)] pointer-events-none" />
                   
-                  <div className="flex justify-between items-start relative z-10">
+                  <div className="flex justify-between items-start relative z-10 w-full">
                     <span className="text-xs font-mono tracking-widest text-[#C89B3C] bg-[#C89B3C]/10 px-3 py-1 rounded-md uppercase font-bold">SOBRE NÓS</span>
                     <GraduationCap size={20} className="text-[#C89B3C]" />
                   </div>
 
-                  <div className="space-y-4 relative z-10 text-left">
+                  <div className="space-y-4 relative z-10 text-left w-full">
                     <span className="text-6xl font-serif font-bold text-slate-100 block leading-none">2026</span>
-                    <h3 className="text-xl font-serif font-semibold text-slate-900 leading-tight">Excelência Educacional</h3>
-                    <p className="text-xs text-slate-600 leading-relaxed font-sans">
+                    <h3 className="text-xl font-serif font-semibold text-slate-900 leading-tight m-0">Excelência Educacional</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed font-sans m-0">
                       A nossa Sede no Huambo, Angola é um polo de ensino estruturado para catalisar carreiras intelectuais e comerciais.
                     </p>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100 flex justify-between items-center relative z-10 text-[9px] font-mono text-[#C89B3C]/80">
+                  <div className="pt-4 border-t border-slate-100 flex justify-between items-center relative z-10 text-[9px] font-mono text-[#C89B3C]/80 w-full">
                     <span>MULTIPLUS ACADEMY</span>
                     <span>HUAMBO, ANGOLA</span>
                   </div>
 
                 </div>
-              </div>
+              </StarBorder>
             </div>
 
             {/* Right side: Prose text with high-end margins */}
@@ -420,15 +443,19 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
               </div>
 
               <div className="pt-4">
-                <button
+                <StarBorder
+                  as="button"
                   onClick={() => {
                     setCurrentPage('about');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider bg-[#0A2E5D] hover:bg-[#123C73] text-white transition-colors"
+                  speed="5s"
+                  thickness={1.5}
+                  className="rounded-lg overflow-hidden cursor-pointer"
+                  innerClassName="px-6 py-3 text-xs font-bold uppercase tracking-wider bg-[#0A2E5D] hover:bg-[#123C73] text-white transition-colors"
                 >
                   Conhecer Nossa História
-                </button>
+                </StarBorder>
               </div>
             </div>
 
@@ -438,43 +465,61 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-24">
             
             {/* Missão */}
-            <div className="p-8 rounded-2xl bg-slate-50 border border-gray-150 relative overflow-hidden flex flex-col justify-between text-left h-full">
+            <StarBorder
+              as="div"
+              speed="6s"
+              thickness={1.5}
+              className="rounded-2xl overflow-hidden shadow-3xs"
+              innerClassName="p-8 bg-slate-50 relative overflow-hidden flex flex-col justify-between text-left h-full w-full"
+            >
               <div className="space-y-4">
-                <div className="w-10 h-10 rounded-lg bg-ink-900/5 flex items-center justify-center text-gold-600">
+                <div className="w-10 h-10 rounded-lg bg-slate-200/50 flex items-center justify-center text-gold-600">
                   <Globe className="w-5 h-5" />
                 </div>
-                <h4 className="text-lg font-serif font-bold text-ink-900">Nossa Missão</h4>
-                <p className="text-xs text-[#1C1C1C]/70 leading-relaxed font-sans">
+                <h4 className="text-lg font-serif font-bold text-slate-900 m-0">Nossa Missão</h4>
+                <p className="text-xs text-[#1C1C1C]/70 leading-relaxed font-sans m-0">
                   Desenvolver as habilidades e competências na Língua Inglesa de jovens, profissionais e executivos angolanos através de metodologias dinâmicas e rigorosas, conectando potenciais locais a oportunidades globais.
                 </p>
               </div>
-            </div>
+            </StarBorder>
 
             {/* Visão */}
-            <div className="p-8 rounded-2xl bg-slate-50 border border-gray-150 relative overflow-hidden flex flex-col justify-between text-left h-full">
+            <StarBorder
+              as="div"
+              speed="6s"
+              thickness={1.5}
+              className="rounded-2xl overflow-hidden shadow-3xs"
+              innerClassName="p-8 bg-slate-50 relative overflow-hidden flex flex-col justify-between text-left h-full w-full"
+            >
               <div className="space-y-4">
-                <div className="w-10 h-10 rounded-lg bg-ink-900/5 flex items-center justify-center text-gold-600">
+                <div className="w-10 h-10 rounded-lg bg-slate-200/50 flex items-center justify-center text-gold-600">
                   <Sparkles className="w-5 h-5" />
                 </div>
-                <h4 className="text-lg font-serif font-bold text-ink-900">Nossa Visão</h4>
-                <p className="text-xs text-[#1C1C1C]/70 leading-relaxed font-sans">
+                <h4 className="text-lg font-serif font-bold text-slate-900 m-0">Nossa Visão</h4>
+                <p className="text-xs text-[#1C1C1C]/70 leading-relaxed font-sans m-0">
                   Ser tida como a academia de elite mais inovadora e respeitada de ensino técnico e geral de Inglês em Angola, expandindo continuamente a nossa oferta curricular com tecnologia LMS premium.
                 </p>
               </div>
-            </div>
+            </StarBorder>
 
             {/* Valores */}
-            <div className="p-8 rounded-2xl bg-slate-50 border border-gray-150 relative overflow-hidden flex flex-col justify-between text-left h-full">
+            <StarBorder
+              as="div"
+              speed="6s"
+              thickness={1.5}
+              className="rounded-2xl overflow-hidden shadow-3xs"
+              innerClassName="p-8 bg-slate-50 relative overflow-hidden flex flex-col justify-between text-left h-full w-full"
+            >
               <div className="space-y-4">
-                <div className="w-10 h-10 rounded-lg bg-ink-900/5 flex items-center justify-center text-gold-600">
+                <div className="w-10 h-10 rounded-lg bg-slate-200/50 flex items-center justify-center text-gold-600">
                   <Award className="w-5 h-5" />
                 </div>
-                <h4 className="text-lg font-serif font-bold text-ink-900">Nossos Valores</h4>
-                <p className="text-xs text-[#1C1C1C]/70 leading-relaxed font-sans">
+                <h4 className="text-lg font-serif font-bold text-slate-900 m-0">Nossos Valores</h4>
+                <p className="text-xs text-[#1C1C1C]/70 leading-relaxed font-sans m-0">
                   Rigor científico e pedagógico, integridade no ensino, valorização permanente do aluno, personalização curricular de cariz prático e compromisso absoluto com resultados mensuráveis.
                 </p>
               </div>
-            </div>
+            </StarBorder>
 
           </div>
 
@@ -501,22 +546,29 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.05 }}
-                className="bg-white p-8 rounded-2xl border border-slate-200/80 hover:border-[#C89B3C]/40 relative flex flex-col justify-between hover:shadow-md transition-all text-left"
               >
-                {/* Minimalist structural top decor */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-[#0A2E5D]/10 rounded-t-2xl hover:bg-[#C89B3C]/50 transition-colors" />
-                
-                <div className="space-y-4">
-                  <div className="p-3 w-12 h-12 rounded-xl bg-[#0A2E5D]/5 flex items-center justify-center mb-6 border border-[#0A2E5D]/10 text-[#C89B3C]">
-                    {benefit.icon}
+                <StarBorder
+                  as="div"
+                  speed="5s"
+                  thickness={1.5}
+                  className="rounded-2xl overflow-hidden shadow-3xs h-full"
+                  innerClassName="bg-white p-8 relative flex flex-col justify-between text-left h-full w-full"
+                >
+                  {/* Minimalist structural top decor */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-[#0A2E5D]/10 rounded-t-2xl hover:bg-[#C89B3C]/50 transition-colors pointer-events-none" />
+                  
+                  <div className="space-y-4">
+                    <div className="p-3 w-12 h-12 rounded-xl bg-[#0A2E5D]/5 flex items-center justify-center mb-6 border border-[#0A2E5D]/10 text-[#C89B3C]">
+                      {benefit.icon}
+                    </div>
+                    <h4 className="text-lg font-serif font-bold text-slate-900 m-0">{benefit.title}</h4>
+                    <p className="text-xs text-slate-600 leading-relaxed font-sans">{benefit.description}</p>
                   </div>
-                  <h4 className="text-lg font-serif font-bold text-slate-900 m-0">{benefit.title}</h4>
-                  <p className="text-xs text-slate-600 leading-relaxed font-sans">{benefit.description}</p>
-                </div>
 
-                <div className="pt-6 mt-4 border-t border-slate-100 text-[9px] font-mono tracking-widest uppercase text-[#C89B3C] font-bold">
-                  Padrão MultiPlus
-                </div>
+                  <div className="pt-6 mt-4 border-t border-slate-100 text-[9px] font-mono tracking-widest uppercase text-[#C89B3C] font-bold">
+                    Padrão MultiPlus
+                  </div>
+                </StarBorder>
               </motion.div>
             ))}
           </div>
@@ -570,7 +622,6 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
           <div className="mb-20">
             <StarBorder
               as="div"
-              color="#C89B3C"
               speed="8s"
               thickness={2}
               className="w-full rounded-3xl overflow-hidden shadow-[0_15px_45px_rgba(10,46,93,0.04)]"
@@ -663,21 +714,29 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 </div>
 
                 <div className="pt-8 flex flex-col sm:flex-row gap-4">
-                  <button
+                  <StarBorder
+                    as="button"
                     onClick={() => {
                       setCurrentPage('courses');
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="flex-1 py-3.5 px-6 rounded-xl text-center text-xs font-bold uppercase tracking-wider bg-[#0A2E5D] hover:bg-[#123C73] text-white transition-colors cursor-pointer"
+                    speed="5s"
+                    thickness={1.5}
+                    className="flex-1 rounded-xl overflow-hidden cursor-pointer"
+                    innerClassName="w-full py-3.5 px-6 text-center text-xs font-bold uppercase tracking-wider bg-[#0A2E5D] hover:bg-[#123C73] text-white transition-colors"
                   >
                     Ver Grade Curricular
-                  </button>
-                  <button
+                  </StarBorder>
+                  <StarBorder
+                    as="button"
                     onClick={onOpenSignUp}
-                    className="flex-1 py-3.5 px-6 rounded-xl text-center text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-[#C89B3C] to-[#C89B3C] text-white hover:opacity-95 transition-opacity cursor-pointer"
+                    speed="5s"
+                    thickness={1.5}
+                    className="flex-1 rounded-xl overflow-hidden cursor-pointer"
+                    innerClassName="w-full py-3.5 px-6 text-center text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-[#C89B3C] to-[#C89B3C] text-white hover:opacity-95 transition-opacity"
                   >
                     Solicitar Admissão Académica
-                  </button>
+                  </StarBorder>
                 </div>
               </div>
 
@@ -689,16 +748,20 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
             <span className="text-[#C89B3C] text-xs font-mono font-bold tracking-widest uppercase block">Expansão de Programas</span>
             <h4 className="text-2xl font-serif font-bold text-slate-900 m-0">Próximos Programas Curriculares</h4>
             <p className="text-xs text-neutral-400 m-0 leading-relaxed">
-              O planeamento estratégico da MultiPlus Academy foi construído para expandir a capacitação de línguas a várias vertentes intelectuais e de comércio internacional. Em fase de preparação pedagógica:
+              O planeamento strategic da MultiPlus Academy foi construído para expandir a capacitação de línguas a várias vertentes intelectuais e de comércio internacional. Em fase de preparação pedagógica:
             </p>
           </div>
 
           {/* Grid listing future programs in a beautiful, future-proof directory layout */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {futurePrograms.map((prog, idx) => (
-              <div 
+              <StarBorder 
                 key={idx} 
-                className="p-6 rounded-2xl bg-white border border-slate-200 hover:border-[#C89B3C]/30 text-left transition-all duration-300 flex flex-col justify-between group hover:shadow-sm"
+                as="div"
+                speed="6s"
+                thickness={1}
+                className="rounded-2xl overflow-hidden hover:shadow-sm"
+                innerClassName="p-6 bg-white text-left transition-all duration-300 flex flex-col justify-between group h-full w-full"
               >
                 <div className="space-y-2">
                   <span className="inline-block text-[9px] font-mono tracking-widest uppercase text-neutral-400 bg-slate-100 px-2 py-0.5 rounded font-bold">
@@ -714,7 +777,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 <div className="pt-4 mt-4 border-t border-slate-100 text-[9px] font-mono tracking-widest uppercase text-[#C89B3C]/85 font-black">
                   Brevemente
                 </div>
-              </div>
+              </StarBorder>
             ))}
           </div>
 
@@ -734,19 +797,31 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
           </div>
 
           {/* Genuine Instructor Profile card conforming layout */}
-          <div className="max-w-4xl mx-auto bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-0">
+          <StarBorder
+            as="div"
+            speed="8s"
+            thickness={2}
+            className="max-w-4xl mx-auto rounded-3xl overflow-hidden shadow-sm"
+            innerClassName="w-full bg-white grid grid-cols-1 md:grid-cols-12 gap-0"
+          >
             
             {/* Visual Frame left */}
             <div className="md:col-span-5 relative py-8 px-6 bg-slate-50 flex flex-col justify-center items-center overflow-hidden border-r border-slate-100">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#C89B3C]/5 rounded-full pointer-events-none" />
               
-              <div className="w-48 h-64 rounded-2xl overflow-hidden shadow-xl border border-slate-200 bg-gray-100">
+              <StarBorder
+                as="div"
+                speed="6s"
+                thickness={1.5}
+                className="w-48 h-64 rounded-2xl overflow-hidden shadow-xl"
+                innerClassName="w-full h-full bg-gray-100"
+              >
                 <img
                   src={MAIN_INSTRUCTOR.photo}
                   alt={MAIN_INSTRUCTOR.name}
-                  className="w-full h-full object-cover grayscale block brightness-95"
+                  className="w-full h-full object-cover grayscale block brightness-95 animate-fadeIn"
                 />
-              </div>
+              </StarBorder>
 
               <div className="mt-6 text-center">
                 <span className="block text-2xl font-serif font-bold text-slate-900 tracking-tight">{MAIN_INSTRUCTOR.experienceYears}+ Anos</span>
@@ -790,21 +865,25 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   ))}
                 </div>
                 
-                <button
+                <StarBorder
+                  as="button"
                   onClick={() => {
                     setCurrentPage('instructors');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-[#0A2E5D] hover:bg-[#123C73] text-white flex items-center justify-center gap-1.5 transition-colors"
+                  speed="5s"
+                  thickness={1.5}
+                  className="w-full sm:w-auto rounded-lg overflow-hidden cursor-pointer"
+                  innerClassName="px-5 py-2.5 text-xs font-bold uppercase tracking-wider bg-[#0A2E5D] hover:bg-[#123C73] text-white flex items-center justify-center gap-1.5 transition-colors"
                 >
                   Ver Perfil Docente
                   <ArrowRight size={13} className="text-[#C89B3C]" />
-                </button>
+                </StarBorder>
               </div>
 
             </div>
 
-          </div>
+          </StarBorder>
 
         </div>
       </section>
@@ -832,50 +911,74 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.4 }}
-                className="bg-white p-8 sm:p-12 rounded-3xl border border-slate-200 text-left relative"
               >
-                <div className="absolute top-6 right-8 text-gray-200 font-serif text-8xl leading-none font-black select-none pointer-events-none">
-                  “
-                </div>
-
-                <div className="space-y-6 relative z-10">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#C89B3C]/10 text-[#C89B3C] text-[10px] font-mono uppercase font-bold tracking-wide border border-[#C89B3C]/15">
-                    <MessageSquare size={11} />
-                    Avaliação em Validação Letiva
+                <StarBorder
+                  as="div"
+                  speed="7s"
+                  thickness={1.5}
+                  className="rounded-3xl overflow-hidden shadow-3xs"
+                  innerClassName="bg-white p-8 sm:p-12 text-left relative w-full h-full"
+                >
+                  <div className="absolute top-6 right-8 text-gray-200 font-serif text-8xl leading-none font-black select-none pointer-events-none">
+                    “
                   </div>
 
-                  <blockquote className="font-serif italic text-sm sm:text-base text-slate-700 leading-relaxed m-0">
-                    "{TESTIMONIALS_PLACEHOLDERS[activeTestimony].testimonyFeedback}"
-                  </blockquote>
-
-                  <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
-                    <div>
-                      <cite className="not-italic font-serif font-bold text-slate-950 text-base block">
-                        {TESTIMONIALS_PLACEHOLDERS[activeTestimony].authorName}
-                      </cite>
-                      <span className="text-xs text-[#C89B3C] font-semibold block mt-0.5 font-sans">
-                        {TESTIMONIALS_PLACEHOLDERS[activeTestimony].authorRole}
-                      </span>
+                  <div className="space-y-6 relative z-10">
+                    <div className="inline-block">
+                      <StarBorder
+                        as="div"
+                        speed="4s"
+                        thickness={1}
+                        className="rounded"
+                        innerClassName="inline-flex items-center gap-1.5 px-3 py-1 bg-[#C89B3C]/10 text-[#C89B3C] text-[10px] font-mono uppercase font-bold tracking-wide"
+                      >
+                        <MessageSquare size={11} />
+                        Avaliação em Validação Letiva
+                      </StarBorder>
                     </div>
 
-                    <div className="h-9 w-9 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200 shadow-sm text-[#C89B3C]">
-                      <Award size={16} />
+                    <blockquote className="font-serif italic text-sm sm:text-base text-slate-700 leading-relaxed m-0">
+                      "{TESTIMONIALS_PLACEHOLDERS[activeTestimony].testimonyFeedback}"
+                    </blockquote>
+
+                    <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
+                      <div>
+                        <cite className="not-italic font-serif font-bold text-slate-950 text-base block">
+                          {TESTIMONIALS_PLACEHOLDERS[activeTestimony].authorName}
+                        </cite>
+                        <span className="text-xs text-[#C89B3C] font-semibold block mt-0.5 font-sans">
+                          {TESTIMONIALS_PLACEHOLDERS[activeTestimony].authorRole}
+                        </span>
+                      </div>
+
+                      <StarBorder
+                        as="div"
+                        speed="5s"
+                        thickness={1}
+                        className="rounded-full overflow-hidden"
+                        innerClassName="h-9 w-9 bg-slate-50 flex items-center justify-center text-[#C89B3C] p-0"
+                      >
+                        <Award size={16} />
+                      </StarBorder>
                     </div>
                   </div>
-                </div>
-
+                </StarBorder>
               </motion.div>
             </AnimatePresence>
 
             {/* Slider navigation controls */}
             <div className="flex justify-center gap-4 mt-8 relative z-10">
-              <button
+              <StarBorder
+                as="button"
                 onClick={prevTestimony}
-                className="p-3 rounded-full bg-white border border-slate-200 hover:border-[#C89B3C] hover:bg-slate-50 text-slate-800 shadow-sm transition-all"
+                speed="4s"
+                thickness={1}
+                className="rounded-full overflow-hidden shadow-3xs cursor-pointer"
+                innerClassName="p-3 bg-white text-slate-800 flex items-center justify-center"
                 aria-label="Depoimento Anterior"
               >
                 <ChevronLeft size={16} />
-              </button>
+              </StarBorder>
               
               <div className="flex items-center gap-2">
                 {TESTIMONIALS_PLACEHOLDERS.map((_, i) => (
@@ -890,13 +993,17 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 ))}
               </div>
 
-              <button
+              <StarBorder
+                as="button"
                 onClick={nextTestimony}
-                className="p-3 rounded-full bg-white border border-slate-200 hover:border-[#C89B3C] hover:bg-slate-50 text-slate-800 shadow-sm transition-all"
+                speed="4s"
+                thickness={1}
+                className="rounded-full overflow-hidden shadow-3xs cursor-pointer"
+                innerClassName="p-3 bg-white text-slate-800 flex items-center justify-center"
                 aria-label="Depoimento Seguinte"
               >
                 <ChevronRight size={16} />
-              </button>
+              </StarBorder>
             </div>
 
           </div>
@@ -917,32 +1024,40 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
               </p>
             </div>
             
-            <button
+            <StarBorder
+              as="button"
               onClick={() => {
                 setCurrentPage('blog');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-white border border-slate-200 hover:border-[#C89B3C]/55 text-slate-800 flex items-center gap-2 transition-all self-start md:self-auto shadow-sm"
+              speed="5s"
+              thickness={1.5}
+              className="rounded-lg overflow-hidden shadow-sm self-start md:self-auto cursor-pointer"
+              innerClassName="px-5 py-2.5 text-xs font-bold uppercase tracking-wider bg-white text-slate-800 flex items-center gap-2 transition-all"
             >
               Ver Todos os Artigos
               <ArrowRight size={14} className="text-[#C89B3C]" />
-            </button>
+            </StarBorder>
           </div>
 
           {/* Grid layout containing 3 blog articles */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {BLOG_POSTS.slice(0, 3).map((post) => (
-              <article 
+              <StarBorder
                 key={post.id}
+                as="article"
                 onClick={() => {
                   setCurrentPage('blog');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-[#C89B3C]/30 hover:shadow-md transition-all flex flex-col justify-between text-left cursor-pointer group"
+                speed="6s"
+                thickness={1.5}
+                className="rounded-2xl overflow-hidden hover:shadow-md cursor-pointer group"
+                innerClassName="bg-white flex flex-col justify-between text-left h-full w-full"
               >
                 
                 {/* Image header */}
-                <div className="aspect-[16/10] overflow-hidden relative bg-[#0A2E5D]">
+                <div className="aspect-[16/10] overflow-hidden relative bg-[#0A2E5D] w-full">
                   <img
                     src={post.image}
                     alt={post.title}
@@ -955,7 +1070,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 </div>
 
                 {/* Content body */}
-                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                <div className="p-6 flex-1 flex flex-col justify-between space-y-4 w-full">
                   <div className="space-y-2">
                     <div className="text-[10px] font-mono text-slate-400 flex items-center gap-3">
                       <span>{post.date}</span>
@@ -970,7 +1085,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                     </p>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100 flex items-center gap-2.5 text-xs text-slate-500 font-sans">
+                  <div className="pt-4 border-t border-slate-100 flex items-center gap-2.5 text-xs text-slate-500 font-sans font-medium">
                     <img 
                       src={post.author.avatar} 
                       alt={post.author.name} 
@@ -981,7 +1096,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   </div>
                 </div>
 
-              </article>
+              </StarBorder>
             ))}
           </div>
 
@@ -1008,9 +1123,13 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
               <div className="space-y-4">
                 
                 {/* 1. Telefone/Phone */}
-                <a 
+                <StarBorder
+                  as="a"
                   href="tel:+244956449084"
-                  className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-[#C89B3C]/40 bg-slate-50/50 hover:bg-slate-50 transition-all group"
+                  speed="5s"
+                  thickness={1}
+                  className="rounded-xl overflow-hidden block"
+                  innerClassName="flex items-center gap-4 p-4 bg-slate-50/50 hover:bg-slate-50 transition-all group w-full text-left"
                 >
                   <div className="p-3 rounded-lg bg-[#0A2E5D]/5 text-[#0A2E5D] group-hover:bg-[#C89B3C]/10 group-hover:text-[#C89B3C] transition-colors">
                     <Phone size={18} />
@@ -1019,12 +1138,16 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                     <span className="block text-[9px] font-mono tracking-widest uppercase text-slate-400">Telemóvel Suporte</span>
                     <span className="text-sm font-semibold text-slate-900">+244 956 449 084</span>
                   </div>
-                </a>
+                </StarBorder>
 
                 {/* 2. Email */}
-                <a 
+                <StarBorder
+                  as="a"
                   href="mailto:multiplusacademy@gmail.com"
-                  className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-[#C89B3C]/40 bg-slate-50/50 hover:bg-slate-50 transition-all group"
+                  speed="5s"
+                  thickness={1}
+                  className="rounded-xl overflow-hidden block"
+                  innerClassName="flex items-center gap-4 p-4 bg-slate-50/50 hover:bg-slate-50 transition-all group w-full text-left"
                 >
                   <div className="p-3 rounded-lg bg-[#0A2E5D]/5 text-[#0A2E5D] group-hover:bg-[#C89B3C]/10 group-hover:text-[#C89B3C] transition-colors">
                     <Mail size={18} />
@@ -1033,12 +1156,16 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                     <span className="block text-[9px] font-mono tracking-widest uppercase text-slate-400">Correio Eletrónico</span>
                     <span className="text-sm font-semibold text-slate-900 break-all">multiplusacademy@gmail.com</span>
                   </div>
-                </a>
+                </StarBorder>
 
                 {/* 3. WhatsApp Integration */}
-                <button 
+                <StarBorder
+                  as="button"
                   onClick={handleWhatsApp}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-[#C89B3C]/40 bg-slate-50/50 hover:bg-slate-50 transition-all text-left group"
+                  speed="5s"
+                  thickness={1}
+                  className="w-full rounded-xl overflow-hidden cursor-pointer block"
+                  innerClassName="flex items-center gap-4 p-4 bg-slate-50/50 hover:bg-slate-50 transition-all text-left group w-full"
                 >
                   <div className="p-3 px-3.5 rounded-lg bg-[#0A2E5D]/5 text-[#0A2E5D] group-hover:bg-[#C89B3C]/10 group-hover:text-[#C89B3C] transition-colors text-xs font-mono font-extrabold uppercase">
                     W/A
@@ -1047,10 +1174,16 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                     <span className="block text-[9px] font-mono tracking-widest uppercase text-slate-400">Iniciar Conversa</span>
                     <span className="text-sm font-semibold text-slate-900">Atendimento via WhatsApp</span>
                   </div>
-                </button>
+                </StarBorder>
 
                 {/* 4. Location Details */}
-                <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+                <StarBorder
+                  as="div"
+                  speed="5s"
+                  thickness={1}
+                  className="rounded-xl overflow-hidden block"
+                  innerClassName="flex items-center gap-4 p-4 bg-slate-50/50 w-full text-left"
+                >
                   <div className="p-3 rounded-lg bg-[#0A2E5D]/5 text-[#0A2E5D]">
                     <MapPin size={18} />
                   </div>
@@ -1058,27 +1191,37 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                     <span className="block text-[9px] font-mono tracking-widest uppercase text-slate-400">Sede Letiva</span>
                     <span className="text-sm font-semibold text-slate-900">Huambo, Angola</span>
                   </div>
-                </div>
+                </StarBorder>
 
               </div>
 
               <div className="pt-2">
-                <button
+                <StarBorder
+                  as="button"
                   onClick={() => {
                     setCurrentPage('contact');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="w-full py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#0A2E5D] text-white hover:bg-[#123C73] transition-colors"
+                  speed="5s"
+                  thickness={1.5}
+                  className="w-full rounded-xl overflow-hidden cursor-pointer block"
+                  innerClassName="w-full py-3.5 text-xs font-bold uppercase tracking-wider bg-[#0A2E5D] text-white hover:bg-[#123C73] transition-colors text-center"
                 >
                   Ir para Formulário Completo
-                </button>
+                </StarBorder>
               </div>
 
             </div>
 
             {/* Premium Interactive World Map Panel (MultiPlus Global Connection Hub) */}
             <div className="lg:col-span-7 flex flex-col justify-stretch">
-              <div className="rounded-3xl overflow-hidden p-3 bg-white border border-slate-200 flex-1 flex flex-col">
+              <StarBorder
+                as="div"
+                speed="8s"
+                thickness={2}
+                className="rounded-3xl overflow-hidden shadow-sm flex-1 flex flex-col"
+                innerClassName="p-3 bg-white flex-1 flex flex-col w-full h-full"
+              >
                 
                 {/* Header widget decor */}
                 <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between text-xs font-mono text-[#0A2E5D]">
@@ -1174,24 +1317,36 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   <div className="flex justify-between items-end relative z-20 mt-4 h-auto">
                     
                     {/* Connection Stats Info Box */}
-                    <div className="bg-white/95 border border-[#C89B3C]/30 rounded-xl p-3 shadow-[0_4px_20px_rgba(10,46,93,0.06)] max-w-[270px] text-left backdrop-blur-sm">
+                    <StarBorder
+                      as="div"
+                      speed="5s"
+                      thickness={1.2}
+                      className="rounded-xl overflow-hidden max-w-[270px]"
+                      innerClassName="bg-white/95 p-3 shadow-[0_4px_20px_rgba(10,46,93,0.06)] text-left backdrop-blur-sm w-full h-full"
+                    >
                       <span className="text-[7.5px] font-mono font-black text-[#C89B3C] block tracking-widest uppercase">Rede Académica Global</span>
                       <h4 className="text-xs font-serif font-black text-slate-900 mt-1 leading-normal m-0 mb-0.5">Sede Central do Huambo</h4>
                       <p className="text-[9px] text-slate-600 leading-relaxed font-sans mt-0.5 m-0">
                         Capacitação linguística de elite conectando profissionais angolanos aos principais centros jurídicos, energéticos e comerciais mundiais.
                       </p>
-                    </div>
+                    </StarBorder>
 
                     {/* Institutional stamp badge */}
-                    <div className="bg-slate-50 border border-slate-150 rounded-lg py-1 px-2.5 text-[8px] font-mono text-slate-500 tracking-wider">
+                    <StarBorder
+                      as="div"
+                      speed="6s"
+                      thickness={1}
+                      className="rounded-lg overflow-hidden"
+                      innerClassName="bg-slate-50 py-1 px-2.5 text-[8px] font-mono text-slate-500 tracking-wider w-full h-full"
+                    >
                       MULTIPLUS ACADEMY • PROJEÇÃO 2026
-                    </div>
+                    </StarBorder>
 
                   </div>
 
                 </div>
 
-              </div>
+              </StarBorder>
             </div>
 
           </div>

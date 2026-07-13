@@ -18,6 +18,10 @@
   --color-espresso-700: #573521; /* Secundaria - acento marrom secundario */
   --color-neutral-400: #A1A4AC;  /* Secundaria - cinza neutro (texto/bordas discretas) */
 
+  --color-flag-red: #CE1126;
+  --color-flag-black: #000000;
+  --color-flag-gold: #F7CE00;
+
   --animate-star-movement-bottom: star-movement-bottom linear infinite alternate;
   --animate-star-movement-top: star-movement-top linear infinite alternate;
 

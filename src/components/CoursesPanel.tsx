@@ -141,38 +141,50 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
             <div className="flex items-center gap-2 self-stretch md:self-auto overflow-x-auto pb-2 md:pb-0 scrollbar-none">
               <span className="text-xs text-slate-400 font-mono uppercase tracking-wider mr-2 whitespace-nowrap">Opções de Formato:</span>
               
-              <button
+              <StarBorder
+                as="button"
                 onClick={() => setSelectedModality('all')}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase whitespace-nowrap ${
+                speed="8s"
+                thickness={1}
+                className="rounded-lg overflow-hidden cursor-pointer"
+                innerClassName={`relative z-1 px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase whitespace-nowrap ${
                   selectedModality === 'all'
-                    ? 'bg-[#0A2E5D] text-white border border-[#0A2E5D] shadow-sm'
-                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80 border border-slate-200'
+                    ? 'bg-[#0A2E5D] text-white'
+                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
                 }`}
               >
                 Todos ({courses.length})
-              </button>
+              </StarBorder>
 
-              <button
+              <StarBorder
+                as="button"
                 onClick={() => setSelectedModality('híbrido')}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase whitespace-nowrap ${
+                speed="8s"
+                thickness={1}
+                className="rounded-lg overflow-hidden cursor-pointer"
+                innerClassName={`relative z-1 px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase whitespace-nowrap ${
                   selectedModality === 'híbrido'
-                    ? 'bg-[#0A2E5D] text-white border border-[#0A2E5D] shadow-sm'
-                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80 border border-slate-200'
+                    ? 'bg-[#0A2E5D] text-white'
+                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
                 }`}
               >
                 Híbrido
-              </button>
+              </StarBorder>
 
-              <button
+              <StarBorder
+                as="button"
                 onClick={() => setSelectedModality('online')}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase whitespace-nowrap ${
+                speed="8s"
+                thickness={1}
+                className="rounded-lg overflow-hidden cursor-pointer"
+                innerClassName={`relative z-1 px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase whitespace-nowrap ${
                   selectedModality === 'online'
-                    ? 'bg-[#0A2E5D] text-white border border-[#0A2E5D] shadow-sm'
-                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80 border border-slate-200'
+                    ? 'bg-[#0A2E5D] text-white'
+                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
                 }`}
               >
                 Online
-              </button>
+              </StarBorder>
             </div>
 
           </div>
@@ -201,7 +213,6 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                   >
                     <StarBorder
                       as="div"
-                      color="#C89B3C"
                       speed="8s"
                       thickness={1.5}
                       className="w-full h-full rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-md flex flex-col justify-between"
@@ -340,29 +351,59 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                 
                 {/* General facts row */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pb-6 border-b border-slate-200">
-                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-150 shadow-xs">
+                  <StarBorder
+                    as="div"
+                    speed="5s"
+                    thickness={1}
+                    className="rounded-xl overflow-hidden shadow-xs"
+                    innerClassName="bg-slate-50 p-3.5 w-full h-full text-left"
+                  >
                     <span className="block text-[8px] font-mono uppercase tracking-wider text-slate-400 mb-0.5">Duração</span>
                     <span className="text-xs font-bold text-slate-900">{activeCourseDetails.duration}</span>
-                  </div>
-                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-150 shadow-xs">
+                  </StarBorder>
+                  <StarBorder
+                    as="div"
+                    speed="5s"
+                    thickness={1}
+                    className="rounded-xl overflow-hidden shadow-xs"
+                    innerClassName="bg-slate-50 p-3.5 w-full h-full text-left"
+                  >
                     <span className="block text-[8px] font-mono uppercase tracking-wider text-slate-400 mb-0.5">Carga Horária</span>
                     <span className="text-xs font-bold text-slate-900">{activeCourseDetails.hours}</span>
-                  </div>
-                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-150 shadow-xs">
+                  </StarBorder>
+                  <StarBorder
+                    as="div"
+                    speed="5s"
+                    thickness={1}
+                    className="rounded-xl overflow-hidden shadow-xs"
+                    innerClassName="bg-slate-50 p-3.5 w-full h-full text-left"
+                  >
                     <span className="block text-[8px] font-mono uppercase tracking-wider text-slate-400 mb-0.5">Idioma Oficial</span>
                     <span className="text-xs font-bold text-slate-900">{activeCourseDetails.language}</span>
-                  </div>
-                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-150 shadow-xs">
+                  </StarBorder>
+                  <StarBorder
+                    as="div"
+                    speed="5s"
+                    thickness={1}
+                    className="rounded-xl overflow-hidden shadow-xs"
+                    innerClassName="bg-slate-50 p-3.5 w-full h-full text-left"
+                  >
                     <span className="block text-[8px] font-mono uppercase tracking-wider text-slate-400 mb-0.5">Início letivo</span>
                     <span className="text-xs font-bold text-slate-900">{activeCourseDetails.startDate}</span>
-                  </div>
+                  </StarBorder>
                 </div>
 
                 {/* Scope descriptive body */}
-                <div className="space-y-2.5 text-xs sm:text-sm text-slate-600 leading-relaxed bg-slate-50/50 p-5 rounded-2xl border border-slate-200 shadow-xs">
+                <StarBorder
+                  as="div"
+                  speed="6s"
+                  thickness={1}
+                  className="rounded-2xl overflow-hidden shadow-xs"
+                  innerClassName="space-y-2.5 bg-slate-50/50 p-5 w-full h-full text-left"
+                >
                   <span className="block font-serif font-bold text-slate-900 text-base mb-1">Enquadramento Científico</span>
                   <p className="text-slate-600 font-medium leading-relaxed m-0">{activeCourseDetails.summary}</p>
-                </div>
+                </StarBorder>
 
                 {/* Target Audience Bullet Point list */}
                 {activeCourseDetails.targetAudience && activeCourseDetails.targetAudience.length > 0 && (
@@ -370,10 +411,17 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                     <span className="block font-mono font-bold uppercase text-[9px] tracking-widest text-[#C89B3C]">Grupo De Candidaturas Elegíveis</span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
                       {activeCourseDetails.targetAudience.map((aud, i) => (
-                        <div key={i} className="flex items-center gap-2.5 text-slate-700 bg-white p-3 rounded-xl border border-slate-200 shadow-xs hover:border-[#C89B3C]/30 transition-all">
+                        <StarBorder
+                          key={i}
+                          as="div"
+                          speed="5s"
+                          thickness={1}
+                          className="rounded-xl overflow-hidden shadow-xs hover:shadow-sm"
+                          innerClassName="flex items-center gap-2.5 text-slate-700 bg-white p-3 w-full h-full text-left"
+                        >
                           <CheckCircle size={15} className="text-[#C89B3C] flex-shrink-0" />
                           <span className="font-semibold text-slate-700">{aud}</span>
-                        </div>
+                        </StarBorder>
                       ))}
                     </div>
                   </div>
@@ -386,7 +434,14 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                     
                     <div className="space-y-4">
                       {activeCourseDetails.modules.map((mod, i) => (
-                        <div key={i} className="p-5 rounded-2xl bg-white border border-slate-200 space-y-3 shadow-xs hover:border-[#C89B3C]/30 transition-all group">
+                        <StarBorder
+                          key={i}
+                          as="div"
+                          speed="6s"
+                          thickness={1}
+                          className="rounded-2xl overflow-hidden shadow-xs hover:shadow-sm group"
+                          innerClassName="p-5 bg-white space-y-3 w-full h-full text-left"
+                        >
                           <div className="flex items-center gap-2.5">
                             <span className="px-2.5 py-0.5 rounded bg-slate-100 text-[10px] font-mono font-bold text-slate-800 border border-slate-200 group-hover:bg-[#0A2E5D] group-hover:text-white group-hover:border-[#0A2E5D] transition-all">
                               {mod.number}
@@ -398,7 +453,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                               <li key={tIdx} className="text-slate-500 hover:text-slate-800 transition-colors">{topic}</li>
                             ))}
                           </ul>
-                        </div>
+                        </StarBorder>
                       ))}
                     </div>
                   </div>
@@ -414,22 +469,30 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                 </div>
                 
                 <div className="flex gap-3 w-full sm:w-auto">
-                  <button
+                  <StarBorder
+                    as="button"
                     onClick={() => setActiveCourseDetails(null)}
-                    className="flex-1 sm:flex-none px-6 py-3 border border-slate-250 rounded-xl text-xs font-semibold uppercase text-slate-600 bg-white hover:bg-slate-100 transition-all font-mono active:scale-[0.98]"
+                    speed="5s"
+                    thickness={1}
+                    className="flex-1 sm:flex-none rounded-xl overflow-hidden cursor-pointer"
+                    innerClassName="px-6 py-3 text-xs font-semibold uppercase text-slate-600 bg-white hover:bg-slate-100 transition-all font-mono active:scale-[0.98] w-full"
                   >
                     Fechar
-                  </button>
+                  </StarBorder>
 
-                  <button
+                  <StarBorder
+                    as="button"
                     onClick={() => {
                       setActiveCourseDetails(null);
                       onOpenSignUp();
                     }}
-                    className="flex-1 sm:flex-none px-8 py-3 bg-[#0A2E5D] hover:bg-[#123C73] text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg active:scale-[0.98]"
+                    speed="5s"
+                    thickness={1.5}
+                    className="flex-1 sm:flex-none rounded-xl overflow-hidden cursor-pointer"
+                    innerClassName="px-8 py-3 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-bold uppercase tracking-widest transition-all shadow-lg active:scale-[0.98] w-full"
                   >
                     Prosseguir Inscrição
-                  </button>
+                  </StarBorder>
                 </div>
               </div>
 
