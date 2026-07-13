@@ -11,8 +11,8 @@
   --color-ink-900: #151D29;      /* Principal - fundo escuro base */
   --color-ink-800: #1B222E;      /* Principal - fundo escuro secundario/cartoes */
   --color-gold-600: #BB8533;     /* Principal - dourado de destaque (CTAs, acentos) */
-  --color-cream-100: #F2E5D7;    /* Principal - fundo claro base */
-  --color-cream-200: #E8DAC8;    /* Principal - fundo claro secundario/cartoes */
+  --color-cream-100: #FFFFFF;    /* Principal - fundo claro base (White) */
+  --color-cream-200: #F8FAFC;    /* Principal - fundo claro secundario/cartoes (Slate 50) */
   --color-danger-700: #AF251D;   /* Secundaria - erro, exclusao, alerta */
   --color-espresso-900: #221F17; /* Secundaria - tom mais escuro alternativo */
   --color-espresso-700: #573521; /* Secundaria - acento marrom secundario */

@@ -393,14 +393,14 @@ export default function InstructorPortal({
   const containerThemeClass = highContrast 
     ? 'bg-black text-yellow-300 font-extrabold border-yellow-500' 
     : isDarkMode 
-      ? 'bg-[#0B1220] text-gray-200 border-slate-850' 
-      : 'bg-cream-100 text-[#1C1C1C] border-gray-150';
+      ? 'bg-ink-900 text-cream-100 border-ink-800' 
+      : 'bg-slate-50 text-slate-800 border-slate-200/60';
 
   const cardThemeClass = highContrast
     ? 'border-4 border-yellow-500 bg-black text-cream-100'
     : isDarkMode
-      ? 'bg-[#121E36] border border-slate-700/60 shadow text-cream-100'
-      : 'bg-cream-100 border border-gray-150 shadow-sm text-[#1C1C1C]';
+      ? 'bg-ink-800 border border-ink-800/40 shadow-xs text-cream-100'
+      : 'bg-white border border-slate-200/80 shadow-xs text-slate-800';
 
   return (
     <div id="multiplus-instructor-portal" className={`min-h-screen flex items-stretch transition-colors duration-200 ${containerThemeClass}`}>
@@ -514,17 +514,20 @@ export default function InstructorPortal({
       </aside>
 
       {/* Main outer shell (adjusted for fixed sidebar space) */}
-      <div className="flex-grow flex flex-col overflow-hidden lg:pl-64">
+      <div className="flex-grow flex flex-col overflow-hidden lg:pl-64 relative">
+        {/* Subtle premium background glow effects matching the Home page layout */}
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[60%] bg-gradient-to-br from-[#C89B3C]/5 to-transparent rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[50%] bg-slate-200/10 dark:bg-slate-800/5 rounded-full blur-[120px] pointer-events-none" />
         
         {/* 2. TOPBAR HEADER FIXA */}
         <header className={`h-16 px-6 border-b flex items-center justify-between sticky top-0 z-30 transition-colors ${
-          highContrast ? 'bg-black border-yellow-500 text-yellow-300' : isDarkMode ? 'bg-[#0E172A] border-slate-800 text-cream-100' : 'bg-cream-100 border-gray-150 text-[#1C1C1C]'
+          highContrast ? 'bg-black border-yellow-500 text-yellow-300' : isDarkMode ? 'bg-ink-900 border-ink-800 text-cream-100' : 'bg-white border-slate-200/60 text-slate-800'
         }`}>
           {/* Left Side */}
           <div className="flex items-center gap-4">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded transition-all bg-transparent border-0 cursor-pointer text-current"
+              className="lg:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-all bg-transparent border-0 cursor-pointer text-current"
               aria-label="Abrir lateral"
             >
               <Menu size={20} />
@@ -545,7 +548,7 @@ export default function InstructorPortal({
               placeholder="Pesquisar arquivos..."
               value={globalSearchTerm}
               onChange={(e) => setGlobalSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-cream-200 border border-gray-200 placeholder:text-neutral-400 text-[#1C1C1C] focus:outline-none focus:border-gold-600"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 placeholder:text-neutral-400 text-slate-800 dark:text-cream-100 focus:outline-none focus:border-gold-600 dark:bg-slate-800/50 dark:border-ink-800"
             />
           </div>
 
@@ -554,7 +557,7 @@ export default function InstructorPortal({
             {/* Accessibility swift switch */}
             <button 
               onClick={toggleTheme}
-              className="p-2 bg-cream-200 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-gold-600 border-0 cursor-pointer"
+              className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-gold-600 border-0 cursor-pointer"
               title="Mudar visual cor"
             >
               {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
@@ -564,7 +567,7 @@ export default function InstructorPortal({
             <div className="relative">
               <button 
                 onClick={() => setShowNotificationsMenu(!showNotificationsMenu)}
-                className="p-2 bg-cream-200 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
+                className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
               >
                 <Bell size={14} />
                 <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-danger-700" />
