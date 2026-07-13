@@ -634,7 +634,7 @@ export default function StudentPortal({
       {/* SIDEBAR NAVIGATION - Collapsible on Mobile, Fixed on Desktop */}
       <aside 
         className={`fixed inset-y-0 left-0 z-40 w-64 ${
-          isHighContrast ? 'bg-black border-r-4 border-yellow-500' : themeMode === 'dark' ? 'bg-[#0F192E] border-slate-800' : 'bg-[#0A2E5D] text-white border-r border-[#0A2E5D]/10'
+          isHighContrast ? 'bg-black border-r-4 border-yellow-500' : themeMode === 'dark' ? 'bg-ink-900 border-ink-800' : 'bg-ink-900 text-white border-r border-ink-800/10'
         } transition-transform duration-300 transform lg:translate-x-0 ${
           isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } flex flex-col justify-between`}
@@ -650,7 +650,7 @@ export default function StudentPortal({
               />
               <div className="text-left">
                 <h1 className="text-sm font-serif font-black m-0 tracking-wide text-cream-100">MultiPlus</h1>
-                <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block font-bold">Student LMS</span>
+                <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block font-bold">Student LMS</span>
               </div>
             </div>
             
@@ -686,7 +686,7 @@ export default function StudentPortal({
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wider text-left transition-all cursor-pointer border-0 ${
                   activeTab === link.id
-                    ? 'bg-[#C89B3C] text-white shadow-md font-bold'
+                    ? 'bg-gold-600 text-ink-900 shadow-sm font-bold'
                     : 'text-cream-100/80 hover:text-cream-100 hover:bg-cream-100/10'
                 }`}
               >
@@ -699,12 +699,12 @@ export default function StudentPortal({
           {/* Sidebar Footer context banner */}
           <div className="p-4 border-t border-white/10 space-y-3.5">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-[#C89B3C] text-white rounded-full flex items-center justify-center font-bold text-xs shadow-sm capitalize">
+              <div className="w-9 h-9 bg-gold-600 text-ink-900 rounded-full flex items-center justify-center font-bold text-xs shadow-sm capitalize">
                 {currentUser?.firstName[0] || 'A' }
               </div>
               <div className="text-left truncate max-w-[130px]">
                 <h4 className="text-xs font-bold text-cream-100 m-0 tracking-wide truncate">{currentUser?.firstName} {currentUser?.lastName}</h4>
-                <span className="text-[10px] font-mono text-[#C89B3C] font-semibold uppercase">{currentUser?.role || 'Aluno'}</span>
+                <span className="text-[10px] font-mono text-gold-600 font-semibold uppercase">{currentUser?.role || 'Aluno'}</span>
               </div>
             </div>
 
@@ -917,14 +917,14 @@ export default function StudentPortal({
                     <>
                       {/* Personal Greetings Block with UTC live date clock and progress indicator */}
                       <div className={`p-6 sm:p-8 rounded-3xl relative overflow-hidden text-left ${
-                        isHighContrast ? 'border-4 border-yellow-500 bg-black text-cream-100' : 'bg-[#0A2E5D] text-cream-100 border border-[#C89B3C]/20 shadow-md'
+                        isHighContrast ? 'border-4 border-yellow-500 bg-black text-cream-100' : 'bg-ink-900 text-cream-100 border border-gold-600/20 shadow-sm'
                       }`}>
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#C89B3C]/10 to-transparent rounded-full pointer-events-none" />
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-gold-600/10 to-transparent rounded-full pointer-events-none" />
                         
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
                           <div>
                             {/* Live real-time clock and precise formatted dates */}
-                            <div className="flex items-center gap-3 text-[#C89B3C] text-[10px] font-mono tracking-widest uppercase font-bold">
+                            <div className="flex items-center gap-3 text-gold-600 text-[10px] font-mono tracking-widest uppercase font-bold">
                               <span>ASSENTO ACADÉMICO ATIVO • MULTIPLUS</span>
                               <span className="px-2 py-0.5 rounded bg-black/40 text-cream-100 select-none">
                                 ⏱ {currentTime.toLocaleTimeString()}
@@ -940,14 +940,14 @@ export default function StudentPortal({
                           </div>
 
                           <div className="bg-cream-100/10 backdrop-blur-md p-4 rounded-2xl border border-white/5 space-y-2 shrink-0">
-                            <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block font-bold">PRÓXIMA AULA SÍNCRONA</span>
+                            <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block font-bold">PRÓXIMA AULA SÍNCRONA</span>
                             <h4 className="text-xs font-serif font-black m-0">Tuesday Legal Advisory Class</h4>
                             <span className="text-[10px] font-mono text-emerald-400 block font-bold">TERÇA-FEIRA • 18h30 - 20h30</span>
                             
                             <a 
                               href="https://meet.google.com/lookup/mock-multiplus"
                               target="_blank"
-                              className="px-3.5 py-1.5 bg-[#C89B3C] hover:bg-cream-100 hover:text-slate-900 text-slate-950 font-mono text-3xs font-extrabold rounded-lg tracking-wider transition-all inline-flex items-center gap-1"
+                              className="px-3.5 py-1.5 bg-gold-600 hover:bg-cream-100 hover:text-slate-900 text-ink-900 font-mono text-3xs font-extrabold rounded-lg tracking-wider transition-all inline-flex items-center gap-1"
                             >
                               Entrar Meet do Google <ExternalLink size={10} />
                             </a>

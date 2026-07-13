@@ -607,7 +607,7 @@ export default function AdminPortal({
       {/* 1. SIDEBAR (Collapsible on Mobile, Fixed on Desktop) */}
       <aside 
         className={`fixed inset-y-0 left-0 z-40 w-64 ${
-          highContrast ? 'bg-black border-r-4 border-yellow-500' : isDarkMode ? 'bg-[#0F192E] border-slate-800' : 'bg-[#0A2E5D] text-white border-r border-[#0A2E5D]/10'
+          highContrast ? 'bg-black border-r-4 border-yellow-500' : isDarkMode ? 'bg-ink-900 border-ink-800' : 'bg-ink-900 text-white border-r border-ink-800/10'
         } transition-transform duration-300 transform lg:translate-x-0 ${
           mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } flex flex-col justify-between`}
@@ -623,7 +623,7 @@ export default function AdminPortal({
               />
               <div className="text-left">
                 <h1 className="text-sm font-serif font-black m-0 tracking-wide text-cream-100">MultiPlus</h1>
-                <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block font-bold">Super Admin</span>
+                <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block font-bold">Super Admin</span>
               </div>
             </div>
             
@@ -658,7 +658,7 @@ export default function AdminPortal({
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wider text-left transition-all cursor-pointer border-0 ${
                   activeTab === item.id
-                    ? 'bg-[#C89B3C] text-white shadow-md font-bold'
+                    ? 'bg-gold-600 text-ink-900 shadow-sm font-bold'
                     : 'text-cream-100/80 hover:text-cream-100 hover:bg-cream-100/10'
                 }`}
               >
@@ -671,14 +671,14 @@ export default function AdminPortal({
           {/* Sidebar Footer */}
           <div className="p-4 border-t border-white/10 space-y-3.5">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-[#C89B3C] text-white rounded-full flex items-center justify-center font-bold text-xs shadow-sm capitalize">
+              <div className="w-9 h-9 bg-gold-600 text-ink-900 rounded-full flex items-center justify-center font-bold text-xs shadow-sm capitalize">
                 {currentUser?.firstName?.[0] || 'A'}
               </div>
               <div className="text-left truncate max-w-[130px]">
                 <h4 className="text-xs font-bold text-cream-100 m-0 tracking-wide truncate">
                   {currentUser?.firstName || 'Admin'} {currentUser?.lastName || 'MultiPlus'}
                 </h4>
-                <span className="text-[10px] font-mono text-[#C89B3C] font-semibold uppercase">ADMINISTRADOR</span>
+                <span className="text-[10px] font-mono text-gold-600 font-semibold uppercase">ADMINISTRADOR</span>
               </div>
             </div>
 
@@ -794,10 +794,10 @@ export default function AdminPortal({
             >
           
           {/* Executive Top Banner */}
-          <div className="bg-[#0A2E5D] text-cream-100 p-6 sm:p-8 rounded-3xl border border-[#C89B3C]/30 relative overflow-hidden shadow-xl">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#C89B3C]/5 rounded-bl-full pointer-events-none" />
+          <div className="bg-ink-900 text-cream-100 p-6 sm:p-8 rounded-3xl border border-gold-600/30 relative overflow-hidden shadow-sm">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gold-600/5 rounded-bl-full pointer-events-none" />
             <div className="relative z-10 space-y-1">
-              <span className="text-[10px] font-mono text-[#C89B3C] font-black tracking-widest block uppercase">Centro de Controlo da MultiPlus Academy</span>
+              <span className="text-[10px] font-mono text-gold-600 font-black tracking-widest block uppercase">Centro de Controlo da MultiPlus Academy</span>
               <h2 className="text-xl sm:text-2xl font-serif font-black m-0 tracking-wide text-cream-100">
                 Bem-vindo ao Centro de Gestão da MultiPlus Academy
               </h2>

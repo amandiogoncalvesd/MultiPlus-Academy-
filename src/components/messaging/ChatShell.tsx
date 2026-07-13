@@ -216,13 +216,13 @@ export default function ChatShell({ role }: ChatShellProps) {
   );
 
   return (
-    <div id="chat-shell" className="flex bg-cream-100 rounded-3xl border border-gray-100 overflow-hidden shadow-xs h-[650px]">
+    <div id="chat-shell" className="flex bg-cream-100 rounded-3xl border border-cream-200 overflow-hidden shadow-sm h-[650px]">
       {/* Sidebar - list of partners */}
-      <div className={`w-full md:w-80 border-r border-gray-100 flex flex-col h-full bg-slate-50/40 ${activePartner ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-4 border-b border-gray-100 bg-cream-100 flex flex-col gap-3">
+      <div className={`w-full md:w-80 border-r border-cream-200 flex flex-col h-full bg-cream-100/40 ${activePartner ? 'hidden md:flex' : 'flex'}`}>
+        <div className="p-4 border-b border-cream-200 bg-cream-100 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-serif text-lg font-extrabold text-slate-800 flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-indigo-600" />
+            <h3 className="font-serif font-black tracking-tight text-ink-900 text-lg flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-gold-600" />
               Mensagens
             </h3>
             <div className="flex gap-1">
@@ -230,14 +230,14 @@ export default function ChatShell({ role }: ChatShellProps) {
                 <button
                   onClick={() => setShowBulkModal(true)}
                   title="Envio em massa"
-                  className="p-1.5 rounded-full hover:bg-indigo-50 text-indigo-600 transition-colors border border-indigo-100"
+                  className="p-1.5 rounded-full hover:bg-cream-200 text-gold-600 transition-colors border border-gold-600/20 bg-transparent cursor-pointer"
                 >
                   <Megaphone className="w-4 h-4" />
                 </button>
               )}
               <button
                 onClick={() => setShowNewModal(true)}
-                className="p-1.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-cream-100 transition-colors"
+                className="p-1.5 rounded-full bg-gold-600 hover:bg-gold-600/90 text-white transition-colors border-0 cursor-pointer flex items-center justify-center"
                 title="Nova Conversa"
               >
                 <Plus className="w-4 h-4" />
@@ -252,7 +252,7 @@ export default function ChatShell({ role }: ChatShellProps) {
               placeholder="Pesquisar conversa..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-1.5 border border-gray-200 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-gray-55"
+              className="w-full pl-9 pr-4 py-1.5 border border-cream-200 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-gold-600/20 focus:border-gold-600 bg-cream-200 text-ink-900"
             />
           </div>
         </div>
@@ -260,16 +260,16 @@ export default function ChatShell({ role }: ChatShellProps) {
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12 text-neutral-400 gap-2">
-              <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+              <Loader2 className="w-6 h-6 animate-spin text-gold-600" />
               <span className="text-xs">A carregar conversas...</span>
             </div>
           ) : filteredPartners.length === 0 ? (
             <div className="text-center py-16 px-4">
-              <MessageSquare className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+              <MessageSquare className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
               <p className="text-xs text-neutral-400">Nenhuma conversa ativa.</p>
               <button
                 onClick={() => setShowNewModal(true)}
-                className="text-xs text-indigo-600 font-semibold hover:underline mt-2 flex items-center gap-1 mx-auto"
+                className="text-xs text-gold-600 font-semibold hover:underline mt-2 flex items-center gap-1 mx-auto bg-transparent border-0 cursor-pointer"
               >
                 Iniciar uma conversa
               </button>
@@ -281,10 +281,10 @@ export default function ChatShell({ role }: ChatShellProps) {
                 <button
                   key={p.id}
                   onClick={() => setActivePartner(p)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all text-left ${
+                  className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all text-left border-0 cursor-pointer ${
                     isSelected
-                      ? 'bg-indigo-600 text-cream-100 shadow-md'
-                      : 'hover:bg-gray-100 bg-cream-100/70 border border-gray-100/50'
+                      ? 'bg-gold-600 text-white shadow-xs font-bold'
+                      : 'hover:bg-cream-200 bg-cream-100/70 border border-cream-200/50'
                   }`}
                 >
                   {p.foto_perfil ? (
@@ -298,8 +298,8 @@ export default function ChatShell({ role }: ChatShellProps) {
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border text-sm ${
                         isSelected
-                          ? 'bg-cream-100/20 border-white/40 text-cream-100'
-                          : 'bg-indigo-50 border-indigo-100 text-indigo-600'
+                          ? 'bg-white/20 border-white/45 text-white'
+                          : 'bg-cream-200 border-gold-600/20 text-gold-600'
                       }`}
                     >
                       {p.nome_completo.charAt(0).toUpperCase()}
@@ -314,7 +314,7 @@ export default function ChatShell({ role }: ChatShellProps) {
                       {p.lastMessage && (
                         <span
                           className={`text-[10px] ${
-                            isSelected ? 'text-cream-100/60' : 'text-neutral-400'
+                            isSelected ? 'text-white/60' : 'text-neutral-400'
                           }`}
                         >
                           {new Date(p.lastMessage.created_at).toLocaleTimeString([], {
@@ -326,7 +326,7 @@ export default function ChatShell({ role }: ChatShellProps) {
                     </div>
                     <p
                       className={`text-xs truncate ${
-                        isSelected ? 'text-cream-100/80' : 'text-neutral-400'
+                        isSelected ? 'text-white/80' : 'text-neutral-400'
                       }`}
                     >
                       {p.lastMessage ? p.lastMessage.texto : 'Comece a conversar!'}
@@ -334,7 +334,7 @@ export default function ChatShell({ role }: ChatShellProps) {
                   </div>
 
                   {p.unreadCount > 0 && (
-                    <div className="w-5 h-5 rounded-full bg-rose-500 text-cream-100 flex items-center justify-center text-[10px] font-bold">
+                    <div className="w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-[10px] font-bold">
                       {p.unreadCount}
                     </div>
                   )}
@@ -350,10 +350,10 @@ export default function ChatShell({ role }: ChatShellProps) {
         {activePartner ? (
           <>
             {/* Header */}
-            <div className="p-4 border-b border-gray-100 flex items-center gap-3 bg-cream-200/50">
+            <div className="p-4 border-b border-cream-200 flex items-center gap-3 bg-cream-200/50">
               <button
                 onClick={() => setActivePartner(null)}
-                className="md:hidden text-xs font-bold text-indigo-600 hover:underline mr-1"
+                className="md:hidden text-xs font-bold text-gold-600 hover:underline mr-1 bg-transparent border-0 cursor-pointer"
               >
                 ← Voltar
               </button>
@@ -362,17 +362,17 @@ export default function ChatShell({ role }: ChatShellProps) {
                 <img
                   src={activePartner.foto_perfil}
                   alt={activePartner.nome_completo}
-                  className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                  className="w-10 h-10 rounded-full object-cover border border-cream-200"
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold border border-indigo-100">
+                <div className="w-10 h-10 rounded-full bg-cream-200 flex items-center justify-center text-gold-600 font-bold border border-gold-600/20">
                   {activePartner.nome_completo.charAt(0).toUpperCase()}
                 </div>
               )}
 
               <div>
-                <h4 className="text-sm font-bold text-slate-800 leading-none mb-1">
+                <h4 className="text-sm font-bold text-ink-900 leading-none mb-1">
                   {activePartner.nome_completo}
                 </h4>
                 <p className="text-[10px] text-neutral-400 leading-none capitalize">
@@ -382,7 +382,7 @@ export default function ChatShell({ role }: ChatShellProps) {
             </div>
 
             {/* Conversation Window */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/30">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-cream-100/20">
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-neutral-400 gap-1.5">
                   <MessageSquare className="w-6 h-6 stroke-[1.5]" />
@@ -399,14 +399,14 @@ export default function ChatShell({ role }: ChatShellProps) {
                       <div
                         className={`max-w-[70%] p-3 rounded-2xl shadow-xs text-sm ${
                           isMe
-                            ? 'bg-indigo-600 text-cream-100 rounded-tr-none'
-                            : 'bg-cream-100 text-slate-800 border border-gray-150 rounded-tl-none'
+                            ? 'bg-gold-600 text-white rounded-tr-none'
+                            : 'bg-cream-200 text-ink-900 border border-cream-200/40 rounded-tl-none'
                         }`}
                       >
                         <p className="leading-snug break-words">{m.texto}</p>
                         <span
                           className={`text-[9px] block text-right mt-1 leading-none ${
-                            isMe ? 'text-cream-100/60' : 'text-neutral-400'
+                            isMe ? 'text-white/60' : 'text-neutral-400'
                           }`}
                         >
                           {new Date(m.created_at).toLocaleTimeString([], {
@@ -423,19 +423,19 @@ export default function ChatShell({ role }: ChatShellProps) {
             </div>
 
             {/* Message input */}
-            <form onSubmit={handleSend} className="p-3 border-t border-gray-100 bg-cream-100 flex gap-2">
+            <form onSubmit={handleSend} className="p-3 border-t border-cream-200 bg-cream-100 flex gap-2">
               <input
                 type="text"
                 required
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Escreva uma mensagem..."
-                className="flex-1 px-4 py-2 bg-cream-200 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                className="flex-1 px-4 py-2 bg-cream-200 border border-cream-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gold-600/20 focus:border-gold-600 transition-all text-ink-900"
               />
               <button
                 type="submit"
                 disabled={!inputText.trim() || sending}
-                className="p-2.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-cream-100 disabled:opacity-50 transition-colors shadow-xs"
+                className="p-2.5 rounded-full bg-gold-600 hover:bg-gold-600/90 text-white disabled:opacity-50 transition-colors shadow-xs border-0 cursor-pointer flex items-center justify-center"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -443,8 +443,8 @@ export default function ChatShell({ role }: ChatShellProps) {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-neutral-400 p-8">
-            <MessageSquare className="w-12 h-12 stroke-[1] text-gray-300 mb-2" />
-            <p className="font-serif font-bold text-slate-700">MultiPlus Chat Premium</p>
+            <MessageSquare className="w-12 h-12 stroke-[1] text-neutral-400 mb-2" />
+            <p className="font-serif font-black tracking-tight text-ink-900">MultiPlus Chat Premium</p>
             <p className="text-xs text-neutral-400 mt-1 max-w-xs text-center">
               Selecione uma conversa na lista ou crie uma nova para falar em tempo real.
             </p>
