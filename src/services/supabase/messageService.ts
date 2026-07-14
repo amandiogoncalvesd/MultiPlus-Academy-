@@ -7,6 +7,9 @@ export interface SupabaseMessage {
   texto: string;
   lido: boolean;
   created_at: string;
+  edited_at?: string;
+  deleted_at?: string;
+  reply_to_message_id?: string;
 }
 
 export interface SupabaseAnnouncement {
@@ -33,15 +36,21 @@ export const messageService = {
     return (data || []) as SupabaseMessage[];
   },
 
-  async sendMessage(senderId: string, receiverId: string, texto: string): Promise<SupabaseMessage> {
+  async sendMessage(senderId: string, receiverId: string, texto: string, replyToMessageId?: string): Promise<SupabaseMessage> {
+    const payload: any = {
+      sender_id: senderId,
+      receiver_id: receiverId,
+      texto,
+      lido: false
+    };
+    
+    if (replyToMessageId) {
+      payload.reply_to_message_id = replyToMessageId;
+    }
+
     const { data, error } = await supabase
       .from('messages')
-      .insert({
-        sender_id: senderId,
-        receiver_id: receiverId,
-        texto,
-        lido: false
-      })
+      .insert(payload)
       .select()
       .single();
     
@@ -50,6 +59,73 @@ export const messageService = {
       throw error;
     }
     return data as SupabaseMessage;
+  },
+
+  async editMessage(messageId: string, novoTexto: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('messages')
+      .update({ 
+        texto: novoTexto, 
+        edited_at: new Date().toISOString() 
+      })
+      .eq('id', messageId);
+    
+    if (error) {
+      console.error('Error editing message:', error);
+      throw error;
+    }
+    return true;
+  },
+
+  async deleteMessageForEveryone(messageId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('messages')
+      .update({ 
+        deleted_at: new Date().toISOString(),
+        texto: 'Mensagem eliminada'
+      })
+      .eq('id', messageId);
+    
+    if (error) {
+      console.error('Error deleting message for everyone:', error);
+      throw error;
+    }
+    return true;
+  },
+
+  async clearConversation(userId: string, partnerId: string): Promise<boolean> {
+    const clearedAt = new Date().toISOString();
+    
+    // Also save in localStorage as fallback
+    localStorage.setItem(`chat_clear_${userId}_${partnerId}`, clearedAt);
+
+    const { error } = await supabase
+      .from('conversation_clears')
+      .upsert({
+        user_id: userId,
+        partner_id: partnerId,
+        cleared_at: clearedAt
+      }, { onConflict: 'user_id,partner_id' });
+    
+    if (error) {
+      console.warn('Failed to upsert conversation clear, fallback used:', error);
+      return false;
+    }
+    return true;
+  },
+
+  async getConversationClearTimestamp(userId: string, partnerId: string): Promise<string | null> {
+    const localVal = localStorage.getItem(`chat_clear_${userId}_${partnerId}`);
+    
+    const { data, error } = await supabase
+      .from('conversation_clears')
+      .select('cleared_at')
+      .eq('user_id', userId)
+      .eq('partner_id', partnerId)
+      .maybeSingle();
+    
+    if (error || !data) return localVal;
+    return data.cleared_at;
   },
 
   async markAsRead(messageId: string): Promise<boolean> {

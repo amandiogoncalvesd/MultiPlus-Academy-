@@ -22,6 +22,7 @@ import { Course } from '../../types';
 import { courseService } from '../../services/supabase/courseService';
 import { enrollmentService } from '../../services/supabase/enrollmentService';
 import StudentSelector from './StudentSelector';
+import CourseEditorModal from '../course/CourseEditorModal';
 
 interface InstructorCoursesTabProps {
   courses: Course[];
@@ -36,6 +37,8 @@ export default function InstructorCoursesTab({
   onNavigateToCreate,
   onRefresh
 }: InstructorCoursesTabProps) {
+  const [selectedCourseForModal, setSelectedCourseForModal] = useState<Course | null>(null);
+  const [isCreatingNewCourse, setIsCreatingNewCourse] = useState(false);
   const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editSubtitle, setEditSubtitle] = useState('');
@@ -232,7 +235,7 @@ export default function InstructorCoursesTab({
 
         {/* Students Table/Card list */}
         <div className="bg-cream-100 dark:bg-ink-900 rounded-3xl border border-gray-150 dark:border-ink-800/60 overflow-hidden shadow-xs">
-          <div className="p-5 border-b border-gray-150 dark:border-ink-800/60 flex justify-between items-center bg-cream-200 dark:bg-ink-800">
+          <div className="p-5 border-b border-gray-150 dark:border-ink-800/60 flex justify-between items-center bg-cream-200 dark:bg-ink-900">
             <span className="text-xs font-mono font-bold text-ink-900 dark:text-cream-100 uppercase">
               Alunos Inscritos ({courseStudents.length})
             </span>
@@ -245,7 +248,7 @@ export default function InstructorCoursesTab({
             </div>
           ) : courseStudents.length === 0 ? (
             <div className="p-16 text-center max-w-md mx-auto space-y-4">
-              <div className="w-12 h-12 bg-cream-200 dark:bg-ink-800 text-neutral-400 rounded-full flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-cream-200 dark:bg-ink-950 text-neutral-400 rounded-full flex items-center justify-center mx-auto">
                 <Users size={20} />
               </div>
               <div className="space-y-1">
@@ -259,7 +262,7 @@ export default function InstructorCoursesTab({
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-cream-200 dark:bg-ink-800 border-b border-gray-150 dark:border-ink-800 text-neutral-400 dark:text-cream-200/60 font-mono text-2xs uppercase">
+                  <tr className="bg-cream-200 dark:bg-ink-950 border-b border-gray-150 dark:border-ink-850 text-neutral-400 dark:text-cream-200/60 font-mono text-2xs uppercase">
                     <th className="p-4 font-bold">Aluno</th>
                     <th className="p-4 font-bold">Email</th>
                     <th className="p-4 font-bold">Estado Académico</th>
@@ -267,9 +270,9 @@ export default function InstructorCoursesTab({
                     <th className="p-4 font-bold text-right">Ação</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-cream-150 dark:divide-ink-800/40">
+                <tbody className="divide-y divide-cream-150 dark:divide-ink-800/30">
                   {courseStudents.map(student => (
-                    <tr key={student.id} className="hover:bg-cream-200/50 dark:hover:bg-ink-800/40 transition-colors">
+                    <tr key={student.id} className="hover:bg-cream-200/50 dark:hover:bg-ink-900/40 transition-colors">
                       <td className="p-4 flex items-center gap-3">
                         <img
                           src={student.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256'}
@@ -340,7 +343,7 @@ export default function InstructorCoursesTab({
         </div>
 
         <button
-          onClick={onNavigateToCreate}
+          onClick={() => setIsCreatingNewCourse(true)}
           className="px-4 py-2 bg-gold-600 hover:bg-[#b58b35] border-0 text-cream-100 text-xs font-mono font-bold uppercase rounded-xl transition-all flex items-center gap-2 cursor-pointer shadow-xs relative z-10"
         >
           <Plus size={14} />
@@ -362,7 +365,7 @@ export default function InstructorCoursesTab({
             </p>
           </div>
           <button
-            onClick={onNavigateToCreate}
+            onClick={() => setIsCreatingNewCourse(true)}
             className="w-full sm:w-auto px-6 py-2.5 bg-gold-600 hover:bg-[#b58b35] border-0 text-cream-100 text-xs font-mono font-bold uppercase rounded-xl transition-all cursor-pointer inline-flex items-center justify-center gap-2 mx-auto relative z-10"
           >
             <Plus size={14} />
@@ -433,7 +436,7 @@ export default function InstructorCoursesTab({
                           type="text"
                           value={editSubtitle}
                           onChange={(e) => setEditSubtitle(e.target.value)}
-                          className="w-full p-2 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-lg text-ink-900 dark:text-cream-100 focus:outline-none focus:border-gold-600"
+                          className="w-full p-2 text-xs bg-cream-200 dark:bg-ink-950 border border-gray-150 dark:border-ink-850 rounded-lg text-ink-900 dark:text-cream-100 focus:outline-none focus:border-gold-600"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
@@ -443,7 +446,7 @@ export default function InstructorCoursesTab({
                             type="text"
                             value={editDuration}
                             onChange={(e) => setEditDuration(e.target.value)}
-                            className="w-full p-2 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-lg text-ink-900 dark:text-cream-100 focus:outline-none focus:border-gold-600"
+                            className="w-full p-2 text-xs bg-cream-200 dark:bg-ink-950 border border-gray-150 dark:border-ink-850 rounded-lg text-ink-900 dark:text-cream-100 focus:outline-none focus:border-gold-600"
                           />
                         </div>
                         <div>
@@ -452,7 +455,7 @@ export default function InstructorCoursesTab({
                             type="text"
                             value={editPrice}
                             onChange={(e) => setEditPrice(e.target.value)}
-                            className="w-full p-2 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-lg text-ink-900 dark:text-cream-100 focus:outline-none focus:border-gold-600"
+                            className="w-full p-2 text-xs bg-cream-200 dark:bg-ink-950 border border-gray-150 dark:border-ink-850 rounded-lg text-ink-900 dark:text-cream-100 focus:outline-none focus:border-gold-600"
                           />
                         </div>
                       </div>
@@ -507,7 +510,7 @@ export default function InstructorCoursesTab({
                       </button>
                     ) : (
                       <button
-                        onClick={() => startEdit(course)}
+                        onClick={() => setSelectedCourseForModal(course)}
                         className="p-1.5 border border-gray-200 dark:border-ink-800 hover:border-gold-600/50 dark:hover:border-gold-600/50 hover:bg-gold-600/10 rounded-lg text-neutral-400 dark:text-cream-250 hover:text-gold-600 transition-all cursor-pointer bg-transparent"
                         title="Editar"
                       >
@@ -575,6 +578,28 @@ export default function InstructorCoursesTab({
             );
           })}
         </div>
+      )}
+
+      {selectedCourseForModal && (
+        <CourseEditorModal
+          courseId={selectedCourseForModal.id}
+          teacherId={selectedCourseForModal.teacher_id}
+          onClose={() => setSelectedCourseForModal(null)}
+          onSave={() => {
+            setSelectedCourseForModal(null);
+            if (onRefresh) onRefresh();
+          }}
+        />
+      )}
+
+      {isCreatingNewCourse && (
+        <CourseEditorModal
+          onClose={() => setIsCreatingNewCourse(false)}
+          onSave={() => {
+            setIsCreatingNewCourse(false);
+            if (onRefresh) onRefresh();
+          }}
+        />
       )}
 
     </div>

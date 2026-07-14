@@ -14,6 +14,7 @@ import StudentPortal from './components/StudentPortal';
 import InstructorPortal from './components/InstructorPortal';
 import AdminPortal from './components/AdminPortal';
 import VerifyCertificatePanel from './components/VerifyCertificatePanel';
+import MessagesPage from './components/MessagesPage';
 import { X, GraduationCap, CheckCircle2, Phone, Award, Scale } from 'lucide-react';
 import { useAuth } from './components/auth/AuthProvider';
 import { supabase } from './lib/supabase/client';
@@ -22,6 +23,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 export default function App() {
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState<PageId>('home');
+  const [previousDashboardPage, setPreviousDashboardPage] = useState<PageId>('admin-dashboard');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [courses, setCourses] = useState<any[]>([]);
 
@@ -49,6 +51,13 @@ export default function App() {
     }, 2000);
     return () => clearTimeout(timer);
   }, []);
+
+  // Track previous dashboard page for the messages page return button
+  useEffect(() => {
+    if (['admin-dashboard', 'instructor-dashboard', 'student-dashboard'].includes(currentPage)) {
+      setPreviousDashboardPage(currentPage);
+    }
+  }, [currentPage]);
 
   // Load real courses dynamically on mount
   useEffect(() => {
@@ -145,6 +154,12 @@ export default function App() {
             setVerificationCode={setVerificationCode}
           />
         );
+      case 'messages':
+        return (
+          <ProtectedRoute allowedRoles={['STUDENT', 'INSTRUCTOR', 'ADMIN']} setCurrentPage={setCurrentPage}>
+            <MessagesPage setCurrentPage={setCurrentPage} previousDashboardPage={previousDashboardPage} />
+          </ProtectedRoute>
+        );
       default:
         return <HomePanel setCurrentPage={setCurrentPage} onOpenSignUp={() => setIsSignUpOpen(true)} />;
     }
@@ -227,7 +242,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* 1. Header Navigation with auth */}
-      {!['student-dashboard', 'instructor-dashboard', 'admin-dashboard'].includes(currentPage) && (
+      {!['student-dashboard', 'instructor-dashboard', 'admin-dashboard', 'messages'].includes(currentPage) && (
         <Navbar 
           currentPage={currentPage} 
           setCurrentPage={setCurrentPage} 
@@ -257,7 +272,7 @@ export default function App() {
       </main>
 
       {/* 3. Global Footer */}
-      {!['student-dashboard', 'instructor-dashboard', 'admin-dashboard'].includes(currentPage) && (
+      {!['student-dashboard', 'instructor-dashboard', 'admin-dashboard', 'messages'].includes(currentPage) && (
         <Footer setCurrentPage={setCurrentPage} />
       )}
 

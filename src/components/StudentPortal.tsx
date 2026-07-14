@@ -8,6 +8,7 @@ import { userService } from '../services/supabase/userService';
 import { academicService } from '../services/supabase/academicService';
 import QuizArea from './portal/QuizArea';
 import { useTheme } from '../contexts/ThemeContext';
+import { messageService } from '../services/supabase/messageService';
 
 
 import { 
@@ -70,6 +71,40 @@ export default function StudentPortal({
   // Search Engine
   const [globalSearch, setGlobalSearch] = useState('');
   const [searchFeedback, setSearchFeedback] = useState<string | null>(null);
+
+  // Quick access unread messages count
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+
+  const fetchUnreadMessagesCount = async () => {
+    if (!currentUser?.id) return;
+    try {
+      const parts = await messageService.getConversationPartners(currentUser.id);
+      const totalUnread = parts.reduce((acc, p) => acc + (p.unreadCount || 0), 0);
+      setUnreadMessagesCount(totalUnread);
+    } catch (err) {
+      console.warn('Error fetching unread message count:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    fetchUnreadMessagesCount();
+
+    const channel = supabase
+      .channel('student-unread-count')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'messages' },
+        () => {
+          fetchUnreadMessagesCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUser?.id]);
 
   // Accessibility setups
   const { isDarkMode, toggleTheme, setThemeMode } = useTheme();
@@ -681,7 +716,11 @@ export default function StudentPortal({
               <button
                 key={link.id}
                 onClick={() => {
-                  setActiveTab(link.id as any);
+                  if (link.id === 'messages') {
+                    setCurrentPage('messages');
+                  } else {
+                    setActiveTab(link.id as any);
+                  }
                   setIsMobileSidebarOpen(false);
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wider text-left transition-all cursor-pointer border-0 ${
@@ -781,6 +820,20 @@ export default function StudentPortal({
               title="Mudar visual cor"
             >
               {themeMode === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+            </button>
+
+            {/* Quick Access Messages Page icon with unread badge */}
+            <button
+              onClick={() => setCurrentPage('messages')}
+              className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
+              title="Abrir Mensagens"
+            >
+              <MessageSquare size={14} className="text-gold-600" />
+              {unreadMessagesCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white flex items-center justify-center text-[8px] font-bold">
+                  {unreadMessagesCount}
+                </span>
+              )}
             </button>
 
             {/* Notification Drawer controller */}
@@ -972,7 +1025,7 @@ export default function StudentPortal({
                                 <span className="text-[8px] font-mono text-neutral-400 uppercase tracking-widest block mb-1">{stat.title}</span>
                                 <span className="text-xl font-serif font-black text-ink-900 dark:text-cream-100 leading-tight">{stat.value}</span>
                               </div>
-                              <div className="p-2.5 bg-cream-200 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-ink-800 shrink-0">
+                              <div className="p-2.5 bg-cream-200 dark:bg-ink-900 rounded-xl border border-gray-150 dark:border-ink-800 shrink-0">
                                 {stat.icon}
                               </div>
                             </div>
@@ -994,7 +1047,7 @@ export default function StudentPortal({
                             <span className="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded text-[9px] font-mono">66% COMPLETO</span>
                           </div>
 
-                          <div className="p-4 rounded-xl bg-cream-200 dark:bg-slate-800/50 border border-gray-100 dark:border-ink-800/50 space-y-3">
+                          <div className="p-4 rounded-xl bg-cream-200 dark:bg-ink-950 border border-gray-150 dark:border-ink-800/50 space-y-3">
                             <span className="text-[9px] font-mono text-gold-600 tracking-wide block uppercase font-bold">RETOMAR HOJE:</span>
                             <h4 className="text-xs font-serif font-black text-neutral-400 dark:text-gray-200 mt-1 m-0">
                               {currentLecture.title}
@@ -1069,7 +1122,7 @@ export default function StudentPortal({
 
                         {/* Preparation course future catalog displays as requested */}
                         <select
-                          className="px-3 py-1.5 rounded-xl bg-cream-100 dark:bg-slate-800 border border-gray-200 text-xs font-serif font-bold text-ink-900 dark:text-cream-100 focus:outline-none"
+                          className="px-3 py-1.5 rounded-xl bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-850 text-xs font-serif font-bold text-ink-900 dark:text-cream-100 focus:outline-none"
                           value={selectedCourseId}
                           onChange={(e) => handleCourseChange(e.target.value)}
                         >
@@ -1191,7 +1244,7 @@ export default function StudentPortal({
                             placeholder={`Escreva anotação académica vinculada ao tempo atual (${Math.floor(videoPlaySec / 60)}:${(videoPlaySec % 60).toString().padStart(2, '0')})...`}
                             value={newNoteInput}
                             onChange={(e) => setNewNoteInput(e.target.value)}
-                            className="flex-1 px-3 py-2 text-xs rounded-xl bg-cream-200 dark:bg-slate-800 border border-gray-200 text-[#1C1C1C] dark:text-cream-100 focus:outline-none"
+                            className="flex-1 px-3 py-2 text-xs rounded-xl bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-850 text-[#1C1C1C] dark:text-cream-100 focus:outline-none"
                           />
                           <button
                             onClick={handleSaveNote}
@@ -1260,7 +1313,7 @@ export default function StudentPortal({
                           ))}
                         </div>
 
-                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-ink-800 bg-cream-200 dark:bg-slate-800/40 p-3 rounded-xl text-center space-y-2">
+                        <div className="mt-4 pt-4 border-t border-gray-150 dark:border-ink-800 bg-cream-200 dark:bg-ink-900/40 p-3 rounded-xl text-center space-y-2">
                           <span className="text-[9px] font-mono text-neutral-400 uppercase tracking-wide block">TUTORIA DIRECTA</span>
                           <p className="text-[10px] text-neutral-400 m-0 leading-normal">
                             Qualquer dúvida ortográfica, consulte o centro de mensagens para debater os rascunhos.
@@ -1287,7 +1340,7 @@ export default function StudentPortal({
 
                       <div className="flex items-center gap-2">
                         {/* Calendrier select view buttons */}
-                        <div className="flex items-center gap-1 border border-gray-100 p-1 bg-cream-200 dark:bg-slate-800 rounded-xl">
+                        <div className="flex items-center gap-1 border border-gray-150 dark:border-ink-800 p-1 bg-cream-200 dark:bg-ink-900 rounded-xl">
                           {(['MONTH', 'WEEK'] as const).map(v => (
                             <button
                               key={v}
@@ -1349,7 +1402,7 @@ export default function StudentPortal({
                         <>
                           {/* Fallback mock items if no real meetings are scheduled */}
                           {/* Session 1 card */}
-                          <div className="p-4 rounded-xl border border-gray-100 bg-cream-200/50 dark:bg-slate-800/20 space-y-3">
+                          <div className="p-4 rounded-xl border border-gray-150 dark:border-ink-800/60 bg-cream-200/50 dark:bg-slate-900/20 space-y-3">
                             <div className="flex justify-between items-center text-2xs font-mono font-bold">
                               <span className="text-gold-600">TERÇA-FEIRA</span>
                               <span className="bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded">18h30 - 20h30</span>
@@ -1368,7 +1421,7 @@ export default function StudentPortal({
                           </div>
 
                           {/* Session 2 card */}
-                          <div className="p-4 rounded-xl border border-gray-100 bg-cream-200/50 dark:bg-slate-800/20 space-y-3">
+                          <div className="p-4 rounded-xl border border-gray-150 dark:border-ink-800/60 bg-cream-200/50 dark:bg-slate-900/20 space-y-3">
                             <div className="flex justify-between items-center text-2xs font-mono font-bold">
                               <span className="text-gold-600">QUINTA-FEIRA</span>
                               <span className="bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded">18h30 - 20h30</span>
@@ -1387,7 +1440,7 @@ export default function StudentPortal({
                           </div>
 
                           {/* Session 3 card */}
-                          <div className="p-4 rounded-xl border border-gray-100 bg-cream-200/50 dark:bg-slate-800/20 space-y-3">
+                          <div className="p-4 rounded-xl border border-gray-150 dark:border-ink-800/60 bg-cream-200/50 dark:bg-slate-900/20 space-y-3">
                             <div className="flex justify-between items-center text-2xs font-mono font-bold">
                               <span className="text-gold-600">SÁBADO LETIVO</span>
                               <span className="bg-amber-50 text-gold-600 px-1.5 py-0.5 rounded">09h00 - 12h00</span>
@@ -1421,7 +1474,23 @@ export default function StudentPortal({
 
               {/* 6. MESSAGE CENTER */}
               {activeTab === 'messages' && (
-                <StudentMessagesTab currentUser={currentUser} />
+                <div className="space-y-4">
+                  <div className={`p-8 rounded-3xl ${cardThemeClass} text-center space-y-6 flex flex-col items-center justify-center`}>
+                    <MessageSquare className="w-16 h-16 text-gold-600 animate-pulse" />
+                    <div>
+                      <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-lg">Central de Tutoria Direta</h3>
+                      <p className="text-xs text-neutral-400 mt-2 max-w-md mx-auto leading-relaxed">
+                        A sua área de mensagens privadas com a professora titular agora abre num ecrã inteiro próprio, oferecendo mais espaço de digitação e visualização.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setCurrentPage('messages')}
+                      className="px-6 py-3 bg-gold-600 hover:bg-[#b58b35] text-cream-100 text-xs font-mono font-bold uppercase rounded-xl transition-all cursor-pointer shadow-md border-0"
+                    >
+                      Abrir Chats em Tela Cheia
+                    </button>
+                  </div>
+                </div>
               )}
 
               {/* 7. CERTIFICATES ACADEMIC VAULT */}
@@ -1476,7 +1545,7 @@ export default function StudentPortal({
                             required
                             value={profileForm.firstName}
                             onChange={(e) => setProfileForm({...profileForm, firstName: e.target.value})}
-                            className="w-full px-3 py-2 bg-cream-200 dark:bg-slate-800/40 border border-gray-200 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
+                            className="w-full px-3 py-2 bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-850 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
                           />
                         </div>
                         <div>
@@ -1486,7 +1555,7 @@ export default function StudentPortal({
                             required
                             value={profileForm.lastName}
                             onChange={(e) => setProfileForm({...profileForm, lastName: e.target.value})}
-                            className="w-full px-3 py-2 bg-cream-200 dark:bg-slate-800/40 border border-gray-200 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
+                            className="w-full px-3 py-2 bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-850 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
                           />
                         </div>
                       </div>
@@ -1498,7 +1567,7 @@ export default function StudentPortal({
                             type="text"
                             value={profileForm.phone}
                             onChange={(e) => setProfileForm({...profileForm, phone: e.target.value})}
-                            className="w-full px-3 py-2 bg-cream-200 dark:bg-slate-800/40 border border-gray-200 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
+                            className="w-full px-3 py-2 bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-850 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
                           />
                         </div>
                         <div>
@@ -1508,7 +1577,7 @@ export default function StudentPortal({
                             required
                             value={profileForm.email}
                             onChange={(e) => setProfileForm({...profileForm, email: e.target.value})}
-                            className="w-full px-3 py-2 bg-cream-200 dark:bg-slate-800/40 border border-gray-200 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
+                            className="w-full px-3 py-2 bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-850 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
                           />
                         </div>
                       </div>
@@ -1527,7 +1596,7 @@ export default function StudentPortal({
                           <select 
                             value={profileForm.preference}
                             onChange={(e) => setProfileForm({...profileForm, preference: e.target.value})}
-                            className="w-full px-3 py-1.5 bg-cream-200 dark:bg-slate-800 border border-gray-200 text-xs text-neutral-400 dark:text-cream-100 rounded-xl focus:outline-none"
+                            className="w-full px-3 py-1.5 bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 text-xs text-neutral-400 dark:text-cream-100 rounded-xl focus:outline-none"
                           >
                             <option>SMS & E-mail Automático</option>
                             <option>Somente E-mail</option>

@@ -10,7 +10,8 @@ export type PageId =
   | 'admin-dashboard'
   | 'login'
   | 'register'
-  | 'verify-certificate';
+  | 'verify-certificate'
+  | 'messages';
 
 export type UserRole = 'STUDENT' | 'INSTRUCTOR' | 'ADMIN';
 

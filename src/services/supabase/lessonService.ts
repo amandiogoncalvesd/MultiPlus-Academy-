@@ -8,6 +8,9 @@ export interface SupabaseLesson {
   video_url: string;
   ordem: number;
   duracao: string;
+  quiz?: any[] | null;
+  scheduled_at?: string | null;
+  status?: 'DRAFT' | 'PUBLISHED';
 }
 
 export interface SupabaseMaterial {
@@ -72,5 +75,33 @@ export const lessonService = {
       throw error;
     }
     return data as SupabaseMaterial;
+  },
+
+  async updateLesson(id: string, updates: Partial<SupabaseLesson>): Promise<SupabaseLesson> {
+    const { data, error } = await supabase
+      .from('lessons')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error(`Error updating lesson ${id}:`, error);
+      throw error;
+    }
+    return data as SupabaseLesson;
+  },
+
+  async deleteLesson(id: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('lessons')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error(`Error deleting lesson ${id}:`, error);
+      throw error;
+    }
+    return true;
   }
 };

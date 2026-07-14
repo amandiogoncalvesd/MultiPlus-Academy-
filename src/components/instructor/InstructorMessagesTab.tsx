@@ -2,9 +2,15 @@ import React, { useState, useEffect } from 'react';
 import ChatShell from '../messaging/ChatShell';
 import { messageService, SupabaseAnnouncement } from '../../services/supabase/messageService';
 import { useAuth } from '../auth/AuthProvider';
-import { Volume2, Megaphone, Loader2 } from 'lucide-react';
+import { Volume2, Megaphone, Loader2, MessageSquare } from 'lucide-react';
 
-export default function InstructorMessagesTab() {
+interface InstructorMessagesTabProps {
+  students?: any[];
+  courses?: any[];
+  setCurrentPage?: (page: any) => void;
+}
+
+export default function InstructorMessagesTab({ setCurrentPage }: InstructorMessagesTabProps) {
   const { user } = useAuth();
   const [selectedChatType, setSelectedChatType] = useState<'individual' | 'mural'>('individual');
   const [muralAnnouncementText, setMuralAnnouncementText] = useState('');
@@ -88,7 +94,21 @@ export default function InstructorMessagesTab() {
       </div>
 
       {selectedChatType === 'individual' ? (
-        <ChatShell role="PROFESSOR" />
+        <div className="bg-cream-100 dark:bg-ink-900 p-8 rounded-3xl border border-gray-150 dark:border-ink-800/60 text-center space-y-6 flex flex-col items-center justify-center">
+          <MessageSquare className="w-16 h-16 text-gold-600 animate-pulse" />
+          <div>
+            <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-lg">Central de Chats Privados Independente</h3>
+            <p className="text-xs text-neutral-400 mt-2 max-w-md mx-auto leading-relaxed">
+              Os seus chats privados com formandos e formadores agora abrem num ecrã inteiro próprio, oferecendo mais espaço e evitando cortes visuais de cabeçalho.
+            </p>
+          </div>
+          <button
+            onClick={() => setCurrentPage && setCurrentPage('messages')}
+            className="px-6 py-3 bg-gold-600 hover:bg-[#b58b35] text-cream-100 text-xs font-mono font-bold uppercase rounded-xl transition-all cursor-pointer shadow-md border-0"
+          >
+            Abrir Chats em Tela Cheia
+          </button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start relative z-10">
           {/* Announcement formulation row */}

@@ -6,6 +6,8 @@ import { supabase } from '../lib/supabase/client';
 import { academicService } from '../services/supabase/academicService';
 import ChatShell from './messaging/ChatShell';
 import { useTheme } from '../contexts/ThemeContext';
+import CourseEditorModal from './course/CourseEditorModal';
+import { messageService } from '../services/supabase/messageService';
 
 import { 
   Users, Settings, Activity, TrendingUp, DollarSign, MapPin, ShieldCheck, 
@@ -48,7 +50,7 @@ export default function AdminPortal({
   setCurrentUser,
 }: AdminPortalProps) {
   const { signOut } = useAuth();
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { isDarkMode, toggleTheme, setThemeMode } = useTheme();
   
   // Theme and accessibility states
   const [highContrast, setHighContrast] = useState(false);
@@ -75,6 +77,8 @@ export default function AdminPortal({
   const [newUserPassword, setNewUserPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [createdCredentials, setCreatedCredentials] = useState<{ email: string; pass: string } | null>(null);
+  const [newUserPhotoFile, setNewUserPhotoFile] = useState<File | null>(null);
+  const [newUserPhotoPreview, setNewUserPhotoPreview] = useState<string>('');
   
   // Profile inputs & biography
   const [adminBio, setAdminBio] = useState('');
@@ -83,6 +87,40 @@ export default function AdminPortal({
 
   // Preference Settings
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  
+  // Quick access unread messages count
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+
+  const fetchUnreadMessagesCount = async () => {
+    if (!currentUser?.id) return;
+    try {
+      const parts = await messageService.getConversationPartners(currentUser.id);
+      const totalUnread = parts.reduce((acc, p) => acc + (p.unreadCount || 0), 0);
+      setUnreadMessagesCount(totalUnread);
+    } catch (err) {
+      console.warn('Error fetching unread message count:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    fetchUnreadMessagesCount();
+
+    const channel = supabase
+      .channel('admin-unread-count')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'messages' },
+        () => {
+          fetchUnreadMessagesCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUser?.id]);
   const [notifEmailCertificados, setNotifEmailCertificados] = useState(false);
   const [preferredTheme, setPreferredTheme] = useState<'light' | 'dark'>('light');
 
@@ -344,6 +382,38 @@ export default function AdminPortal({
         throw new Error('Retorno inválido da Edge Function (nenhum user id retornado)');
       }
 
+      let avatarUrlVal = '';
+
+      if (newUserPhotoFile) {
+        try {
+          const ext = newUserPhotoFile.name.split('.').pop();
+          const filePath = `${createdAuthUser.id}/${Date.now()}.${ext}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(filePath, newUserPhotoFile);
+
+          if (uploadError) {
+            console.error('Erro ao fazer upload da foto:', uploadError);
+          } else {
+            const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+            avatarUrlVal = urlData.publicUrl;
+
+            // Update in the users table
+            const { error: updateErr } = await supabase
+              .from('users')
+              .update({ foto_perfil: avatarUrlVal })
+              .eq('id', createdAuthUser.id);
+
+            if (updateErr) {
+              console.error('Erro ao associar foto de perfil no utilizador:', updateErr);
+            }
+          }
+        } catch (uploadErr) {
+          console.warn('Falha silenciosa ao processar upload de foto:', uploadErr);
+        }
+      }
+
       const newUser: User = {
         id: createdAuthUser.id,
         email: newUserEmail,
@@ -351,7 +421,7 @@ export default function AdminPortal({
         lastName: last,
         role: newUserRole,
         status: newUserStatus,
-        avatarUrl: '', // Deixar vazio por padrão, sistema usará iniciais
+        avatarUrl: avatarUrlVal || '',
         phone: '', // Deixar vazio por padrão
         streak: 0,
         longestStreak: 0,
@@ -371,6 +441,8 @@ export default function AdminPortal({
       setNewUserName('');
       setNewUserEmail('');
       setNewUserPassword('');
+      setNewUserPhotoFile(null);
+      setNewUserPhotoPreview('');
     } catch (err: any) {
       console.error(err);
       alert(`Erro ao salvar no Supabase via Edge Function: ${err.message || err}`);
@@ -653,7 +725,11 @@ export default function AdminPortal({
               <button
                 key={item.id}
                 onClick={() => {
-                  setActiveTab(item.id);
+                  if (item.id === 'mensagens') {
+                    setCurrentPage('messages');
+                  } else {
+                    setActiveTab(item.id);
+                  }
                   setMobileSidebarOpen(false);
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wider text-left transition-all cursor-pointer border-0 ${
@@ -753,6 +829,20 @@ export default function AdminPortal({
               title="Mudar visual cor"
             >
               {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
+
+            {/* Quick Access Messages Page icon with unread badge */}
+            <button
+              onClick={() => setCurrentPage('messages')}
+              className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
+              title="Abrir Mensagens"
+            >
+              <MessageSquare size={14} className="text-gold-600" />
+              {unreadMessagesCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white flex items-center justify-center text-[8px] font-bold">
+                  {unreadMessagesCount}
+                </span>
+              )}
             </button>
 
             {/* Notification Bell toggle menu */}
@@ -885,7 +975,7 @@ export default function AdminPortal({
 
             {/* VIEW 2: UTILIZADORES TAB (Full administration panel) */}
             {activeTab === 'utilizadores' && (
-              <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-slate-900 dark:text-cream-100">
+              <div className={`p-6 rounded-3xl space-y-6 ${cardThemeClass}`}>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
                     <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Controle de Autenticação e Perfis (RBAC)</h3>
@@ -896,7 +986,7 @@ export default function AdminPortal({
                     <select
                       value={roleFilter}
                       onChange={(e) => setRoleFilter(e.target.value as any)}
-                      className="p-2 border rounded-xl text-xs bg-cream-100 text-slate-800"
+                      className="p-2 border border-gray-250 dark:border-ink-800 rounded-xl text-xs bg-cream-100 dark:bg-ink-900 text-slate-800 dark:text-cream-100 focus:outline-none"
                     >
                       <option value="ALL">Todos os Membros</option>
                       <option value="STUDENT">Alunos (STUDENT)</option>
@@ -907,7 +997,7 @@ export default function AdminPortal({
                 </div>
 
                 {/* Form to insert new account */}
-                <form onSubmit={handleCreateUser} className="bg-cream-200 dark:bg-ink-950/40 p-5 rounded-2xl border border-gray-250 dark:border-ink-800/60 grid grid-cols-1 md:grid-cols-5 gap-4 items-end text-xs text-slate-850 dark:text-cream-100">
+                <form onSubmit={handleCreateUser} className="bg-cream-200 dark:bg-ink-950/40 p-5 rounded-2xl border border-gray-250 dark:border-ink-800/60 grid grid-cols-1 md:grid-cols-6 gap-4 items-end text-xs text-slate-850 dark:text-cream-100">
                   <div>
                     <label className="block text-[9px] font-mono text-neutral-400 uppercase font-black mb-1">Nome Completo</label>
                     <input
@@ -916,7 +1006,7 @@ export default function AdminPortal({
                       placeholder="Ex: Dra. Madalena Huambo"
                       value={newUserName}
                       onChange={(e) => setNewUserName(e.target.value)}
-                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
+                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
                     />
                   </div>
                   <div>
@@ -927,7 +1017,7 @@ export default function AdminPortal({
                       placeholder="exemplo@advogados.ao"
                       value={newUserEmail}
                       onChange={(e) => setNewUserEmail(e.target.value)}
-                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
+                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
                     />
                   </div>
                   <div>
@@ -935,12 +1025,44 @@ export default function AdminPortal({
                     <select
                       value={newUserRole}
                       onChange={(e) => setNewUserRole(e.target.value as UserRole)}
-                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded-xl text-xs text-current focus:outline-none focus:border-gold-600"
+                      className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl text-xs text-current focus:outline-none focus:border-gold-600"
                     >
                       <option value="STUDENT">Aluno de Elite (STUDENT)</option>
                       <option value="INSTRUCTOR">Professor Titular (INSTRUCTOR)</option>
                       <option value="ADMIN">Administrador Geral (ADMIN)</option>
                     </select>
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-mono text-neutral-400 uppercase font-black mb-1">Foto de Perfil (Opcional)</label>
+                    <div className="flex items-center gap-2 h-[38px]">
+                      {newUserPhotoPreview ? (
+                        <img 
+                          src={newUserPhotoPreview} 
+                          alt="Preview" 
+                          className="w-9 h-9 rounded-full object-cover border border-gray-250 dark:border-ink-800"
+                        />
+                      ) : (
+                        <div className="w-9 h-9 rounded-full bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 flex items-center justify-center text-[9px] text-neutral-400 font-mono">
+                          N/D
+                        </div>
+                      )}
+                      <label htmlFor="new-user-photo-file" className="px-2.5 py-2 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 text-3xs font-mono font-bold uppercase rounded-xl cursor-pointer hover:bg-cream-250 hover:text-gold-600 transition-colors h-[34px] flex items-center">
+                        Escolher
+                      </label>
+                      <input 
+                        type="file" 
+                        id="new-user-photo-file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setNewUserPhotoFile(file);
+                            setNewUserPhotoPreview(URL.createObjectURL(file));
+                          }
+                        }}
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-[9px] font-mono text-neutral-400 uppercase font-black mb-1">Senha de Acesso</label>
@@ -951,7 +1073,7 @@ export default function AdminPortal({
                         placeholder="Mínimo 8 caracteres"
                         value={newUserPassword}
                         onChange={(e) => setNewUserPassword(e.target.value)}
-                        className="flex-grow p-2.5 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
+                        className="flex-grow p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
                       />
                       <button
                         type="button"
@@ -965,7 +1087,7 @@ export default function AdminPortal({
                   </div>
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-ink-900 text-cream-100 hover:bg-gold-600 hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer transition-colors h-[38px] flex items-center justify-center"
+                    className="w-full py-2.5 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 hover:bg-gold-600 hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer transition-colors h-[38px] flex items-center justify-center"
                   >
                     Registrar Credencial
                   </button>
@@ -1126,152 +1248,160 @@ export default function AdminPortal({
 
             {/* VIEW 5: GESTÃO DE CURSOS */}
             {activeTab === 'cursos' && (
-              <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-slate-900 dark:text-cream-100">
+              <div className={`p-6 rounded-3xl space-y-6 ${cardThemeClass}`}>
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Catálogo de Especializações Ativas</h3>
                     <p className="text-xs text-neutral-400 mt-1">Gestão de currículos jurídicos, fixação de mensalidades e oradores associados.</p>
                   </div>
-                  <button onClick={() => { setIsCreatingCourse(true); setCourseTitle(''); }} className="px-3.5 py-1.5 bg-ink-900 text-cream-100 hover:bg-gold-600 rounded-xl text-3xs font-mono font-bold uppercase transition-all flex items-center gap-1.5">
+                  <button onClick={() => setEditingCourse({ id: '' } as any)} className="px-3.5 py-1.5 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 hover:bg-gold-600 rounded-xl text-3xs font-mono font-bold uppercase transition-all flex items-center gap-1.5 border-0 cursor-pointer">
                     <Plus size={12} /> Criar Curso
                   </button>
                 </div>
 
-                {isCreatingCourse && (
-                  <form onSubmit={async (e) => {
-                    e.preventDefault();
-                    if (!courseTitle) return;
-                    
-                    const newSlug = `${courseTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}-${Date.now()}`;
-                    const payload = {
-                      title: courseTitle,
-                      slug: newSlug,
-                      description: "Especialização programática de alto impacto.",
-                      duration: "10 Semanas",
-                      category: "Híbrido",
-                      status: 'PUBLISHED'
-                    };
-                    
-                    const { data, error } = await supabase.from('courses').insert(payload).select().single();
-                    if (error) {
-                      alert(`Erro ao criar curso no Supabase: ${error.message}`);
-                    } else if (data) {
-                      const cObj: Course = {
-                        id: data.id,
-                        slug: data.slug,
-                        title: data.title,
-                        subtitle: data.description || "Especialização programática de alto impacto.",
-                        price: coursePrice || "€450",
-                        duration: data.duration || "10 Semanas",
-                        hours: "36 Horas Letivas",
-                        language: "Inglês técnico",
-                        modality: "Híbrido",
-                        summary: data.description || "",
-                        schedule: "Sábados 09h00 - 12h00",
-                        startDate: "2026-09-01",
-                        targetAudience: ["Juristas", "Profissionais do Petróleo"],
-                        modules: [],
-                        status: data.status,
-                        teacher_id: data.teacher_id
-                      };
-                      setCourses(prev => [...prev, cObj]);
-                      setIsCreatingCourse(false);
-                      addAuditLog("CRIAÇÃO CURSO", `Criado novo curso: ${courseTitle}`);
-                      alert('Novo programa indexado com sucesso no Supabase!');
-                    }
-                  }} className="p-4 bg-cream-200 dark:bg-ink-950/40 rounded-xl space-y-3 border border-gray-200 dark:border-ink-800/60">
-                    <p className="font-serif font-bold text-xs m-0 text-ink-900 dark:text-cream-100">Formulário do Novo Curso</p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-slate-800 dark:text-cream-100">
-                      <input type="text" placeholder="Nome do Curso..." value={courseTitle} onChange={(e) => setCourseTitle(e.target.value)} required className="p-2 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded text-current" />
-                      <input type="text" placeholder="Preço (Ex: €450)..." value={coursePrice} onChange={(e) => setCoursePrice(e.target.value)} className="p-2 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded text-current" />
-                      <input type="text" placeholder="Oradora responsável..." value={courseInstructor} onChange={(e) => setCourseInstructor(e.target.value)} className="p-2 bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded text-current" />
-                    </div>
-                    <div className="flex gap-2 justify-end">
-                      <button type="button" onClick={() => setIsCreatingCourse(false)} className="px-3 py-1 bg-cream-100 dark:bg-ink-850 text-slate-650 dark:text-cream-200 rounded border border-gray-250 dark:border-ink-750">Cancelar</button>
-                      <button type="submit" className="px-3 py-1 bg-ink-900 text-cream-100 rounded">Salvar Curso</button>
-                    </div>
-                  </form>
-                )}
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {courses.map(course => (
-                    <div key={course.id} className="p-4 bg-cream-100 dark:bg-ink-850 border border-gray-150 dark:border-ink-800 rounded-2xl flex flex-col justify-between text-left hover:border-gold-600/55">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-gold-600 font-bold block">{course.duration} • {course.price}</span>
-                        <h4 className="font-serif font-black text-sm text-ink-900 dark:text-cream-100 m-0">{course.title}</h4>
-                        <p className="text-[11px] text-neutral-400 dark:text-neutral-400 leading-normal">{course.subtitle}</p>
-                      </div>
+                  {courses.map(course => {
+                    const formatCoursePrice = (val: any) => {
+                      if (!val) return '0 Kz';
+                      const num = parseFloat(String(val).replace(/[^\d.]/g, ''));
+                      if (isNaN(num)) return val;
+                      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ' Kz';
+                    };
 
-                      <div className="flex justify-between items-center pt-3 border-t dark:border-ink-800 mt-4 text-[10px] font-mono">
-                        <span className="text-neutral-400">Responsável: {courseInstructor}</span>
-                        <div className="flex gap-1.5">
-                          <button onClick={async () => {
-                            if (confirm('Deseja realmente duplicar este programa de estudos?')) {
-                              const newSlug = `${course.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}-copy-${Date.now()}`;
-                              const payload = {
-                                title: `${course.title} (Cópia)`,
-                                slug: newSlug,
-                                description: course.summary || "Cópia de programa de estudos",
-                                duration: course.duration || "10 Semanas",
-                                category: course.modality || "Híbrido",
-                                status: course.status || 'PUBLISHED',
-                                teacher_id: course.teacher_id
-                              };
-                              const { data, error } = await supabase.from('courses').insert(payload).select().single();
-                              if (error) {
-                                alert(`Erro ao duplicar curso no Supabase: ${error.message}`);
-                              } else if (data) {
-                                const cObj: Course = {
-                                  ...course,
-                                  id: data.id,
-                                  slug: data.slug,
-                                  title: data.title,
-                                  status: data.status,
-                                  teacher_id: data.teacher_id
+                    return (
+                      <div key={course.id} className="p-4 bg-cream-100 dark:bg-ink-900/40 border border-gray-150 dark:border-ink-800/80 rounded-2xl flex flex-col justify-between text-left hover:border-gold-600/55">
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-mono text-gold-600 font-bold block">
+                            {course.duration} • {formatCoursePrice(course.price)}
+                          </span>
+                          <h4 className="font-serif font-black text-sm text-ink-900 dark:text-cream-100 m-0">{course.title}</h4>
+                          <p className="text-[11px] text-neutral-400 dark:text-neutral-400 leading-normal">{course.subtitle}</p>
+                        </div>
+
+                        <div className="flex justify-between items-center pt-3 border-t border-gray-150 dark:border-ink-800 mt-4 text-[10px] font-mono">
+                          <span className="text-neutral-400">Responsável: {courseInstructor}</span>
+                          <div className="flex gap-1.5 items-center">
+                            <button 
+                              onClick={() => setEditingCourse(course)} 
+                              className="px-2.5 py-1 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 hover:bg-gold-600 hover:text-slate-900 rounded text-[10px] font-mono font-bold uppercase transition-colors border-0 cursor-pointer"
+                            >
+                              Editar
+                            </button>
+                            <button onClick={async () => {
+                              if (confirm('Deseja realmente duplicar este programa de estudos?')) {
+                                const newSlug = `${course.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}-copy-${Date.now()}`;
+                                const payload = {
+                                  title: `${course.title} (Cópia)`,
+                                  slug: newSlug,
+                                  description: course.summary || "Cópia de programa de estudos",
+                                  duration: course.duration || "10 Semanas",
+                                  category: course.modality || "Híbrido",
+                                  status: course.status || 'PUBLISHED',
+                                  teacher_id: course.teacher_id
                                 };
-                                setCourses(prev => [...prev, cObj]);
-                                addAuditLog("DUPLICAR CURSO", `Duplicado o curso ID: ${course.id} para o novo ID: ${data.id}`);
-                                alert('Curso duplicado com sucesso no Supabase!');
+                                const { data, error } = await supabase.from('courses').insert(payload).select().single();
+                                if (error) {
+                                  alert(`Erro ao duplicar curso no Supabase: ${error.message}`);
+                                } else if (data) {
+                                  const cObj: Course = {
+                                    ...course,
+                                    id: data.id,
+                                    slug: data.slug,
+                                    title: data.title,
+                                    status: data.status,
+                                    teacher_id: data.teacher_id
+                                  };
+                                  setCourses(prev => [...prev, cObj]);
+                                  addAuditLog("DUPLICAR CURSO", `Duplicado o curso ID: ${course.id} para o novo ID: ${data.id}`);
+                                  alert('Curso duplicado com sucesso no Supabase!');
+                                }
                               }
-                            }
-                          }} className="p-1 text-slate-650 dark:text-cream-200 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-750 hover:bg-cream-200 dark:hover:bg-ink-800 rounded text-xs transition-colors">Duplicar</button>
-                          <button onClick={async () => {
-                            if (confirm('Deseja realmente remover permanentemente este curso do Supabase?')) {
-                              const { error } = await supabase.from('courses').delete().eq('id', course.id);
-                              if (error) {
-                                alert(`Erro ao remover curso do Supabase: ${error.message}`);
-                              } else {
-                                setCourses(prev => prev.filter(c => c.id !== course.id));
-                                addAuditLog("REMOVER CURSO", `Removido curso ID: ${course.id}`);
-                                alert('Curso removido com sucesso!');
+                            }} className="px-2.5 py-1 text-slate-650 dark:text-cream-200 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-750 hover:bg-cream-200 dark:hover:bg-ink-800 rounded text-[10px] font-mono font-bold uppercase transition-colors">
+                              Duplicar
+                            </button>
+                            <button onClick={async () => {
+                              if (confirm('Deseja realmente remover permanentemente este curso do Supabase?')) {
+                                const { error } = await supabase.from('courses').delete().eq('id', course.id);
+                                if (error) {
+                                  alert(`Erro ao remover curso do Supabase: ${error.message}`);
+                                } else {
+                                  setCourses(prev => prev.filter(c => c.id !== course.id));
+                                  addAuditLog("REMOVER CURSO", `Removido curso ID: ${course.id}`);
+                                  alert('Curso removido com sucesso!');
+                                }
                               }
-                            }
-                          }} className="p-1 text-red-650 hover:bg-red-50/10 rounded border-0 bg-transparent cursor-pointer"><Trash2 size={12} /></button>
+                            }} className="p-1 text-red-650 hover:bg-red-50/10 rounded border-0 bg-transparent cursor-pointer"><Trash2 size={12} /></button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
+
+                {editingCourse && (
+                  <CourseEditorModal
+                    courseId={editingCourse.id || undefined}
+                    teacherId={editingCourse.teacher_id}
+                    onClose={() => setEditingCourse(null)}
+                    onSave={(saved) => {
+                      setCourses(prev => {
+                        const exists = prev.find(c => c.id === saved.id);
+                        if (exists) {
+                          return prev.map(c => c.id === saved.id ? {
+                            ...c,
+                            id: saved.id,
+                            title: saved.title,
+                            slug: saved.slug,
+                            subtitle: saved.description,
+                            price: saved.price,
+                            duration: saved.duration,
+                            status: saved.status
+                          } : c);
+                        } else {
+                          return [...prev, {
+                            id: saved.id,
+                            title: saved.title,
+                            slug: saved.slug,
+                            subtitle: saved.description,
+                            price: saved.price,
+                            duration: saved.duration,
+                            status: saved.status,
+                            hours: "36 Horas Letivas",
+                            language: "Português",
+                            modality: saved.category || "Híbrido",
+                            summary: saved.description || "",
+                            schedule: "Sábados 09h00 - 12h00",
+                            startDate: "2026-09-01",
+                            targetAudience: ["Juristas"],
+                            modules: [],
+                            teacher_id: saved.teacher_id
+                          } as any];
+                        }
+                      });
+                      addAuditLog("EDICAO CURSO", `Curso atualizado/criado: ${saved.title}`);
+                    }}
+                  />
+                )}
 
               </div>
             )}
 
             {/* VIEW 7: CERTIFICADOS */}
             {activeTab === 'certificados' && (
-              <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-slate-900 dark:text-cream-100">
+              <div className={`p-6 rounded-3xl space-y-6 ${cardThemeClass}`}>
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
                   <div>
                     <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Registro de Chaves de Diplomas Digitais</h3>
                     <p className="text-xs text-neutral-400 mt-1">Emissão em lote de certificados com blockchain local e tecnologia QR-Code auditável publicamente.</p>
                   </div>
                   <div className="flex gap-2.5">
-                    <input type="text" id="cert-recipient" placeholder="Nome do Jurista..." className="p-2 text-xs bg-cream-100 dark:bg-ink-800 border dark:border-ink-800 rounded-xl w-44 text-current" />
+                    <input type="text" id="cert-recipient" placeholder="Nome do Jurista..." className="p-2 text-xs bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl w-44 text-current focus:outline-none focus:border-gold-600" />
                     <button onClick={() => {
                       const name = (document.getElementById('cert-recipient') as HTMLInputElement)?.value;
                       if (!name) return alert('Por favor insira um nome de outorgado.');
                       handleEmitCertificate(name, "English for the Legal Field in Angola");
                       (document.getElementById('cert-recipient') as HTMLInputElement).value = '';
-                    }} className="px-3 py-2 bg-ink-900 text-cream-100 rounded-xl text-3xs font-mono font-bold uppercase transition-colors">
+                    }} className="px-3 py-2 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer transition-colors">
                       Gerar Agora
                     </button>
                   </div>
@@ -1279,12 +1409,12 @@ export default function AdminPortal({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {certificates.map((cert, i) => (
-                    <div key={i} className="p-4 bg-cream-100 dark:bg-ink-850 border-2 border-gold-600/40 rounded-2xl flex justify-between items-center text-left text-slate-850 dark:text-cream-100">
+                    <div key={i} className="p-4 bg-cream-100 dark:bg-ink-900/40 border-2 border-gold-600/40 rounded-2xl flex justify-between items-center text-left text-slate-850 dark:text-cream-100">
                       <div className="space-y-1">
                         <span className="text-[8px] font-mono text-gold-600 font-bold uppercase">Código: {cert.verificationCode}</span>
                         <h4 className="font-serif font-black text-xs text-slate-700 dark:text-cream-100 m-0">{cert.recipientName}</h4>
                         <p className="text-[10px] text-neutral-400 font-mono m-0">{cert.courseName}</p>
-                        <span className="text-[9px] text-ink-900 block">Emitido em: {cert.completionDate}</span>
+                        <span className="text-[9px] text-ink-900 dark:text-cream-100/80 block">Emitido em: {cert.completionDate}</span>
                       </div>
                       <div className="p-1 border border-gray-200 dark:border-ink-750 bg-cream-200 dark:bg-ink-900 rounded shrink-0">
                         <QrCode className="text-slate-800 dark:text-cream-200" size={40} />
@@ -1299,23 +1429,33 @@ export default function AdminPortal({
             {/* VIEW 12: MENSAGENS PANEL */}
             {activeTab === 'mensagens' && (
               <div className="space-y-4">
-                <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 text-slate-900 dark:text-cream-100">
-                  <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Central de Mensagens e Comunicações em Tempo Real</h3>
-                  <p className="text-xs text-neutral-400 mt-1">Converse individualmente com formandos e formadores ou envie mensagens em massa.</p>
+                <div className={`p-8 rounded-3xl ${cardThemeClass} text-center space-y-6 flex flex-col items-center justify-center`}>
+                  <MessageSquare className="w-16 h-16 text-gold-600 animate-pulse" />
+                  <div>
+                    <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-lg">Central de Mensagens Independente</h3>
+                    <p className="text-xs text-neutral-400 mt-2 max-w-md mx-auto leading-relaxed">
+                      As suas mensagens agora abrem num ecrã inteiro próprio, oferecendo mais espaço e evitando cortes visuais de cabeçalho.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setCurrentPage('messages')}
+                    className="px-6 py-3 bg-gold-600 hover:bg-[#b58b35] text-cream-100 text-xs font-mono font-bold uppercase rounded-xl transition-all cursor-pointer shadow-md border-0"
+                  >
+                    Abrir Chat em Tela Cheia
+                  </button>
                 </div>
-                <ChatShell role="ADMIN" />
               </div>
             )}
 
             {/* VIEW 13: NOTIFICAÇÕES */}
             {activeTab === 'notificacoes' && (
-              <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-slate-900 dark:text-cream-100">
-                <div className="flex justify-between items-center border-b dark:border-ink-800 pb-3">
+              <div className={`p-6 rounded-3xl space-y-6 ${cardThemeClass}`}>
+                <div className="flex justify-between items-center border-b border-gray-150 dark:border-ink-800/60 pb-3">
                   <div>
                     <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Notificações e Alertas Urgentes</h3>
                     <p className="text-xs text-neutral-400 mt-1">Centro de monitorização de falhas, reconciliação de guias e inscrições.</p>
                   </div>
-                  <button onClick={handleClearAlerts} className="text-3xs font-mono text-blue-900 uppercase">Limpar Alertas</button>
+                  <button onClick={handleClearAlerts} className="text-3xs font-mono text-blue-900 dark:text-gold-600 uppercase border-0 bg-transparent cursor-pointer hover:underline">Limpar Alertas</button>
                 </div>
 
                 <div className="space-y-3">
@@ -1338,7 +1478,7 @@ export default function AdminPortal({
 
             {/* VIEW 16: INTEGRAÇÕES */}
             {activeTab === 'integracoes' && (
-              <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-slate-900 dark:text-cream-100">
+              <div className={`p-6 rounded-3xl space-y-6 ${cardThemeClass}`}>
                 <div>
                   <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Gateway de Ligações de API</h3>
                   <p className="text-xs text-neutral-400 mt-1">Relação e status de serviços Cloud externos integrados para automatizar a vida académica da MultiPlus (Painel de Monitorização).</p>
@@ -1350,7 +1490,7 @@ export default function AdminPortal({
                     { name: "Vercel", desc: "Hospedagem e Deployment CDN", status: "Conectado" },
                     { name: "Cloudinary", desc: "Gestão e Otimização de Media", status: "Conectado" }
                   ].map((service) => (
-                    <div key={service.name} className="p-4 bg-cream-200 dark:bg-ink-900/40 border dark:border-ink-800 rounded-2xl flex justify-between items-center text-left">
+                    <div key={service.name} className="p-4 bg-cream-200 dark:bg-ink-900/60 border border-gray-150 dark:border-ink-800 rounded-2xl flex justify-between items-center text-left">
                       <div>
                         <h4 className="font-serif font-bold text-ink-900 dark:text-cream-100 text-xs m-0">{service.name} Integration</h4>
                         <span className="text-[9px] font-mono text-gray-450 block mt-1">
@@ -1358,7 +1498,7 @@ export default function AdminPortal({
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400 text-[9px] font-mono font-bold uppercase">
-                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse animate-duration-1000"></span>
+                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
                         {service.status}
                       </div>
                     </div>
@@ -1370,7 +1510,7 @@ export default function AdminPortal({
 
             {/* VIEW 17: CONFIGURAÇÕES */}
             {activeTab === 'configuracoes' && (
-              <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-slate-900 dark:text-cream-100">
+              <div className={`p-6 rounded-3xl space-y-6 ${cardThemeClass}`}>
                 <div>
                   <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Configurações Gerais de Operação</h3>
                   <p className="text-xs text-neutral-400 mt-1">Definição dos parâmetros institucionais base, emails de tesouraria de Luanda e Huambo e taxas de câmbio.</p>
@@ -1379,15 +1519,15 @@ export default function AdminPortal({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-left">
                   <div className="space-y-1">
                     <label className="block text-[8px] font-mono text-neutral-400 uppercase font-black">Nome da Instituição</label>
-                    <input type="text" value={instName} onChange={(e) => setInstName(e.target.value)} className="w-full p-2.5 bg-cream-100 dark:bg-ink-850 border border-gray-250 dark:border-ink-750 text-slate-800 dark:text-cream-100 rounded-xl font-serif font-extrabold focus:outline-none focus:border-gold-600" />
+                    <input type="text" value={instName} onChange={(e) => setInstName(e.target.value)} className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 text-slate-850 dark:text-cream-100 rounded-xl font-serif font-extrabold focus:outline-none focus:border-gold-600" />
                   </div>
                   <div className="space-y-1">
                     <label className="block text-[8px] font-mono text-neutral-400 uppercase font-black">Domínio de Internet</label>
-                    <input type="text" value={instDomain} onChange={(e) => setInstDomain(e.target.value)} className="w-full p-2.5 bg-cream-100 dark:bg-ink-850 border border-gray-250 dark:border-ink-750 text-slate-850 dark:text-cream-100 rounded-xl font-mono focus:outline-none focus:border-gold-600" />
+                    <input type="text" value={instDomain} onChange={(e) => setInstDomain(e.target.value)} className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 text-slate-850 dark:text-cream-100 rounded-xl font-mono focus:outline-none focus:border-gold-600" />
                   </div>
                   <div className="space-y-1 md:col-span-2">
                     <label className="block text-[8px] font-mono text-neutral-400 uppercase font-black">Contacto de Emergência</label>
-                    <input type="text" value={instPhone} onChange={(e) => setInstPhone(e.target.value)} className="w-full p-2.5 bg-cream-100 dark:bg-ink-850 border border-gray-250 dark:border-ink-750 text-slate-850 dark:text-cream-100 rounded-xl focus:outline-none focus:border-gold-600" />
+                    <input type="text" value={instPhone} onChange={(e) => setInstPhone(e.target.value)} className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 text-slate-850 dark:text-cream-100 rounded-xl focus:outline-none focus:border-gold-600" />
                   </div>
                 </div>
 
@@ -1404,15 +1544,71 @@ export default function AdminPortal({
                     }
                     addAuditLog("CONFIG GERAL", "Atualizado informações da instituição pelo Admin");
                     alert('As alterações da instituição foram salvas!');
-                  }} className="px-5 py-2.5 bg-ink-900 text-cream-100 hover:bg-gold-600 hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer">
+                  }} className="px-5 py-2.5 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 hover:bg-gold-600 hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer">
                     Salvar Parâmetros
                   </button>
+                </div>
+
+                <div className="border-t border-gray-150 dark:border-ink-800/60 pt-6 space-y-6">
+                  <div>
+                    <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block mb-1">Métricas Globais</span>
+                    <h3 className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 m-0">Preferências de Interface</h3>
+                    <p className="text-[10px] text-neutral-400 mt-1">Personalize as métricas de contraste e o visual geral do painel administrativo.</p>
+                  </div>
+
+                  <div className="space-y-4 divide-y divide-gray-100 dark:divide-ink-800">
+                    {/* Theme colors toggler */}
+                    <div className="pt-2 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                      <div>
+                        <h4 className="text-xs font-serif font-black text-ink-900 dark:text-cream-100 m-0">Esquema de Cores do Painel</h4>
+                        <p className="text-[10px] text-neutral-400 m-0">Alternar entre telas claras e escuras anti-fadiga ocular.</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => { setThemeMode('light'); setHighContrast(false); }}
+                          className={`px-4 py-2 text-2xs font-mono font-bold uppercase rounded-xl border transition-all cursor-pointer ${
+                            !isDarkMode && !highContrast ? 'bg-ink-900 text-cream-100 border-ink-900' : 'bg-cream-100 text-neutral-400 hover:bg-cream-200'
+                          }`}
+                        >
+                          Light Mode
+                        </button>
+                        <button
+                          onClick={() => { setThemeMode('dark'); setHighContrast(false); }}
+                          className={`px-4 py-2 text-2xs font-mono font-bold uppercase rounded-xl border transition-all cursor-pointer ${
+                            isDarkMode && !highContrast ? 'bg-slate-800 text-cream-100 border-slate-800' : 'bg-cream-100 text-neutral-400 hover:bg-cream-200'
+                          }`}
+                        >
+                          Dark Mode
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* High Contrast Option */}
+                    <div className="pt-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                      <div>
+                        <h4 className="text-xs font-serif font-black text-danger-700 dark:text-danger-700 m-0">Ecrã de Alto Contraste</h4>
+                        <p className="text-[10px] text-neutral-400 m-0">Cores puras pretas e amarelas otimizadas para leitores de tela e deficiências visuais.</p>
+                      </div>
+                      <div>
+                        <button
+                          onClick={() => {
+                            setHighContrast(!highContrast);
+                          }}
+                          className={`px-4 py-2 text-2xs font-mono font-bold uppercase rounded-xl border transition-all cursor-pointer ${
+                            highContrast ? 'bg-yellow-500 text-black border-yellow-500 font-extrabold' : 'bg-cream-100 text-neutral-400 hover:bg-cream-200'
+                          }`}
+                        >
+                          {highContrast ? 'Ativado ✓' : 'Ativar Contraste'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
               </div>
             )}
             {activeTab === 'perfil' && (
-              <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-6 text-left text-slate-900 dark:text-cream-100">
+              <div className={`p-6 rounded-3xl space-y-6 text-left ${cardThemeClass}`}>
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                   <div className="relative shrink-0">
                     {currentUser?.avatarUrl ? (
@@ -1462,7 +1658,7 @@ export default function AdminPortal({
                   <p className="text-amber-600 dark:text-amber-400 font-semibold">⚠️ Proteja bem as suas credenciais. Qualquer acção efetuada sob esta conta é registada nos logs de auditoria.</p>
                 </div>
 
-                <div className="space-y-4 border-t dark:border-ink-800 pt-5">
+                <div className="space-y-4 border-t border-gray-150 dark:border-ink-800 pt-5">
                   <h4 className="font-serif font-bold text-ink-900 dark:text-cream-100 text-sm">Editar Informações de Perfil</h4>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -1472,7 +1668,7 @@ export default function AdminPortal({
                         type="text" 
                         value={adminName} 
                         onChange={(e) => setAdminName(e.target.value)} 
-                        className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600" 
+                        className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -1481,7 +1677,7 @@ export default function AdminPortal({
                         type="text" 
                         value={adminPhone} 
                         onChange={(e) => setAdminPhone(e.target.value)} 
-                        className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600" 
+                        className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600" 
                       />
                     </div>
                     <div className="space-y-1 md:col-span-2">
@@ -1490,13 +1686,13 @@ export default function AdminPortal({
                         value={adminBio} 
                         onChange={(e) => setAdminBio(e.target.value)} 
                         rows={3}
-                        className="w-full p-2.5 bg-cream-100 dark:bg-ink-800 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
+                        className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
                         placeholder="Escreva uma breve biografia ou introdução para o perfil do portal..."
                       />
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-2">
+                  <div className="flex items-center gap-2 pt-2 text-slate-800 dark:text-cream-100">
                     <input 
                       type="checkbox" 
                       id="notif_certificados"
@@ -1504,7 +1700,7 @@ export default function AdminPortal({
                       onChange={(e) => setNotifEmailCertificados(e.target.checked)}
                       className="rounded border-gray-350 dark:border-ink-800 text-ink-900 focus:ring-[#BB8533] cursor-pointer"
                     />
-                    <label htmlFor="notif_certificados" className="text-xs font-semibold cursor-pointer">
+                    <label htmlFor="notif_certificados" className="text-xs font-semibold cursor-pointer select-none">
                       Receber notificações de novos certificados emitidos por e-mail
                     </label>
                   </div>

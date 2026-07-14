@@ -11,6 +11,7 @@ export interface SupabaseCourse {
   duration: string;
   teacher_id: string;
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  price?: number | null;
   created_at?: string;
   updated_at?: string;
 }

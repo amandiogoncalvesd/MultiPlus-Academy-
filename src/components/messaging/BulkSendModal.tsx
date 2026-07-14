@@ -63,19 +63,19 @@ export default function BulkSendModal({ contacts, onClose, onSendBulk }: BulkSen
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.2 }}
-        className="bg-cream-100 dark:bg-ink-900 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-lg overflow-hidden border border-cream-200 dark:border-ink-800 flex flex-col max-h-[85vh]"
+        className="bg-cream-100 dark:bg-ink-950 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-lg overflow-hidden border border-gray-250 dark:border-ink-800 flex flex-col max-h-[85vh]"
       >
-        <div className="p-5 border-b border-cream-200 dark:border-ink-800 flex items-center justify-between bg-cream-200 dark:bg-ink-800">
+        <div className="p-5 border-b border-gray-150 dark:border-ink-800 flex items-center justify-between bg-cream-200 dark:bg-ink-900">
           <div>
             <h3 className="font-serif font-black tracking-tight text-ink-900 dark:text-cream-100 text-lg">Envio em Massa</h3>
             <p className="text-xs text-neutral-400 mt-0.5">Selecione os destinatários para enviar mensagens personalizadas</p>
           </div>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-cream-100 dark:hover:bg-ink-900 transition-colors border-0 cursor-pointer text-neutral-400">
+          <button onClick={onClose} className="p-1 rounded-full hover:bg-cream-100 dark:hover:bg-ink-950 transition-colors border-0 cursor-pointer text-neutral-400">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-4 border-b border-cream-200 dark:border-ink-800 bg-cream-100 dark:bg-ink-900 flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="p-4 border-b border-gray-150 dark:border-ink-800 bg-cream-100 dark:bg-ink-950 flex flex-col sm:flex-row gap-3 items-center justify-between">
           <div className="relative w-full sm:max-w-xs">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-neutral-400" />
             <input
@@ -83,7 +83,7 @@ export default function BulkSendModal({ contacts, onClose, onSendBulk }: BulkSen
               placeholder="Pesquisar..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-cream-200 dark:border-slate-700 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gold-600/20 focus:border-gold-600 bg-cream-200 dark:bg-ink-800 text-ink-900 dark:text-cream-100 placeholder:text-neutral-400"
+              className="w-full pl-9 pr-4 py-2 border border-gray-250 dark:border-ink-800 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-gold-600/20 focus:border-gold-600 bg-cream-200 dark:bg-ink-900 text-ink-900 dark:text-cream-100 placeholder:text-neutral-400"
             />
           </div>
           <button
@@ -95,7 +95,7 @@ export default function BulkSendModal({ contacts, onClose, onSendBulk }: BulkSen
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 bg-cream-100 dark:bg-ink-900 divide-y divide-cream-200/40 dark:divide-ink-800/45 max-h-[30vh]">
+        <div className="flex-1 overflow-y-auto p-4 bg-cream-100 dark:bg-ink-950 divide-y divide-gray-200/40 dark:divide-ink-800/45 max-h-[30vh]">
           {filtered.length === 0 ? (
             <p className="text-center text-xs text-neutral-400 py-6">Nenhum contacto encontrado.</p>
           ) : (
@@ -105,13 +105,13 @@ export default function BulkSendModal({ contacts, onClose, onSendBulk }: BulkSen
                 <button
                   key={c.id}
                   onClick={() => handleToggleSelect(c.id)}
-                  className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all text-left mt-1 border border-transparent cursor-pointer ${isSelected ? 'bg-cream-200 dark:bg-ink-800 border-gold-600/20' : 'hover:bg-cream-200 dark:hover:bg-ink-800 bg-transparent'}`}
+                  className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all text-left mt-1 border border-transparent cursor-pointer ${isSelected ? 'bg-cream-200 dark:bg-ink-900 border-gold-600/20' : 'hover:bg-cream-200 dark:hover:bg-ink-900 bg-transparent'}`}
                 >
                   <div className="flex items-center gap-3">
                     {c.foto_perfil ? (
-                      <img src={c.foto_perfil} alt={c.nome_completo} className="w-9 h-9 rounded-full object-cover border border-cream-200 dark:border-ink-800" referrerPolicy="no-referrer" />
+                      <img src={c.foto_perfil} alt={c.nome_completo} className="w-9 h-9 rounded-full object-cover border border-gray-150 dark:border-ink-800" referrerPolicy="no-referrer" />
                     ) : (
-                      <div className="w-9 h-9 rounded-full bg-cream-200 dark:bg-ink-800 flex items-center justify-center text-gold-600 border border-gold-600/20 font-bold text-sm">
+                      <div className="w-9 h-9 rounded-full bg-cream-200 dark:bg-ink-900 flex items-center justify-center text-gold-600 border border-gold-600/20 font-bold text-sm">
                         {c.nome_completo.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -129,7 +129,7 @@ export default function BulkSendModal({ contacts, onClose, onSendBulk }: BulkSen
           )}
         </div>
 
-        <form onSubmit={handleSend} className="p-4 border-t border-cream-200 dark:border-ink-800 bg-cream-200 dark:bg-ink-800">
+        <form onSubmit={handleSend} className="p-4 border-t border-gray-150 dark:border-ink-800 bg-cream-200 dark:bg-ink-900">
           <div className="mb-3 flex justify-between items-center text-xs text-neutral-400 px-1">
             <span>{selectedIds.length} destinatário(s) selecionado(s)</span>
           </div>
@@ -140,7 +140,7 @@ export default function BulkSendModal({ contacts, onClose, onSendBulk }: BulkSen
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Escreva a mensagem para enviar a todos..."
-              className="flex-1 p-3 border border-cream-200 dark:border-slate-750 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-gold-600/20 focus:border-gold-600 bg-cream-100 dark:bg-ink-900 resize-none text-ink-900 dark:text-cream-100 placeholder:text-neutral-400"
+              className="flex-1 p-3 border border-gray-250 dark:border-slate-750 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-gold-600/20 focus:border-gold-600 bg-cream-100 dark:bg-ink-950 resize-none text-ink-900 dark:text-cream-100 placeholder:text-neutral-400"
             />
             <button
               type="submit"
