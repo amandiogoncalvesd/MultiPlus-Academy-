@@ -38,6 +38,7 @@ export default function VerifyCertificatePanel({
           isValid: true,
           institution: 'MultiPlus Academy (Huambo, Angola)',
           verificationCode: match.codigo_validacao,
+          pdfUrl: match.certificate_pdf_url,
         });
       } else {
         setResult(null);
@@ -187,6 +188,19 @@ export default function VerifyCertificatePanel({
                       <span className="font-semibold text-slate-700 block mt-0.5">{result.validUntil}</span>
                     </div>
                   </div>
+
+                  {result.pdfUrl && (
+                    <div className="pt-3 border-t border-slate-150 text-center w-full">
+                      <a
+                        href={result.pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0A2E5D] hover:bg-[#123C73] text-white rounded-xl text-xs font-mono font-black uppercase tracking-wider transition-colors no-underline cursor-pointer"
+                      >
+                        <Award size={14} /> Descarregar Certificado (PDF Oficial)
+                      </a>
+                    </div>
+                  )}
 
                   <div className="text-2xs text-center text-emerald-700 font-mono pt-3 border-t border-emerald-100 font-bold w-full">
                     Selo Digital MultiPlus • Processado sob Certificação Segura

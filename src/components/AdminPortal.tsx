@@ -8,6 +8,7 @@ import ChatShell from './messaging/ChatShell';
 import { useTheme } from '../contexts/ThemeContext';
 import CourseEditorModal from './course/CourseEditorModal';
 import { messageService } from '../services/supabase/messageService';
+import CertificateIssueModal from './certificates/CertificateIssueModal';
 
 import { 
   Users, Settings, Activity, TrendingUp, DollarSign, MapPin, ShieldCheck, 
@@ -70,6 +71,7 @@ export default function AdminPortal({
   
   // Modals / Editing States
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [showCertificateIssueModal, setShowCertificateIssueModal] = useState(false);
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserRole, setNewUserRole] = useState<UserRole>('STUDENT');
@@ -212,7 +214,8 @@ export default function AdminPortal({
           emitido_em,
           final_grade,
           student_id,
-          course_id
+          course_id,
+          certificate_pdf_url
         `);
       
       if (certData) {
@@ -233,6 +236,7 @@ export default function AdminPortal({
             institution: 'MultiPlus Academy (Angola)',
             isValid: true,
             verificationCode: c.codigo_validacao,
+            pdfUrl: c.certificate_pdf_url
           };
         });
         setCertificates(mappedCerts);
@@ -520,27 +524,6 @@ export default function AdminPortal({
       type: action.includes("FINANCE") ? 'financial' : action.includes("UTILIZADOR") ? 'security' : 'system'
     };
     setAuditLogs(prev => [freshLog, ...prev]);
-  };
-
-  // Certificados Issuance
-  const handleEmitCertificate = (recipientName: string, courseName: string) => {
-    if (!recipientName) return;
-    const code = `MPA-2026-REG-${Math.floor(Math.random() * 9000 + 1000)}`;
-    const newCert = {
-      certificateNumber: code,
-      courseName,
-      recipientName,
-      completionDate: new Date().toISOString().slice(0, 10),
-      instructorName: "Dra. Esmeralda Sumbelelo",
-      finalGrade: "95/100",
-      institution: "MultiPlus Academy (Angola)",
-      isValid: true,
-      verificationCode: code
-    };
-    const nextCerts = [...certificates, newCert];
-    syncToLocalStorage(dbUsers, nextCerts);
-    addAuditLog("EMISSÃO CERTIFICADO", `Emitido para ${recipientName} sob código ${code}`);
-    alert(`Certificado digital oficial outorgado com sucesso! Chave: ${code}`);
   };
 
   // Reporting simulators
@@ -1383,6 +1366,15 @@ export default function AdminPortal({
                   />
                 )}
 
+                {showCertificateIssueModal && (
+                  <CertificateIssueModal
+                    onClose={() => {
+                      setShowCertificateIssueModal(false);
+                      loadDatabase();
+                    }}
+                  />
+                )}
+
               </div>
             )}
 
@@ -1392,17 +1384,14 @@ export default function AdminPortal({
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
                   <div>
                     <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Registro de Chaves de Diplomas Digitais</h3>
-                    <p className="text-xs text-neutral-400 mt-1">Emissão em lote de certificados com blockchain local e tecnologia QR-Code auditável publicamente.</p>
+                    <p className="text-xs text-neutral-400 mt-1">Envio direto de certificados reais assinados para os estudantes formados.</p>
                   </div>
-                  <div className="flex gap-2.5">
-                    <input type="text" id="cert-recipient" placeholder="Nome do Jurista..." className="p-2 text-xs bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl w-44 text-current focus:outline-none focus:border-gold-600" />
-                    <button onClick={() => {
-                      const name = (document.getElementById('cert-recipient') as HTMLInputElement)?.value;
-                      if (!name) return alert('Por favor insira um nome de outorgado.');
-                      handleEmitCertificate(name, "English for the Legal Field in Angola");
-                      (document.getElementById('cert-recipient') as HTMLInputElement).value = '';
-                    }} className="px-3 py-2 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer transition-colors">
-                      Gerar Agora
+                  <div>
+                    <button
+                      onClick={() => setShowCertificateIssueModal(true)}
+                      className="px-4 py-2.5 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer transition-all hover:bg-gold-600"
+                    >
+                      Outorgar Certificado (PDF)
                     </button>
                   </div>
                 </div>
@@ -1411,10 +1400,20 @@ export default function AdminPortal({
                   {certificates.map((cert, i) => (
                     <div key={i} className="p-4 bg-cream-100 dark:bg-ink-900/40 border-2 border-gold-600/40 rounded-2xl flex justify-between items-center text-left text-slate-850 dark:text-cream-100">
                       <div className="space-y-1">
-                        <span className="text-[8px] font-mono text-gold-600 font-bold uppercase">Código: {cert.verificationCode}</span>
+                        <span className="text-[8px] font-mono text-gold-600 font-bold uppercase block">Código: {cert.verificationCode}</span>
                         <h4 className="font-serif font-black text-xs text-slate-700 dark:text-cream-100 m-0">{cert.recipientName}</h4>
                         <p className="text-[10px] text-neutral-400 font-mono m-0">{cert.courseName}</p>
                         <span className="text-[9px] text-ink-900 dark:text-cream-100/80 block">Emitido em: {cert.completionDate}</span>
+                        {cert.pdfUrl && (
+                          <a
+                            href={cert.pdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] font-mono text-gold-600 hover:underline flex items-center gap-1 font-bold mt-1.5"
+                          >
+                            <Download size={10} /> Baixar PDF
+                          </a>
+                        )}
                       </div>
                       <div className="p-1 border border-gray-200 dark:border-ink-750 bg-cream-200 dark:bg-ink-900 rounded shrink-0">
                         <QrCode className="text-slate-800 dark:text-cream-200" size={40} />

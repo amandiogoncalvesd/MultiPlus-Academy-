@@ -60,6 +60,7 @@ import InstructorEvaluationsTab from './instructor/InstructorEvaluationsTab';
 import InstructorCalendarTab from './instructor/InstructorCalendarTab';
 import InstructorMessagesTab from './instructor/InstructorMessagesTab';
 import { courseService } from '../services/supabase/courseService';
+import CertificateIssueModal from './certificates/CertificateIssueModal';
 
 interface InstructorPortalProps {
   setCurrentPage: (page: PageId) => void;
@@ -155,6 +156,8 @@ export default function InstructorPortal({
   // 6. Certificados code verification states
   const [inputHashVerify, setInputHashVerify] = useState('');
   const [hashResultText, setHashResultText] = useState('');
+  const [showCertificateIssueModal, setShowCertificateIssueModal] = useState(false);
+  const [preselectedStudentId, setPreselectedStudentId] = useState('');
 
   // Synchronize base academic states
   useEffect(() => {
@@ -275,35 +278,8 @@ export default function InstructorPortal({
 
   // Dynamic certificate issuer
   const emitCertificateForStudent = async (userId: string) => {
-    try {
-      // Find the student's active enrollment
-      const { data: enrollment } = await supabase
-        .from('enrollments')
-        .select('*')
-        .eq('student_id', userId)
-        .limit(1)
-        .maybeSingle();
-
-      const courseId = enrollment?.course_id || '00000000-0000-0000-0000-000000000000';
-      
-      // Update enrollment to completed and 100% progress
-      await supabase
-        .from('enrollments')
-        .update({ status: 'COMPLETED', progress_percent: 100 })
-        .eq('student_id', userId)
-        .eq('course_id', courseId);
-
-      const hashVer = `MPA-2026-UNLOCKED-${userId.substring(0, 4).toUpperCase()}`;
-      
-      // Insert new certificate
-      await academicService.issueCertificate(userId, courseId, hashVer);
-
-      await loadDatabase();
-      alert(`Outorga jurídica concluída! Certificado gerado e salvo no Supabase sob hash "${hashVer}".`);
-    } catch (e: any) {
-      console.error('Erro ao outorgar certificado:', e);
-      alert(`Erro ao outorgar certificado: ${e.message || e}`);
-    }
+    setPreselectedStudentId(userId);
+    setShowCertificateIssueModal(true);
   };
 
   // Add course from wizard creator
@@ -484,10 +460,7 @@ export default function InstructorPortal({
               { id: 'dashboard', name: 'Dashboard', icon: <Activity size={15} /> },
               { id: 'cursos', name: 'Meus Cursos', icon: <BookOpen size={15} /> },
               { id: 'criar-curso', name: 'Criar Curso', icon: <Plus size={15} /> },
-              { id: 'aulas', name: 'Gerir Aulas', icon: <Video size={15} /> },
-              { id: 'modulos', name: 'Estruturação/Syllabus', icon: <Layers size={15} /> },
               { id: 'alunos', name: 'Diretório Alunos', icon: <Users size={15} /> },
-              { id: 'biblioteca', name: 'Biblioteca Digital', icon: <FolderOpen size={15} /> },
               { id: 'avaliacoes', name: 'Correção & Provas', icon: <ClipboardList size={15} /> },
               { id: 'certificados', name: 'Emissão Diplomas', icon: <Award size={15} /> },
               { id: 'calendario', name: 'Agenda Letiva', icon: <Calendar size={15} /> },
@@ -794,111 +767,7 @@ export default function InstructorPortal({
             </div>
           )}
 
-          {/* TAB 4: GERIR AULAS */}
-          {activeTab === 'aulas' && (
-            <div className={`p-6 rounded-3xl text-left space-y-6 ${cardThemeClass}`}>
-              <div>
-                <span className="text-[9px] font-mono text-gold-600 font-black uppercase tracking-widest block">INTEGRAÇÃO CLOUDINARY CLOUD</span>
-                <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-lg mt-1 m-0">Videoteca de Transcrições de Oratória</h3>
-                <p className="text-xs text-neutral-400">Anexe materiais lúdicos (PDFs), apresentações de slides (PPT), determine tempos estimados e marque regras de acesso.</p>
-              </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
-                {/* Upload Simulated Area */}
-                <div className="p-6 bg-cream-200 dark:bg-ink-900/40 rounded-2xl border-2 border-dashed border-gray-200 dark:border-ink-800/60 flex flex-col items-center justify-center text-center space-y-3">
-                  <Upload size={30} className="text-neutral-400" />
-                  <div>
-                    <h4 className="font-serif font-bold text-slate-700 dark:text-cream-150 text-sm m-0">Arraste seu arquivo mp4 ou srt aqui</h4>
-                    <span className="text-[10px] text-neutral-400 block mt-1">Capacidade de processamento de até 1 GB por vídeo</span>
-                  </div>
-                  <button 
-                    onClick={() => alert('Selecione vídeo de simulação: O lms carrega as legendas automáticas via Cloudinary.')}
-                    className="px-3.5 py-1.5 bg-[#0D2644] dark:bg-gold-600 text-cream-100 dark:text-slate-950 rounded-lg text-3xs font-mono font-bold uppercase transition-all cursor-pointer border-0"
-                  >
-                    Navegar Arquivos Físicos
-                  </button>
-                </div>
-
-                {/* Video list mock and privacy configurations */}
-                <div className="space-y-4">
-                  <span className="text-[9px] font-mono text-neutral-400 font-extrabold uppercase tracking-wider block">Videoaulas Carregadas Recentes</span>
-                  
-                  {[
-                    { title: 'Conceito e Diferenciação de Indemnisation', duration: '24M', status: 'Livre' },
-                    { title: 'Precedentes Judiciais e Casos de Arbitragem em Luanda', duration: '44M', status: 'Apenas Membros' }
-                  ].map((vid, vidIdx) => (
-                    <div key={vidIdx} className="p-3 bg-cream-150 dark:bg-ink-900/80 border border-gray-150 dark:border-ink-800/60 rounded-xl flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Video size={14} className="text-gold-600" />
-                        <div>
-                          <span className="font-serif font-black text-xs text-slate-700 dark:text-cream-100 block">{vid.title}</span>
-                          <span className="text-[9px] font-mono text-neutral-400">{vid.duration} • Legendas em Português</span>
-                        </div>
-                      </div>
-                      <span className="text-[8px] font-mono uppercase bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-lg">
-                        {vid.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-              </div>
-            </div>
-          )}
-
-          {/* TAB 5: ESTRUTURAÇÃO / SYLLABUS */}
-          {activeTab === 'modulos' && (
-            <div className={`p-6 rounded-3xl ${cardThemeClass} text-left space-y-6`}>
-              <div>
-                <span className="text-[9px] font-mono text-gold-600 font-black uppercase tracking-widest block">Course Structure Tree / Planner</span>
-                <h3 className="font-serif font-black text-ink-900 dark:text-gold-600 text-lg mt-1 m-0">Planeador Modular de Ementas</h3>
-                <p className="text-xs text-neutral-400">Arraste temas, crie novos pilares e estipule cronogramas em tempo real antes do lançamento letivo.</p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                
-                {/* Form to insert module */}
-                <div className={`lg:col-span-5 p-5 rounded-2xl border ${isDarkMode ? 'bg-[#152542] border-slate-750' : 'bg-cream-200 border-gray-200'}`}>
-                  <h4 className="text-2xs font-mono font-bold text-neutral-400 uppercase block mb-3 border-b pb-1.5">ANEXAR CATEGORIA DE CONTEÚDO</h4>
-                  <form onSubmit={handleAddPlannerModule} className="space-y-4">
-                    <div>
-                      <label className="block text-[8px] font-mono text-neutral-400 uppercase mb-1">Título do Segmento Académico</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Ex: Módulo IV - Fusões Internacionais e Joint Ventures"
-                        value={newPlannerModuleTitle}
-                        onChange={(e) => setNewPlannerModuleTitle(e.target.value)}
-                        className="w-full p-2 bg-cream-100 dark:bg-[#1E293B] border rounded text-xs text-slate-809 dark:text-cream-100"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      className="px-3.5 py-2 bg-ink-900 hover:bg-gold-600 text-cream-100 hover:text-slate-900 rounded text-3xs font-mono font-extrabold uppercase cursor-pointer"
-                    >
-                      Acrescentar Eixo Letivo
-                    </button>
-                  </form>
-                </div>
-
-                {/* Structure visual representations */}
-                <div className="lg:col-span-7 space-y-3">
-                  <span className="text-[9px] font-mono text-neutral-400 font-extrabold uppercase block text-left">PILARES DA GRADE DE PORTFOLIO JURÍDICO</span>
-                  {plannerModules.map((pm, pmIdx) => (
-                    <div key={pmIdx} className={`p-3 border rounded-xl flex justify-between items-center text-left ${isDarkMode ? 'bg-[#0E172A] border-slate-700/50' : 'bg-cream-100 border-gray-150'}`}>
-                      <div>
-                        <span className="text-[8px] font-mono text-gold-600 font-bold block">{pm.number}</span>
-                        <h5 className="font-serif font-black text-slate-700 dark:text-gray-300 text-xs m-0">{pm.title}</h5>
-                      </div>
-                      <span className="text-[9px] font-mono text-neutral-400 font-semibold">{pm.lessonsCount} Tópicos Indexados</span>
-                    </div>
-                  ))}
-                </div>
-
-              </div>
-            </div>
-          )}
 
           {/* TAB 6: DIRETÓRIO ALUNOS */}
           {activeTab === 'alunos' && (
@@ -912,102 +781,7 @@ export default function InstructorPortal({
             />
           )}
 
-          {/* TAB 7: BIBLIOTECA DIGITAL */}
-          {activeTab === 'biblioteca' && (
-            <div className={`p-6 rounded-3xl text-left space-y-6 ${cardThemeClass}`}>
-              
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                  <span className="text-[9px] font-mono text-gold-600 font-black uppercase tracking-wider block">Library Common Repository</span>
-                  <p className="font-serif font-black text-md text-ink-900 dark:text-cream-100 m-0 leading-tight">Materiais Complementares das Classes</p>
-                  <p className="text-xs text-neutral-400 mt-1">Carregue manuais (PDF), cartilhas de vocabulário, rascunhos em docx e gabaritos de apoio.</p>
-                </div>
 
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setLibraryCategory('all')}
-                    className={`px-3 py-1 text-4xs font-mono uppercase rounded-lg border cursor-pointer ${
-                      libraryCategory === 'all' ? 'bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950' : 'bg-transparent text-neutral-400'
-                    }`}
-                  >
-                    Ver Todos
-                  </button>
-                  <button
-                    onClick={() => setLibraryCategory('pdf')}
-                    className={`px-3 py-1 text-4xs font-mono uppercase rounded-lg border cursor-pointer ${
-                      libraryCategory === 'pdf' ? 'bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950' : 'bg-transparent text-neutral-400'
-                    }`}
-                  >
-                    PDF
-                  </button>
-                  <button
-                    onClick={() => setLibraryCategory('docx')}
-                    className={`px-3 py-1 text-4xs font-mono uppercase rounded-lg border cursor-pointer ${
-                      libraryCategory === 'docx' ? 'bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950' : 'bg-transparent text-neutral-400'
-                    }`}
-                  >
-                    DOCX
-                  </button>
-                </div>
-              </div>
-
-              {/* Upload dynamic form bar */}
-              <form onSubmit={handleUploadLibraryFile} className="bg-cream-200 dark:bg-ink-900/65 p-4 rounded-xl border border-gray-150 dark:border-ink-800/60 flex gap-2">
-                <input
-                  type="text"
-                  required
-                  placeholder="Nome do novo arquivo (Ex: Dicionário-de-Termos-Comuns.pdf)..."
-                  value={newLibraryFileName}
-                  onChange={(e) => setNewLibraryFileName(e.target.value)}
-                  className="flex-grow p-2 text-xs bg-cream-100 dark:bg-ink-800 border border-gray-200 dark:border-ink-750 rounded-xl focus:outline-none text-slate-800 dark:text-cream-100"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 rounded text-3xs font-mono font-bold uppercase cursor-pointer border-0"
-                >
-                  Anexar à Pasta
-                </button>
-              </form>
-
-              {/* Grid List representation */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {libraryFiles
-                  .filter(f => libraryCategory === 'all' || f.type === libraryCategory)
-                  .map((file) => (
-                    <div key={file.id} className="p-4 bg-cream-150 dark:bg-ink-900/40 border border-gray-150 dark:border-ink-800/60 rounded-2xl space-y-2 flex flex-col justify-between hover:border-gold-600/40 hover:shadow-sm">
-                      <div className="flex items-start gap-2.5">
-                        <FileText className="text-gold-600 shrink-0 mt-0.5" size={16} />
-                        <div className="truncate">
-                          <h6 className="font-serif font-bold text-xs text-slate-800 dark:text-cream-100 m-0 truncate leading-tight" title={file.name}>
-                            {file.name}
-                          </h6>
-                          <span className="text-[9px] font-mono text-neutral-400 block mt-0.5">{file.size} • {file.date}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2 justify-end">
-                        <button 
-                          onClick={() => alert('A descarregar arquivo emulado do repositório da MultiPlus...')}
-                          className="px-2 py-1 text-4xs font-mono uppercase border border-gray-250 dark:border-ink-750 hover:bg-gray-55 dark:hover:bg-ink-800 text-slate-600 dark:text-cream-200 rounded bg-transparent cursor-pointer"
-                        >
-                          Baixar
-                        </button>
-                        <button 
-                          onClick={() => {
-                            setLibraryFiles(prev => prev.filter(f => f.id !== file.id));
-                            alert('Ficheiro eliminado.');
-                          }}
-                          className="px-2 py-1 text-4xs font-mono uppercase bg-red-50 dark:bg-red-950/20 text-red-650 dark:text-red-400 hover:bg-red-100 rounded border-0 cursor-pointer"
-                        >
-                          Apagar
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-
-            </div>
-          )}
 
           {/* TAB 8: CORREÇÃO & PROVAS */}
           {activeTab === 'avaliacoes' && (
@@ -1318,6 +1092,21 @@ export default function InstructorPortal({
         </main>
 
       </div>
+
+      {showCertificateIssueModal && (
+        <CertificateIssueModal
+          initialStudentId={preselectedStudentId}
+          onClose={() => {
+            setShowCertificateIssueModal(false);
+            setPreselectedStudentId('');
+          }}
+          onSave={() => {
+            loadDatabase();
+            setShowCertificateIssueModal(false);
+            setPreselectedStudentId('');
+          }}
+        />
+      )}
 
     </div>
   );

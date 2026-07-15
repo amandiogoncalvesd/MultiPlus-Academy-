@@ -9,6 +9,7 @@ import { courseService, SupabaseCourse } from '../../services/supabase/courseSer
 import { lessonService, SupabaseLesson } from '../../services/supabase/lessonService';
 import { enrollmentService } from '../../services/supabase/enrollmentService';
 import StudentSelector from '../instructor/StudentSelector';
+import { useAuth } from '../auth/AuthProvider';
 
 interface CourseEditorModalProps {
   courseId?: string; // If undefined, we are creating a new course
@@ -19,13 +20,51 @@ interface CourseEditorModalProps {
 
 export default function CourseEditorModal({
   courseId: initialCourseId,
-  teacherId,
+  teacherId: initialTeacherId,
   onClose,
   onSave
 }: CourseEditorModalProps) {
+  const { role: userRole, user } = useAuth();
   const [courseId, setCourseId] = useState<string | undefined>(initialCourseId);
   const [activeTab, setActiveTab] = useState<'details' | 'lessons' | 'students'>('details');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Selected teacher ID state and teachers list
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string>(initialTeacherId || '');
+  const [teachers, setTeachers] = useState<any[]>([]);
+  const [loadingTeachers, setLoadingTeachers] = useState(false);
+
+  const isAdmin = userRole === 'ADMIN';
+
+  // Fetch instructors if user is Admin
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        setLoadingTeachers(true);
+        const { data, error } = await supabase
+          .from('users')
+          .select('id, nome_completo')
+          .eq('role', 'PROFESSOR');
+        
+        if (error) throw error;
+        setTeachers(data || []);
+      } catch (err) {
+        console.error('Error fetching teachers:', err);
+      } finally {
+        setLoadingTeachers(false);
+      }
+    };
+
+    if (isAdmin) {
+      fetchTeachers();
+    }
+  }, [isAdmin]);
+
+  useEffect(() => {
+    if (initialTeacherId) {
+      setSelectedTeacherId(initialTeacherId);
+    }
+  }, [initialTeacherId]);
 
   // Course Fields State
   const [title, setTitle] = useState('');
@@ -85,6 +124,9 @@ export default function CourseEditorModal({
         setDuration(course.duration || '12 Semanas');
         setStatus(course.status || 'DRAFT');
         setThumbnail(course.thumbnail || '');
+        if (course.teacher_id) {
+          setSelectedTeacherId(course.teacher_id);
+        }
       }
     } catch (err) {
       console.error('Error loading course details:', err);
@@ -162,6 +204,11 @@ export default function CourseEditorModal({
       return;
     }
 
+    if (isAdmin && !selectedTeacherId) {
+      alert('Por favor, selecione e atribua este curso a um professor.');
+      return;
+    }
+
     try {
       setIsSaving(true);
       const cleanPrice = price ? parseFloat(price.replace(/[^\d.]/g, '')) : null;
@@ -180,7 +227,7 @@ export default function CourseEditorModal({
         level,
         duration,
         status,
-        teacher_id: teacherId
+        teacher_id: isAdmin ? selectedTeacherId : (selectedTeacherId || initialTeacherId || user?.id)
       };
 
       let savedCourse: any;
@@ -541,6 +588,26 @@ export default function CourseEditorModal({
                       <p className="text-[10px] text-neutral-400 italic">O preço é registrado em moeda local. Visualização formatada: {formatKz(price)}</p>
                     </div>
                   </div>
+
+                  {isAdmin && (
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Atribuir ao Professor *</label>
+                      <select
+                        value={selectedTeacherId}
+                        onChange={(e) => setSelectedTeacherId(e.target.value)}
+                        required
+                        className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs focus:outline-none focus:border-gold-600 font-sans"
+                      >
+                        <option value="">-- Selecione o Professor --</option>
+                        {teachers.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.nome_completo}
+                          </option>
+                        ))}
+                      </select>
+                      {loadingTeachers && <span className="text-[10px] text-gold-600 animate-pulse font-mono">A carregar lista de professores...</span>}
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">

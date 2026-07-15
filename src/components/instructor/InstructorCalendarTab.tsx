@@ -33,16 +33,22 @@ export default function InstructorCalendarTab({
   const [dbLessons, setDbLessons] = useState<any[]>([]);
   const [scheduledLessons, setScheduledLessons] = useState<any[]>([]);
   
-  const [meetingDate, setMeetingDate] = useState('2026-06-15');
+  const getRelativeDate = (daysOffset: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + daysOffset);
+    return d.toISOString().slice(0, 10);
+  };
+
+  const [meetingDate, setMeetingDate] = useState(new Date().toISOString().slice(0, 10));
   const [meetingTime, setMeetingTime] = useState('18:30');
   const [loadingLessons, setLoadingLessons] = useState(false);
   const [scheduling, setScheduling] = useState(false);
 
   // Fallback initial list if no database schedules exist yet
   const [eventsList, setEventsList] = useState([
-    { id: 'ev-1', title: 'Drafting Workshop I - Contratos internacionais', date: '2026-06-12', time: '18:30', type: 'Prática' },
-    { id: 'ev-2', title: 'Exame Intermédio: Common Law Enfoque de Luanda', date: '2026-06-18', time: '14:00', type: 'Avaliação' },
-    { id: 'ev-3', title: 'Sessão Conversacional Síncrona (Esmeralda B.S)', date: '2026-06-25', time: '19:00', type: 'Ao Vivo' }
+    { id: 'ev-1', title: 'Drafting Workshop I - Contratos internacionais', date: getRelativeDate(-3), time: '18:30', type: 'Prática' },
+    { id: 'ev-2', title: 'Exame Intermédio: Common Law Enfoque de Luanda', date: getRelativeDate(3), time: '14:00', type: 'Avaliação' },
+    { id: 'ev-3', title: 'Sessão Conversacional Síncrona (Esmeralda B.S)', date: getRelativeDate(10), time: '19:00', type: 'Ao Vivo' }
   ]);
 
   // Set initial selected course and student
@@ -147,7 +153,7 @@ export default function InstructorCalendarTab({
       return {
         id: sl.id || `sl-${index}`,
         title: `${title} (${studentName})`,
-        date: sl.lesson?.scheduled_at?.split('T')[0] || '2026-06-15',
+        date: sl.lesson?.scheduled_at?.split('T')[0] || new Date().toISOString().slice(0, 10),
         time: sl.lesson?.scheduled_at?.split('T')[1]?.substring(0, 5) || '18:30',
         type: 'Síncrona'
       };
@@ -320,7 +326,7 @@ export default function InstructorCalendarTab({
                 {scheduledLessons.map((session, index) => {
                   const courseName = session.lesson?.course?.title || 'English for the Legal Field';
                   const title = session.lesson?.titulo || session.lesson?.title || 'Aula Síncrona';
-                  const dateVal = session.lesson?.scheduled_at?.split('T')[0] || '2026-06-15';
+                  const dateVal = session.lesson?.scheduled_at?.split('T')[0] || new Date().toISOString().slice(0, 10);
                   const timeVal = session.lesson?.scheduled_at?.split('T')[1]?.substring(0, 5) || '18:30';
                   const sUser = session.student;
                   const studentName = sUser ? `${sUser.firstName || ''} ${sUser.lastName || ''}`.trim() || sUser.email : 'Aluno';

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase/client';
 import { 
   Users, 
@@ -49,6 +49,42 @@ export default function InstructorStudentsTab({
   const [editingGradeStudentId, setEditingGradeStudentId] = useState<string | null>(null);
   const [editScore, setEditScore] = useState(88);
 
+  // Real database metrics state from vw_student_progress view
+  const [progressMetrics, setProgressMetrics] = useState<Record<string, {
+    progress_percent: number;
+    total_lessons?: number;
+    completed_lessons?: number;
+    avg_quiz_score?: number;
+    last_activity?: string;
+  }>>({});
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('vw_student_progress')
+          .select('*');
+        if (error) throw error;
+        if (data) {
+          const mapping: Record<string, any> = {};
+          data.forEach((row: any) => {
+            mapping[row.student_id] = {
+              progress_percent: row.progress_percent || 0,
+              total_lessons: row.total_lessons,
+              completed_lessons: row.completed_lessons,
+              avg_quiz_score: row.avg_quiz_score,
+              last_activity: row.last_activity
+            };
+          });
+          setProgressMetrics(mapping);
+        }
+      } catch (err) {
+        console.error('Error fetching vw_student_progress:', err);
+      }
+    };
+    fetchMetrics();
+  }, []);
+
   // Helper mock data for grades and presence because they are simulated inside LMS
   const [metricsDB, setMetricsDB] = useState<Record<string, { grade: number; presence: number }>>(() => {
     return {
@@ -61,22 +97,6 @@ export default function InstructorStudentsTab({
   const getEnrollment = (studentId: string) => {
     const enroll = enrollments.find(e => e.userId === studentId);
     return enroll || { progressPercent: 66, status: 'ACTIVE', courseId: 'eng-legal-angola' };
-  };
-
-  const updateStudentProgress = async (studentId: string, newProgress: number) => {
-    try {
-      const { error } = await supabase
-        .from('enrollments')
-        .update({ progress_percent: newProgress })
-        .eq('student_id', studentId);
-
-      if (error) throw error;
-      alert(`O progresso de estudos foi reajustado no Supabase para ${newProgress}%!`);
-      window.location.reload(); 
-    } catch (err: any) {
-      console.error(err);
-      alert(`Erro ao reajustar progresso: ${err.message || err}`);
-    }
   };
 
   const handleSendInstantAlert = (id: string, name: string) => {
@@ -116,12 +136,13 @@ export default function InstructorStudentsTab({
 
     // 4. Progress criteria
     let progressMatch = true;
+    const progressPercent = progressMetrics[student.id]?.progress_percent ?? 0;
     if (selectedProgressFilter === 'low') {
-      progressMatch = enrollment.progressPercent < 50;
+      progressMatch = progressPercent < 50;
     } else if (selectedProgressFilter === 'medium') {
-      progressMatch = enrollment.progressPercent >= 50 && enrollment.progressPercent < 80;
+      progressMatch = progressPercent >= 50 && progressPercent < 80;
     } else if (selectedProgressFilter === 'completed') {
-      progressMatch = enrollment.progressPercent === 100 || enrollment.status === 'COMPLETED';
+      progressMatch = progressPercent === 100 || enrollment.status === 'COMPLETED';
     }
 
     return textMatch && courseMatch && statusMatch && progressMatch;
@@ -245,6 +266,7 @@ export default function InstructorStudentsTab({
                   const enroll = getEnrollment(student.id);
                   const isBlocked = student.status === 'SUSPENDED';
                   const activeMetric = metricsDB[student.id] || metricsDB['default'];
+                  const progressPercent = progressMetrics[student.id]?.progress_percent ?? 0;
 
                   return (
                     <tr key={student.id} className="hover:bg-cream-200/50 dark:hover:bg-ink-800/40 transition-colors">
@@ -273,18 +295,17 @@ export default function InstructorStudentsTab({
                             {courses.find(c => c.id === enroll.courseId)?.title || 'English for the Legal Field'}
                           </span>
                           
-                          {/* Slider/Progress interactive controller */}
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="range"
-                              min="0"
-                              max="100"
-                              value={enroll.progressPercent}
-                              onChange={(e) => updateStudentProgress(student.id, Number(e.target.value))}
-                              className="w-full accent-[#C89B3C] h-1 bg-cream-250 dark:bg-ink-800 rounded-full cursor-pointer"
-                              title="Ajuste manual de progresso para fins de simulação"
-                            />
-                            <span className="text-[9px] font-mono font-bold text-neutral-400 dark:text-cream-200/60">{enroll.progressPercent}%</span>
+                          {/* Progress indicator from vw_student_progress */}
+                          <div className="flex flex-col w-full gap-1">
+                            <div className="w-full bg-cream-250 dark:bg-ink-800 rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className="bg-[#C89B3C] h-full transition-all duration-500"
+                                style={{ width: `${progressPercent}%` }}
+                              />
+                            </div>
+                            <span className="text-[9px] font-mono font-bold text-neutral-400 dark:text-cream-200/60">
+                              {progressPercent}% de Progresso
+                            </span>
                           </div>
                         </div>
                       </td>
@@ -418,7 +439,7 @@ export default function InstructorStudentsTab({
                       <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono bg-cream-200 dark:bg-ink-800 p-2 rounded-xl text-ink-900 dark:text-cream-100">
                         <div>
                           <span className="block text-[8px] text-neutral-400 dark:text-cream-200/60 uppercase">Progresso</span>
-                          <span className="font-bold">{enroll.progressPercent}%</span>
+                          <span className="font-bold">{progressMetrics[student.id]?.progress_percent ?? 0}%</span>
                         </div>
                         <div>
                           <span className="block text-[8px] text-neutral-400 dark:text-cream-200/60 uppercase">Rendimento</span>
