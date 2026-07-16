@@ -175,7 +175,7 @@ export default function InstructorCoursesTab({
     setEditTitle(course.title);
     setEditSubtitle(course.subtitle || course.summary || '');
     setEditDuration(course.duration);
-    setEditPrice(course.price || '€450');
+    setEditPrice(course.price || '450.000 Kz');
   };
 
   const saveEdit = async (id: string) => {

@@ -142,7 +142,6 @@ export default function StudentPortal({
 
   // Calendar toggle view (Month vs Week)
   const [calendarView, setCalendarView] = useState<'MONTH' | 'WEEK'>('MONTH');
-  const [isGoogleSynced, setIsGoogleSynced] = useState(false);
 
   // Simulated notifications list
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -602,25 +601,23 @@ export default function StudentPortal({
     setGlobalSearch('');
   };
 
-  // Safe Google Calendar sync simulation
-  const handleSyncGoogleCalendar = () => {
-    setIsGoogleSynced(true);
-    alert('Integração Concluída! O seu Calendário Letivo MultiPlus está agora sincronizado bidirecionalmente com o seu Google Calendar pessoal.');
-  };
-
   // Export scheduled lessons as .ics file
   const handleExportICS = () => {
-    if (!scheduledLessons || scheduledLessons.length === 0) {
+    const lessonsWithDate = (scheduledLessons || []).filter(
+      session => session.lesson?.scheduled_at
+    );
+
+    if (lessonsWithDate.length === 0) {
       alert('Nenhuma aula agendada encontrada para exportação.');
       return;
     }
 
     let icsContent = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//MultiPlus Academy//NONSGML Calendar//PT\nCALSCALE:GREGORIAN\nMETHOD:PUBLISH\n';
 
-    scheduledLessons.forEach((session, idx) => {
+    lessonsWithDate.forEach((session, idx) => {
       const title = session.lesson?.titulo || session.lesson?.title || 'Aula Síncrona';
       const description = session.lesson?.descricao || 'Sessão em videoconferência síncrona com avaliação e debates.';
-      const rawDate = session.lesson?.scheduled_at || new Date().toISOString();
+      const rawDate = session.lesson?.scheduled_at!;
       const courseTitle = session.lesson?.course?.title || session.lesson?.course?.titulo || 'Curso MultiPlus';
       
       const d = new Date(rawDate);
@@ -662,28 +659,9 @@ export default function StudentPortal({
     duration: l.duracao || '15:00',
     description: l.descricao || '',
     scheduled_at: l.scheduled_at
-  })) : [
-    {
-      id: 'lesson_1_fallback',
-      title: 'Aula 1: Introdução ao Common Law vs. Civil Law no Contexto de Luanda e Huambo',
-      duration: '15:20',
-      description: 'Análise estrutural da doutrina dos casos precedentes vigentes nas transações petrolíferas sob a égide das regras de conteúdo local.'
-    },
-    {
-      id: 'lesson_2_fallback',
-      title: 'Aula 2: Vocabulário Crítico para Correspondência Jurídica Formal e Advisories',
-      duration: '18:45',
-      description: 'Aplicação de terminologias de etiqueta avançadas no drafting de correio profissional internacional.'
-    },
-    {
-      id: 'lesson_3_fallback',
-      title: 'Aula 3: Elaboração de Contratos Comerciais (Drafting) e Cláusulas Indemnity',
-      duration: '22:10',
-      description: 'Estruturação conceitual passo a passo de isenção mútua de perdas comerciais de acordo com as leis do mercado angolano.'
-    }
-  ];
+  })) : [];
 
-  const currentLecture = activeSyllabus[activeLessonIdx] || activeSyllabus[0];
+  const currentLecture = activeSyllabus[activeLessonIdx] || activeSyllabus[0] || null;
 
   // Notebook handling
   const handleSaveNote = () => {
@@ -1098,10 +1076,10 @@ export default function StudentPortal({
                           <div className="p-4 rounded-xl bg-cream-200 dark:bg-ink-950 border border-gray-150 dark:border-ink-800/50 space-y-3">
                             <span className="text-[9px] font-mono text-gold-600 tracking-wide block uppercase font-bold">RETOMAR HOJE:</span>
                             <h4 className="text-xs font-serif font-black text-neutral-400 dark:text-gray-200 mt-1 m-0">
-                              {currentLecture.title}
+                              {currentLecture?.title || 'Sem aulas ativas'}
                             </h4>
                             <p className="text-2xs text-neutral-400 dark:text-gray-300 leading-relaxed font-sans mt-1 m-0">
-                              {currentLecture.description}
+                              {currentLecture?.description || 'Nenhuma aula disponível no seu curso no momento.'}
                             </p>
                           </div>
 
@@ -1191,76 +1169,94 @@ export default function StudentPortal({
                       {/* Interactive player mock card */}
                       <div className="aspect-video bg-slate-900 border border-gold-600/35 rounded-2xl overflow-hidden relative flex flex-col justify-between items-stretch p-4 select-none shadow">
                         
-                        {/* Video streaming top logs */}
-                        <div className="flex justify-between items-center text-[10px] font-mono text-cream-100/50 z-10">
-                          <span className="bg-black/40 px-2 py-0.5 rounded border border-white/5">Cloudinary Segment Stream v2</span>
-                          <span className="bg-emerald-600 font-extrabold text-cream-100 px-2 py-0.5 rounded">AUTO 1080P</span>
-                        </div>
-
-                        {/* Interactive anti-recorders watermarker layer */}
-                        <div 
-                          className="absolute text-cream-100/10 text-[11px] sm:text-xs font-mono tracking-widest font-extrabold pointer-events-none z-20 bg-black/10 px-2.5 py-1 rounded border border-white/5 whitespace-nowrap transition-all duration-1000 ease-in-out"
-                          style={{ top: randomWatermark.top, left: randomWatermark.left, transform: 'rotate(-5deg)' }}
-                        >
-                          🛡 {currentUser?.email || 'antonio@advogados.ao'} • MULTIPLUS
-                        </div>
-
-                        {/* Player Backdrops visual layout */}
-                        {currentLecture.scheduled_at && new Date(currentLecture.scheduled_at) > new Date() ? (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,rgba(93,10,10,0.35)_0%,#1a0404_100%)]">
-                            <Lock size={44} className="text-red-500 mb-2 animate-bounce" />
+                        {!currentLecture ? (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,rgba(93,93,93,0.15)_0%,#0F1520_100%)]">
+                            <BookOpen className="w-12 h-12 text-gold-600/30 mb-2" />
                             <h4 className="text-cream-100 text-xs sm:text-sm font-serif font-black text-center max-w-sm mt-1 mb-0 leading-snug">
-                              {currentLecture.title}
+                              Nenhuma aula disponível
                             </h4>
-                            <span className="text-[10px] font-mono text-neutral-400 mt-2 block bg-black/40 px-3 py-1.5 rounded-lg border border-red-500/20">
-                              🔒 CONTEÚDO BLOQUEADO • Disponível apenas a partir de {new Date(currentLecture.scheduled_at).toLocaleString('pt-AO')}
-                            </span>
+                            <p className="text-[10px] text-neutral-400 mt-2 text-center max-w-xs">
+                              As aulas do seu curso aparecerão aqui assim que o professor as publicar.
+                            </p>
                           </div>
                         ) : (
                           <>
-                            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,rgba(10,46,93,0.3)_0%,#040c1a_100%)]">
-                              <Video size={44} className="text-gold-600/40 mb-2 animate-pulse" />
-                              <h4 className="text-cream-100 text-xs sm:text-sm font-serif font-black text-center max-w-sm mt-1 mb-0 leading-snug">
-                                {currentLecture.title}
-                              </h4>
-                              <span className="text-[10px] font-mono text-neutral-400 mt-2 block">
-                                {isPlayingVideo ? `A reproduzir a ${videoPlaybackSpeed}x` : 'Pausado'} • {Math.floor(videoPlaySec / 60)}:{(videoPlaySec % 60).toString().padStart(2, '0')} / {currentLecture.duration}
-                              </span>
+                            {/* Video streaming top logs */}
+                            <div className="flex justify-between items-center text-[10px] font-mono text-cream-100/50 z-10">
+                              <span className="bg-black/40 px-2 py-0.5 rounded border border-white/5">Cloudinary Segment Stream v2</span>
+                              <span className="bg-emerald-600 font-extrabold text-cream-100 px-2 py-0.5 rounded">AUTO 1080P</span>
                             </div>
 
-                            {/* Play control bars row footer */}
-                            <div className="z-10 bg-black/70 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 flex items-center justify-between gap-4 mt-auto">
-                              <div className="flex items-center gap-3">
-                                <button
-                                  onClick={() => setIsPlayingVideo(!isPlayingVideo)}
-                                  className="px-3.5 py-1 bg-gold-600 text-slate-950 font-mono text-[10px] font-bold rounded-lg uppercase cursor-pointer"
-                                >
-                                  {isPlayingVideo ? 'Pausar' : 'Reproduzir'}
-                                </button>
-                                <button
-                                  onClick={() => setVideoPlaySec(prev => prev + 15)}
-                                  className="text-cream-100/75 hover:text-gold-600 text-3xs font-mono"
-                                >
-                                  +15 segundos
-                                </button>
-                              </div>
-
-                              {/* Speed dial switches */}
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[8px] font-mono text-neutral-400">VELOCIDADE:</span>
-                                {[1, 1.25, 1.5, 2].map(spd => (
-                                  <button
-                                    key={spd}
-                                    onClick={() => setVideoPlaybackSpeed(spd)}
-                                    className={`px-1.5 py-0.5 rounded text-4xs font-mono ${
-                                      videoPlaybackSpeed === spd ? 'bg-gold-600 text-slate-950 font-bold' : 'text-neutral-400 hover:text-cream-100 hover:bg-cream-100/10'
-                                    }`}
-                                  >
-                                    {spd}x
-                                  </button>
-                                ))}
-                              </div>
+                            {/* Interactive anti-recorders watermarker layer */}
+                            <div 
+                              className="absolute text-cream-100/10 text-[11px] sm:text-xs font-mono tracking-widest font-extrabold pointer-events-none z-20 bg-black/10 px-2.5 py-1 rounded border border-white/5 whitespace-nowrap transition-all duration-1000 ease-in-out"
+                              style={{ top: randomWatermark.top, left: randomWatermark.left, transform: 'rotate(-5deg)' }}
+                            >
+                              🛡 {currentUser?.email || currentUser?.firstName || 'Aluno'} • MULTIPLUS
                             </div>
+
+                            {/* Player Backdrops visual layout */}
+                            {(!currentLecture.scheduled_at || new Date(currentLecture.scheduled_at) > new Date()) ? (
+                              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,rgba(93,10,10,0.35)_0%,#1a0404_100%)]">
+                                <Lock size={44} className="text-red-500 mb-2 animate-bounce" />
+                                <h4 className="text-cream-100 text-xs sm:text-sm font-serif font-black text-center max-w-sm mt-1 mb-0 leading-snug">
+                                  {currentLecture.title}
+                                </h4>
+                                <span className="text-[10px] font-mono text-neutral-400 mt-2 block bg-black/40 px-3 py-1.5 rounded-lg border border-red-500/20">
+                                  {currentLecture.scheduled_at ? (
+                                    `🔒 CONTEÚDO BLOQUEADO • Disponível apenas a partir de ${new Date(currentLecture.scheduled_at).toLocaleString('pt-AO')}`
+                                  ) : (
+                                    '🔒 CONTEÚDO BLOQUEADO • Esta aula ainda não foi agendada pelo professor'
+                                  )}
+                                </span>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,rgba(10,46,93,0.3)_0%,#040c1a_100%)]">
+                                  <Video size={44} className="text-gold-600/40 mb-2 animate-pulse" />
+                                  <h4 className="text-cream-100 text-xs sm:text-sm font-serif font-black text-center max-w-sm mt-1 mb-0 leading-snug">
+                                    {currentLecture.title}
+                                  </h4>
+                                  <span className="text-[10px] font-mono text-neutral-400 mt-2 block">
+                                    {isPlayingVideo ? `A reproduzir a ${videoPlaybackSpeed}x` : 'Pausado'} • {Math.floor(videoPlaySec / 60)}:{(videoPlaySec % 60).toString().padStart(2, '0')} / {currentLecture.duration}
+                                  </span>
+                                </div>
+
+                                {/* Play control bars row footer */}
+                                <div className="z-10 bg-black/70 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 flex items-center justify-between gap-4 mt-auto">
+                                  <div className="flex items-center gap-3">
+                                    <button
+                                      onClick={() => setIsPlayingVideo(!isPlayingVideo)}
+                                      className="px-3.5 py-1 bg-gold-600 text-slate-950 font-mono text-[10px] font-bold rounded-lg uppercase cursor-pointer"
+                                    >
+                                      {isPlayingVideo ? 'Pausar' : 'Reproduzir'}
+                                    </button>
+                                    <button
+                                      onClick={() => setVideoPlaySec(prev => prev + 15)}
+                                      className="text-cream-100/75 hover:text-gold-600 text-3xs font-mono"
+                                    >
+                                      +15 segundos
+                                    </button>
+                                  </div>
+
+                                  {/* Speed dial switches */}
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[8px] font-mono text-neutral-400">VELOCIDADE:</span>
+                                    {[1, 1.25, 1.5, 2].map(spd => (
+                                      <button
+                                        key={spd}
+                                        onClick={() => setVideoPlaybackSpeed(spd)}
+                                        className={`px-1.5 py-0.5 rounded text-4xs font-mono ${
+                                          videoPlaybackSpeed === spd ? 'bg-gold-600 text-slate-950 font-bold' : 'text-neutral-400 hover:text-cream-100 hover:bg-cream-100/10'
+                                        }`}
+                                      >
+                                        {spd}x
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              </>
+                            )}
                           </>
                         )}
 
@@ -1343,46 +1339,62 @@ export default function StudentPortal({
                         </span>
 
                         <div className="space-y-2 flex-1">
-                           {activeSyllabus.map((syll, index) => {
-                             const isLocked = syll.scheduled_at ? new Date(syll.scheduled_at) > new Date() : false;
-                             return (
-                               <button
-                                 key={index}
-                                 onClick={() => {
-                                   setActiveLessonIdx(index);
-                                   setVideoPlaySec(0);
-                                 }}
-                                 className={`w-full text-left p-3 rounded-xl border transition-all text-xs flex justify-between gap-3 cursor-pointer ${
-                                   activeLessonIdx === index
-                                     ? 'border-gold-600 bg-ink-900/5 dark:bg-slate-800 text-ink-900 dark:text-gold-600'
-                                     : 'border-gray-100 dark:border-ink-800 hover:border-gray-200'
-                                 } ${isLocked ? 'opacity-85' : ''}`}
-                               >
-                                 <div className="space-y-1 text-left flex-1 min-w-0">
-                                   <h5 className="font-serif font-black m-0 leading-snug truncate flex items-center gap-1">
-                                     {isLocked && <Lock size={12} className="text-red-500 shrink-0" />}
-                                     {syll.title}
-                                   </h5>
-                                   <p className="text-[10px] text-neutral-400 m-0 flex items-center gap-1.5">
-                                     {isLocked ? (
-                                       <span className="text-red-650 dark:text-red-400 font-semibold font-mono text-[9px] flex items-center gap-0.5">
-                                         Agendada para {new Date(syll.scheduled_at!).toLocaleDateString('pt-AO')}
-                                       </span>
-                                     ) : completedLessons.includes(syll.id) ? (
-                                       <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono text-[9px] flex items-center gap-0.5">
-                                         ✓ Concluída
-                                       </span>
-                                     ) : (
-                                       <span>Segmento explicativo</span>
-                                     )}
-                                   </p>
-                                 </div>
-                                 <span className="text-gold-600 font-mono text-4xs shrink-0 self-center font-bold">
-                                   {syll.duration}
-                                 </span>
-                               </button>
-                             );
-                           })}
+                           {activeSyllabus.length === 0 ? (
+                             <div className="text-center py-12 space-y-3">
+                               <BookOpen className="w-12 h-12 text-gold-600/30 mx-auto" />
+                               <h4 className="font-serif font-black text-ink-900 dark:text-cream-100 text-sm">
+                                 Nenhuma aula disponível
+                                </h4>
+                               <p className="text-xs text-neutral-400 max-w-xs mx-auto">
+                                 As aulas do seu curso aparecerão aqui assim que o professor as publicar.
+                               </p>
+                             </div>
+                           ) : (
+                             activeSyllabus.map((syll, index) => {
+                               const isLocked = syll.scheduled_at ? new Date(syll.scheduled_at) > new Date() : true;
+                               return (
+                                 <button
+                                   key={index}
+                                   onClick={() => {
+                                     if (isLocked) {
+                                       alert('Esta aula está bloqueada!');
+                                       return;
+                                     }
+                                     setActiveLessonIdx(index);
+                                     setVideoPlaySec(0);
+                                   }}
+                                   className={`w-full text-left p-3 rounded-xl border transition-all text-xs flex justify-between gap-3 cursor-pointer ${
+                                     activeLessonIdx === index
+                                       ? 'border-gold-600 bg-ink-900/5 dark:bg-slate-800 text-ink-900 dark:text-gold-600'
+                                       : 'border-gray-100 dark:border-ink-800 hover:border-gray-200'
+                                   } ${isLocked ? 'opacity-70 cursor-not-allowed bg-cream-150 dark:bg-ink-950/20' : ''}`}
+                                 >
+                                   <div className="space-y-1 text-left flex-1 min-w-0">
+                                     <h5 className="font-serif font-black m-0 leading-snug truncate flex items-center gap-1">
+                                       {isLocked && <Lock size={12} className="text-red-500 shrink-0" />}
+                                       {syll.title}
+                                     </h5>
+                                     <p className="text-[10px] text-neutral-400 m-0 flex items-center gap-1.5">
+                                       {isLocked ? (
+                                         <span className="text-red-650 dark:text-red-400 font-semibold font-mono text-[9px] flex items-center gap-0.5">
+                                           {syll.scheduled_at ? `Agendada para ${new Date(syll.scheduled_at!).toLocaleDateString('pt-AO')}` : 'Não agendada'}
+                                         </span>
+                                       ) : completedLessons.includes(syll.id) ? (
+                                         <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono text-[9px] flex items-center gap-0.5">
+                                           ✓ Concluída
+                                         </span>
+                                       ) : (
+                                         <span>Segmento explicativo</span>
+                                       )}
+                                     </p>
+                                   </div>
+                                   <span className="text-gold-600 font-mono text-4xs shrink-0 self-center font-bold">
+                                     {syll.duration}
+                                   </span>
+                                 </button>
+                               );
+                             })
+                           )}
                         </div>
 
                         <div className="mt-4 pt-4 border-t border-gray-150 dark:border-ink-800 bg-cream-200 dark:bg-ink-900/40 p-3 rounded-xl text-center space-y-2">
@@ -1427,13 +1439,6 @@ export default function StudentPortal({
                         </div>
 
                         <button
-                          onClick={handleSyncGoogleCalendar}
-                          className="px-3.5 py-1.5 bg-gold-600 hover:bg-[#b08530] text-slate-950 font-mono text-3xs font-extrabold uppercase rounded-xl tracking-wider transition-all cursor-pointer border-0"
-                        >
-                          {isGoogleSynced ? 'Sincronizado' : 'Sincronizar Google Calendar'}
-                        </button>
-
-                        <button
                           onClick={handleExportICS}
                           className="px-3.5 py-1.5 bg-cream-300 dark:bg-ink-800 hover:bg-gold-600 dark:hover:bg-gold-600 dark:hover:text-slate-950 text-ink-900 dark:text-cream-100 font-mono text-3xs font-extrabold uppercase rounded-xl tracking-wider transition-all cursor-pointer border-0 flex items-center gap-1"
                         >
@@ -1445,11 +1450,11 @@ export default function StudentPortal({
                     {/* Schedule item grids mapped out */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       
-                      {scheduledLessons.length > 0 ? (
-                        scheduledLessons.map((session, index) => {
+                      {scheduledLessons.filter(s => s.lesson?.scheduled_at).length > 0 ? (
+                        scheduledLessons.filter(s => s.lesson?.scheduled_at).map((session, index) => {
                           const title = session.lesson?.titulo || session.lesson?.title || 'Aula Síncrona';
-                          const dateVal = session.lesson?.scheduled_at?.split('T')[0] || new Date().toISOString().split('T')[0];
-                          const timeVal = session.lesson?.scheduled_at?.split('T')[1]?.substring(0, 5) || '18:30';
+                          const dateVal = session.lesson.scheduled_at.split('T')[0];
+                          const timeVal = session.lesson.scheduled_at.split('T')[1]?.substring(0, 5) || '--:--';
                           const courseTitle = session.lesson?.course?.title || session.lesson?.course?.titulo || 'English for the Legal Field';
                           const meetUrl = 'https://meet.google.com/lookup/mock-multiplus';
 
@@ -1478,61 +1483,15 @@ export default function StudentPortal({
                           );
                         })
                       ) : (
-                        <>
-                          {/* Fallback mock items if no real meetings are scheduled */}
-                          {/* Session 1 card */}
-                          <div className="p-4 rounded-xl border border-gray-150 dark:border-ink-800/60 bg-cream-200/50 dark:bg-slate-900/20 space-y-3">
-                            <div className="flex justify-between items-center text-2xs font-mono font-bold">
-                              <span className="text-gold-600">TERÇA-FEIRA</span>
-                              <span className="bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded">18h30 - 20h30</span>
-                            </div>
-                            <div>
-                              <h4 className="text-xs font-serif font-black text-ink-900 dark:text-gold-600">Análise Linguística: Common Law vs. Civil Law</h4>
-                              <p className="text-[10px] text-neutral-400 mt-1">Sessão em videoconferência síncrona com avaliação e debates.</p>
-                            </div>
-                            <a 
-                              href="https://meet.google.com/lookup/mock-multiplus"
-                              target="_blank"
-                              className="py-2.5 bg-ink-900 text-cream-100 text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-ink-900 transition-colors"
-                            >
-                              Entrar na Aula Meet
-                            </a>
-                          </div>
-
-                          {/* Session 2 card */}
-                          <div className="p-4 rounded-xl border border-gray-150 dark:border-ink-800/60 bg-cream-200/50 dark:bg-slate-900/20 space-y-3">
-                            <div className="flex justify-between items-center text-2xs font-mono font-bold">
-                              <span className="text-gold-600">QUINTA-FEIRA</span>
-                              <span className="bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded">18h30 - 20h30</span>
-                            </div>
-                            <div>
-                              <h4 className="text-xs font-serif font-black text-ink-900 dark:text-gold-600">Drafting: Cláusulas de Exclusão e Dolo</h4>
-                              <p className="text-[10px] text-neutral-400 mt-1">Aplicação prática do Artigo 230 do Regulamento Angolano na redação internacional.</p>
-                            </div>
-                            <a 
-                              href="https://meet.google.com/lookup/mock-multiplus"
-                              target="_blank"
-                              className="py-2.5 bg-ink-900 text-cream-100 text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-ink-900 transition-colors"
-                            >
-                              Entrar na Aula Meet
-                            </a>
-                          </div>
-
-                          {/* Session 3 card */}
-                          <div className="p-4 rounded-xl border border-gray-150 dark:border-ink-800/60 bg-cream-200/50 dark:bg-slate-900/20 space-y-3">
-                            <div className="flex justify-between items-center text-2xs font-mono font-bold">
-                              <span className="text-gold-600">SÁBADO LETIVO</span>
-                              <span className="bg-amber-50 text-gold-600 px-1.5 py-0.5 rounded">09h00 - 12h00</span>
-                            </div>
-                            <div>
-                              <h4 className="text-xs font-serif font-black text-ink-900 dark:text-gold-600">Simulação de Corte Arbitral (Mock Arbitration)</h4>
-                              <p className="text-[10px] text-neutral-400 mt-1">Encontro laboratorial presencial programado no campus regional do Huambo.</p>
-                            </div>
-                            <span className="py-2.5 bg-gray-100 dark:bg-slate-800 text-neutral-400 text-center rounded-lg text-3xs font-mono font-bold uppercase block">
-                              Encontro Presencial
-                            </span>
-                          </div>
-                        </>
+                        <div className="col-span-full py-12 text-center space-y-3">
+                          <CalendarIcon className="w-12 h-12 text-gold-600/30 mx-auto animate-pulse" />
+                          <h4 className="font-serif font-black text-ink-900 dark:text-cream-100 text-sm">
+                            Nenhum encontro agendado
+                          </h4>
+                          <p className="text-xs text-neutral-400 max-w-xs mx-auto">
+                            Não existem aulas com agendamento no momento para o seu curso.
+                          </p>
+                        </div>
                       )}
 
                     </div>

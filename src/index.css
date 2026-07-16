@@ -22,6 +22,16 @@
   --color-flag-black: #000000;
   --color-flag-gold: #F7CE00;
 
+  --color-ink-750: #1E2736;     /* Intermediário entre ink-800 e ink-900 */
+  --color-ink-850: #192030;     /* Intermediário para cards dark mode */
+  --color-ink-950: #0F1520;     /* Mais escuro que ink-900 — fundo profundo */
+  --color-cream-150: #F5F0EA;   /* Intermediário entre cream-100 e cream-200 */
+  --color-cream-250: #EDE5DA;   /* Um tom acima de cream-200 para hover */
+  --color-gray-150: #E8E8E8;    /* Borda sutil clara */
+  --color-gray-250: #D1D5DB;    /* Borda média clara (equivale a slate-300) */
+  --color-neutral-450: #8B8F98; /* Placeholder intermediário */
+  --color-slate-850: #172033;   /* Texto dark mode (equivale a ink-850) */
+
   --animate-star-movement-bottom: star-movement-bottom linear infinite alternate;
   --animate-star-movement-top: star-movement-top linear infinite alternate;
 

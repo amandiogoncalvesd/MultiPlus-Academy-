@@ -96,7 +96,7 @@ export default function InstructorStudentsTab({
 
   const getEnrollment = (studentId: string) => {
     const enroll = enrollments.find(e => e.userId === studentId);
-    return enroll || { progressPercent: 66, status: 'ACTIVE', courseId: 'eng-legal-angola' };
+    return enroll || null;
   };
 
   const handleSendInstantAlert = (id: string, name: string) => {

@@ -40,7 +40,7 @@ export default function StudentTasksTab() {
       id: 'task_1',
       title: 'Structural translation: Oil and Gas Concession regulations',
       description: 'Traduzir os artigos 5 a 12 da regulamentação nacional de Conteúdo Local (Lei 27/21 de Angola) para inglês técnico, justificando a escolha dos verbos modais (shall, may, must).',
-      dueDate: '2026-06-15',
+      dueDate: '',
       points: 100,
       status: 'PENDING'
     },
@@ -48,7 +48,7 @@ export default function StudentTasksTab() {
       id: 'task_2',
       title: 'Minuting draft: Indemnification and Limitation of Liability Boilerplates',
       description: 'Estruturar rascunho de compromisso de isenção mútua de perdas comerciais entre um consórcio contratual no Porto do Huambo e operadora marítima transnacional.',
-      dueDate: '2026-06-25',
+      dueDate: '',
       points: 100,
       status: 'PENDING'
     },
@@ -56,7 +56,7 @@ export default function StudentTasksTab() {
       id: 'task_3',
       title: 'Quiz 1: Civil Law vs Common Law foundational concepts',
       description: 'Questionário de fixação automatizado cobrindo as origens, Stare Decisis, doutrinas e diferenças estruturais para juristas de países lusófonos.',
-      dueDate: '2026-06-05',
+      dueDate: '',
       points: 50,
       status: 'COMPLETED',
       submittedFile: 'quiz_1_submission_dr_antonio.pdf',
@@ -69,7 +69,7 @@ export default function StudentTasksTab() {
       id: 'task_4',
       title: 'Grammar exercise: Formal Legal Advisory Writing Ethics',
       description: 'Análise de e-mails formais e substituição de expressões redundantes ou coloquiais por verbos latinos aceitáveis no direito internacional.',
-      dueDate: '2026-05-28',
+      dueDate: '',
       points: 100,
       status: 'OVERDUE'
     }
@@ -182,7 +182,7 @@ export default function StudentTasksTab() {
                       VALOR: {task.points} PONTOS
                     </span>
                     {task.status === 'PENDING' && (
-                      <span className="text-[9px] font-mono text-amber-600 dark:text-[#E2B755] font-bold">⏱ EXPIRA EM: {task.dueDate}</span>
+                      <span className="text-[9px] font-mono text-amber-600 dark:text-[#E2B755] font-bold">⏱ {task.dueDate ? `EXPIRA EM: ${task.dueDate}` : 'Sem prazo definido'}</span>
                     )}
                   </div>
 

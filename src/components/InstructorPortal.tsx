@@ -139,7 +139,7 @@ export default function InstructorPortal({
   // 3. New Course creation Form States
   const [newCourseTitle, setNewCourseTitle] = useState('');
   const [newCourseSubtitle, setNewCourseSubtitle] = useState('');
-  const [newCoursePrice, setNewCoursePrice] = useState('€450');
+  const [newCoursePrice, setNewCoursePrice] = useState('450.000 Kz');
   const [newCourseCategory, setNewCourseCategory] = useState('Direito Corporativo');
   const [newCourseDuration, setNewCourseDuration] = useState('12 Semanas (3 Meses)');
 

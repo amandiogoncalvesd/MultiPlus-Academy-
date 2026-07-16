@@ -132,21 +132,8 @@ export default function AdminPortal({
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
   const [courseTitle, setCourseTitle] = useState('');
-  const [coursePrice, setCoursePrice] = useState('€350');
+  const [coursePrice, setCoursePrice] = useState('350.000 Kz');
   const [courseStatus, setCourseStatus] = useState<'ATIVO' | 'RASCUNHO' | 'ARQUIVADO'>('ATIVO');
-
-  // Integrations states
-  const [integrationStatuses, setIntegrationStatuses] = useState<Record<string, boolean>>({
-    Supabase: true,
-    Cloudinary: true,
-    GoogleCalendar: true,
-    GoogleMeet: true,
-    GoogleForms: true,
-    GoogleDrive: true,
-    VertexAI: false,
-    WhatsAppAPI: false,
-    SMTPEmail: true,
-  });
 
   // Blog states
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
@@ -164,8 +151,8 @@ export default function AdminPortal({
 
   // Config parameters
   const [instName, setInstName] = useState('MultiPlus Academy');
-  const [instDomain, setInstDomain] = useState('multiplus.ao');
-  const [instPhone, setInstPhone] = useState('+244 923 000 000');
+  const [instDomain, setInstDomain] = useState('');
+  const [instPhone, setInstPhone] = useState('');
 
   // General Notification center
   const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
@@ -269,7 +256,7 @@ export default function AdminPortal({
           modality: c.category === 'Online' ? 'Online' : 'Híbrido',
           schedule: 'Terças e Quintas, 18h30',
           startDate: 'Em breve',
-          price: '€450',
+          price: '450.000 Kz',
           targetAudience: [],
           modules: [],
           status: c.status,
@@ -332,8 +319,8 @@ export default function AdminPortal({
           .single();
         if (instData) {
           setInstName(instData.nome || 'MultiPlus Academy');
-          setInstDomain(instData.dominio || 'multiplus.ao');
-          setInstPhone(instData.contacto || '+244 923 000 000');
+          setInstDomain(instData.dominio || '');
+          setInstPhone(instData.contacto || '');
         }
       } catch (instErr) {
         console.warn('Erro ao ler a tabela institution_settings:', instErr);
