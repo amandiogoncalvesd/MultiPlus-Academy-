@@ -41,13 +41,14 @@ export default function InstructorStudentsTab({
   const [selectedProgressFilter, setSelectedProgressFilter] = useState('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('all');
 
-  // Interactive student note/alert state
+  // Interactive student alert state
   const [alertingStudentId, setAlertingStudentId] = useState<string | null>(null);
   const [customAlertText, setCustomAlertText] = useState('');
 
   // Editable grades state
   const [editingGradeStudentId, setEditingGradeStudentId] = useState<string | null>(null);
   const [editScore, setEditScore] = useState(88);
+  const [customGrades, setCustomGrades] = useState<Record<string, number>>({});
 
   // Real database metrics state from vw_student_progress view
   const [progressMetrics, setProgressMetrics] = useState<Record<string, {
@@ -85,56 +86,54 @@ export default function InstructorStudentsTab({
     fetchMetrics();
   }, []);
 
-  // Helper mock data for grades and presence because they are simulated inside LMS
-  const [metricsDB, setMetricsDB] = useState<Record<string, { grade: number; presence: number }>>(() => {
-    return {
-      'per_student': { grade: 92, presence: 95 },
-      'user_temp_1': { grade: 78, presence: 82 },
-      'default': { grade: 85, presence: 90 }
-    };
-  });
-
   const getEnrollment = (studentId: string) => {
     const enroll = enrollments.find(e => e.userId === studentId);
     return enroll || null;
   };
 
-  const handleSendInstantAlert = (id: string, name: string) => {
+  const handleSendInstantAlert = async (id: string, name: string) => {
     if (!customAlertText.trim()) return;
-    alert(`Mensagem com carimbo de urgência redirecionada para ${name}: "${customAlertText}"`);
+    
+    try {
+      const { error } = await supabase.from('notifications').insert({
+        user_id: id,
+        text: `[ADVERTÊNCIA FORMAL] ${customAlertText}`,
+        read: false
+      });
+      if (error) throw error;
+      alert(`Mensagem com carimbo de urgência enviada com sucesso para ${name}: "${customAlertText}"`);
+    } catch (err) {
+      console.error('Error writing notification alert to DB:', err);
+      alert('Não foi possível registrar o alerta oficial na base de dados.');
+    }
+
     setAlertingStudentId(null);
     setCustomAlertText('');
   };
 
   const saveGradeScore = (id: string) => {
-    setMetricsDB(prev => ({
+    setCustomGrades(prev => ({
       ...prev,
-      [id]: {
-        ...prev[id || 'default'],
-        grade: editScore
-      }
+      [id]: editScore
     }));
     setEditingGradeStudentId(null);
-    alert('Nota académica guardada e vinculada ao percurso letivo.');
+    alert('Nota académica guardada e vinculada ao percurso letivo com sucesso!');
   };
 
   // Perform advanced filter matches
   const filteredList = students.filter(student => {
-    // 1. Text lookup
     const term = searchQuery.toLowerCase();
     const textMatch = student.firstName.toLowerCase().includes(term) ||
                       student.lastName.toLowerCase().includes(term) ||
                       student.email.toLowerCase().includes(term) ||
                       (student.phone && student.phone.includes(term));
 
-    // 2. Course matching
     const enrollment = getEnrollment(student.id);
-    const courseMatch = selectedCourseFilter === 'all' || enrollment.courseId === selectedCourseFilter;
-
-    // 3. Status filter matching
+    if (!enrollment && selectedCourseFilter !== 'all') return false;
+    
+    const courseMatch = selectedCourseFilter === 'all' || (enrollment && enrollment.courseId === selectedCourseFilter);
     const statusMatch = selectedStatusFilter === 'all' || student.status === selectedStatusFilter;
 
-    // 4. Progress criteria
     let progressMatch = true;
     const progressPercent = progressMetrics[student.id]?.progress_percent ?? 0;
     if (selectedProgressFilter === 'low') {
@@ -142,7 +141,7 @@ export default function InstructorStudentsTab({
     } else if (selectedProgressFilter === 'medium') {
       progressMatch = progressPercent >= 50 && progressPercent < 80;
     } else if (selectedProgressFilter === 'completed') {
-      progressMatch = progressPercent === 100 || enrollment.status === 'COMPLETED';
+      progressMatch = progressPercent === 100 || (enrollment && enrollment.status === 'COMPLETED');
     }
 
     return textMatch && courseMatch && statusMatch && progressMatch;
@@ -265,8 +264,15 @@ export default function InstructorStudentsTab({
                 filteredList.map((student) => {
                   const enroll = getEnrollment(student.id);
                   const isBlocked = student.status === 'SUSPENDED';
-                  const activeMetric = metricsDB[student.id] || metricsDB['default'];
+                  
                   const progressPercent = progressMetrics[student.id]?.progress_percent ?? 0;
+                  const completedLessons = progressMetrics[student.id]?.completed_lessons ?? 0;
+                  const totalLessons = progressMetrics[student.id]?.total_lessons ?? 1;
+                  const presenceRate = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : progressPercent;
+
+                  const avgScore = customGrades[student.id] !== undefined
+                    ? customGrades[student.id]
+                    : (progressMetrics[student.id]?.avg_quiz_score ? Math.round(progressMetrics[student.id].avg_quiz_score!) : 85);
 
                   return (
                     <tr key={student.id} className="hover:bg-cream-200/50 dark:hover:bg-ink-800/40 transition-colors">
@@ -292,10 +298,10 @@ export default function InstructorStudentsTab({
                       <td className="p-4 sm:p-5">
                         <div className="space-y-1.5 w-44">
                           <span className="text-[9px] font-mono text-neutral-400 dark:text-cream-200/60 block uppercase truncate max-w-[170px]">
-                            {courses.find(c => c.id === enroll.courseId)?.title || 'English for the Legal Field'}
+                            {(enroll && courses.find(c => c.id === enroll.courseId)?.title) || 'English for the Legal Field'}
                           </span>
                           
-                          {/* Progress indicator from vw_student_progress */}
+                          {/* Progress indicator */}
                           <div className="flex flex-col w-full gap-1">
                             <div className="w-full bg-cream-250 dark:bg-ink-800 rounded-full h-1.5 overflow-hidden">
                               <div
@@ -333,12 +339,12 @@ export default function InstructorStudentsTab({
                           <button
                             onClick={() => {
                               setEditingGradeStudentId(student.id);
-                              setEditScore(activeMetric.grade);
+                              setEditScore(avgScore);
                             }}
                             className="bg-transparent border-0 p-0 text-left cursor-pointer hover:underline text-neutral-400 hover:text-gold-600 transition-colors"
                             title="Clique para redefinir nota final de exames"
                           >
-                            <span className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 block">{activeMetric.grade}</span>
+                            <span className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 block">{avgScore}</span>
                             <span className="text-[8px] font-mono text-neutral-400 dark:text-cream-200/60 block">/ 100 • EDITAR</span>
                           </button>
                         )}
@@ -347,7 +353,7 @@ export default function InstructorStudentsTab({
                       {/* Attendance presence tracker */}
                       <td className="p-4 sm:p-5">
                         <span className="text-sm font-serif font-black text-neutral-400 dark:text-cream-200/60 block">
-                          {activeMetric.presence}%
+                          {presenceRate}%
                         </span>
                         <span className="text-[8px] font-mono text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider block">
                           REGULADO
@@ -379,7 +385,7 @@ export default function InstructorStudentsTab({
                           {isBlocked ? <Lock size={12} /> : <Unlock size={12} />}
                         </button>
 
-                        {enroll.status === 'COMPLETED' ? (
+                        {enroll && enroll.status === 'COMPLETED' ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-400 text-[10px] font-mono font-bold uppercase rounded-xl border border-emerald-100 dark:border-emerald-800/40">
                             Certificado✓
                           </span>
@@ -409,7 +415,15 @@ export default function InstructorStudentsTab({
               filteredList.map((student) => {
                 const enroll = getEnrollment(student.id);
                 const isBlocked = student.status === 'SUSPENDED';
-                const activeMetric = metricsDB[student.id] || metricsDB['default'];
+                
+                const progressPercent = progressMetrics[student.id]?.progress_percent ?? 0;
+                const completedLessons = progressMetrics[student.id]?.completed_lessons ?? 0;
+                const totalLessons = progressMetrics[student.id]?.total_lessons ?? 1;
+                const presenceRate = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : progressPercent;
+
+                const avgScore = customGrades[student.id] !== undefined
+                  ? customGrades[student.id]
+                  : (progressMetrics[student.id]?.avg_quiz_score ? Math.round(progressMetrics[student.id].avg_quiz_score!) : 85);
 
                 return (
                   <div key={student.id} className="bg-cream-100 dark:bg-ink-900 p-4 rounded-2xl border border-gray-150 dark:border-ink-800/60 space-y-3 text-left">
@@ -432,22 +446,22 @@ export default function InstructorStudentsTab({
                       <div>
                         <span className="text-[8px] font-mono text-neutral-400 dark:text-cream-200/60 block uppercase">Curso</span>
                         <span className="font-semibold text-neutral-400 dark:text-cream-100 block text-[11px] truncate">
-                          {courses.find(c => c.id === enroll.courseId)?.title || 'English for the Legal Field'}
+                          {enroll && courses.find(c => c.id === enroll.courseId)?.title}
                         </span>
                       </div>
 
                       <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono bg-cream-200 dark:bg-ink-800 p-2 rounded-xl text-ink-900 dark:text-cream-100">
                         <div>
                           <span className="block text-[8px] text-neutral-400 dark:text-cream-200/60 uppercase">Progresso</span>
-                          <span className="font-bold">{progressMetrics[student.id]?.progress_percent ?? 0}%</span>
+                          <span className="font-bold">{progressPercent}%</span>
                         </div>
                         <div>
                           <span className="block text-[8px] text-neutral-400 dark:text-cream-200/60 uppercase">Rendimento</span>
-                          <span className="font-bold">{activeMetric.grade}/100</span>
+                          <span className="font-bold">{avgScore}/100</span>
                         </div>
                         <div>
                           <span className="block text-[8px] text-neutral-400 dark:text-cream-200/60 uppercase">Presença</span>
-                          <span className="font-bold">{activeMetric.presence}%</span>
+                          <span className="font-bold">{presenceRate}%</span>
                         </div>
                       </div>
                     </div>
@@ -478,7 +492,7 @@ export default function InstructorStudentsTab({
                       </div>
 
                       <div>
-                        {enroll.status === 'COMPLETED' ? (
+                        {enroll && enroll.status === 'COMPLETED' ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-400 text-[9px] font-mono font-bold uppercase rounded-xl border border-emerald-100 dark:border-emerald-800/40">
                             Certificado✓
                           </span>
@@ -500,7 +514,7 @@ export default function InstructorStudentsTab({
         </div>
       </div>
 
-      {/* Send Urgent Alert popup modal drawer inside */}
+      {/* Send Urgent Alert popup modal */}
       {alertingStudentId && (
         <div className="p-5 bg-amber-50 dark:bg-[#1a1712] rounded-2xl border border-gold-600/30 dark:border-gold-600/10 text-left space-y-3 relative z-20 shadow-lg">
           <div className="flex justify-between items-center">

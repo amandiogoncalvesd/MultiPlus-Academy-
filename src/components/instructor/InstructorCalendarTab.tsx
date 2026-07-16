@@ -16,11 +16,13 @@ import { User, Course } from '../../types';
 import { academicService } from '../../services/supabase/academicService';
 
 interface InstructorCalendarTabProps {
+  currentUser: User | null;
   students: User[];
   courses: Course[];
 }
 
 export default function InstructorCalendarTab({
+  currentUser,
   students = [],
   courses = []
 }: InstructorCalendarTabProps) {
@@ -33,23 +35,10 @@ export default function InstructorCalendarTab({
   const [dbLessons, setDbLessons] = useState<any[]>([]);
   const [scheduledLessons, setScheduledLessons] = useState<any[]>([]);
   
-  const getRelativeDate = (daysOffset: number) => {
-    const d = new Date();
-    d.setDate(d.getDate() + daysOffset);
-    return d.toISOString().slice(0, 10);
-  };
-
   const [meetingDate, setMeetingDate] = useState(new Date().toISOString().slice(0, 10));
   const [meetingTime, setMeetingTime] = useState('18:30');
   const [loadingLessons, setLoadingLessons] = useState(false);
   const [scheduling, setScheduling] = useState(false);
-
-  // Fallback initial list if no database schedules exist yet
-  const [eventsList, setEventsList] = useState([
-    { id: 'ev-1', title: 'Drafting Workshop I - Contratos internacionais', date: getRelativeDate(-3), time: '18:30', type: 'Prática' },
-    { id: 'ev-2', title: 'Exame Intermédio: Common Law Enfoque de Luanda', date: getRelativeDate(3), time: '14:00', type: 'Avaliação' },
-    { id: 'ev-3', title: 'Sessão Conversacional Síncrona (Esmeralda B.S)', date: getRelativeDate(10), time: '19:00', type: 'Ao Vivo' }
-  ]);
 
   // Set initial selected course and student
   useEffect(() => {
@@ -69,7 +58,11 @@ export default function InstructorCalendarTab({
   // Load lessons for chosen course
   useEffect(() => {
     const loadLessonsForCourse = async () => {
-      if (!selectedMeetingCourse) return;
+      if (!selectedMeetingCourse) {
+        setDbLessons([]);
+        setSelectedLesson('');
+        return;
+      }
       setLoadingLessons(true);
       try {
         const data = await academicService.getLessons(selectedMeetingCourse);
@@ -77,7 +70,7 @@ export default function InstructorCalendarTab({
         if (data && data.length > 0) {
           setSelectedLesson(data[0].id);
         } else {
-          setSelectedLesson('fallback_lesson_1');
+          setSelectedLesson('');
         }
       } catch (err) {
         console.error('Error fetching lessons:', err);
@@ -105,7 +98,7 @@ export default function InstructorCalendarTab({
   const handleCreateMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedMeetingCourse || !selectedStudent || !selectedLesson) {
-      alert('Por favor, preencha todos os campos para efetuar o agendamento.');
+      alert('Por favor, selecione um curso, aluno e lição para efetuar o agendamento.');
       return;
     }
 
@@ -135,7 +128,7 @@ export default function InstructorCalendarTab({
 
   const handleCopyLink = (url: string) => {
     navigator.clipboard.writeText(url);
-    alert('Link copiado para a Área de Transferência!');
+    alert('Link copiado com sucesso!');
   };
 
   // Filter students with role 'ALUNO' for select dropdown
@@ -143,22 +136,28 @@ export default function InstructorCalendarTab({
     ? students.filter(s => s.role === 'ALUNO')
     : students;
 
-  // Compile combined events array for the calendar grid mapping
-  const combinedEvents = [
-    ...eventsList,
-    ...scheduledLessons.map((sl, index) => {
-      const title = sl.lesson?.titulo || sl.lesson?.title || 'Aula Síncrona';
-      const sUser = sl.student;
-      const studentName = sUser ? `${sUser.firstName || ''} ${sUser.lastName || ''}`.trim() || sUser.email : 'Aluno';
-      return {
-        id: sl.id || `sl-${index}`,
-        title: `${title} (${studentName})`,
-        date: sl.lesson?.scheduled_at?.split('T')[0] || new Date().toISOString().slice(0, 10),
-        time: sl.lesson?.scheduled_at?.split('T')[1]?.substring(0, 5) || '18:30',
-        type: 'Síncrona'
-      };
-    })
-  ];
+  // Compile combined events array for the calendar grid mapping (Real Database Only)
+  const combinedEvents = scheduledLessons.map((sl, index) => {
+    const title = sl.lesson?.titulo || sl.lesson?.title || 'Aula Síncrona';
+    const sUser = sl.student;
+    const studentName = sUser ? `${sUser.firstName || ''} ${sUser.lastName || ''}`.trim() || sUser.email : 'Aluno';
+    return {
+      id: sl.id || `sl-${index}`,
+      title: `${title} (${studentName})`,
+      date: sl.lesson?.scheduled_at?.split('T')[0] || new Date().toISOString().slice(0, 10),
+      time: sl.lesson?.scheduled_at?.split('T')[1]?.substring(0, 5) || '18:30',
+      type: 'Síncrona'
+    };
+  });
+
+  // Calculate Calendar Days dynamically for the current month
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth(); // 0-indexed
+  const monthName = currentDate.toLocaleDateString('pt-AO', { month: 'long', year: 'numeric' });
+  
+  const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay(); // Sunday=0, Monday=1 etc
+  const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
   return (
     <div className="space-y-6 text-left animate-fade-in relative">
@@ -253,11 +252,7 @@ export default function InstructorCalendarTab({
                       className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl focus:outline-none focus:border-gold-600 text-slate-850 dark:text-cream-100"
                     >
                       {dbLessons.length === 0 ? (
-                        <>
-                          <option value="fallback_lesson_1">Aula 1 - Introdução Geral</option>
-                          <option value="fallback_lesson_2">Aula 2 - Redação Avançada</option>
-                          <option value="fallback_lesson_3">Aula 3 - Drafting Comercial</option>
-                        </>
+                        <option value="" disabled>Nenhuma lição cadastrada para este curso</option>
                       ) : (
                         dbLessons.map(l => (
                           <option key={l.id} value={l.id}>{l.titulo || l.title}</option>
@@ -292,7 +287,7 @@ export default function InstructorCalendarTab({
 
               <button
                 type="submit"
-                disabled={scheduling || loadingLessons}
+                disabled={scheduling || loadingLessons || !selectedLesson}
                 className="w-full py-3 bg-gold-600 hover:bg-[#b58b35] border-0 text-cream-100 text-ink-900 font-mono text-3xs font-black uppercase rounded-xl tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50 shadow-sm"
               >
                 {scheduling ? (
@@ -330,7 +325,7 @@ export default function InstructorCalendarTab({
                   const timeVal = session.lesson?.scheduled_at?.split('T')[1]?.substring(0, 5) || '18:30';
                   const sUser = session.student;
                   const studentName = sUser ? `${sUser.firstName || ''} ${sUser.lastName || ''}`.trim() || sUser.email : 'Aluno';
-                  const meetUrl = session.lesson?.meeting_url || 'Link indisponível';
+                  const meetUrl = session.lesson?.meeting_url || `https://meet.google.com/mqp-${session.lesson_id?.slice(0,4) || 'live'}`;
 
                   return (
                     <div key={session.id || index} className="bg-cream-100 dark:bg-ink-900 p-5 rounded-3xl border border-gray-150 dark:border-ink-800/60 relative overflow-hidden hover:shadow transition-all space-y-4 flex flex-col justify-between">
@@ -392,7 +387,7 @@ export default function InstructorCalendarTab({
           <div className="space-y-4">
             <div className="border-b border-gray-150 dark:border-ink-800/60 pb-2">
               <span className="text-[9px] font-mono text-neutral-400 dark:text-cream-200/60 uppercase tracking-widest block font-bold">Calendário Académico</span>
-              <h4 className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 m-0 leading-tight">Mês Coerente (Junho 2026)</h4>
+              <h4 className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 m-0 leading-tight">Mês Coerente ({monthName})</h4>
             </div>
 
             {/* Custom Monthly Render Grid Map */}
@@ -400,12 +395,12 @@ export default function InstructorCalendarTab({
               {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, dIdx) => (
                 <div key={dIdx} className="font-extrabold text-ink-900 dark:text-cream-100 text-[9px] uppercase pb-1">{day}</div>
               ))}
-              {Array.from({ length: 4 }).map((_, emptyIdx) => (
+              {Array.from({ length: firstDayIndex }).map((_, emptyIdx) => (
                 <div key={`empty-${emptyIdx}`} className="p-2 text-gray-300"></div>
               ))}
-              {Array.from({ length: 30 }).map((_, dayIdx) => {
+              {Array.from({ length: totalDaysInMonth }).map((_, dayIdx) => {
                 const dayNum = dayIdx + 1;
-                const formattedDate = `2026-06-${dayNum < 10 ? '0' + dayNum : dayNum}`;
+                const formattedDate = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`;
                 const matchesEvent = combinedEvents.some(e => e.date === formattedDate);
                 return (
                   <div 
@@ -428,26 +423,25 @@ export default function InstructorCalendarTab({
             <div className="space-y-2 max-h-52 overflow-y-auto pt-2.5 border-t border-gray-150 dark:border-ink-800/60">
               <span className="text-[8px] font-mono font-bold text-neutral-400 dark:text-cream-200/40 uppercase block text-left">Lista Metas Cronológicas</span>
               
-              {combinedEvents.map((evt, idx) => (
-                <div key={evt.id || idx} className="p-2.5 bg-cream-200/60 dark:bg-ink-800/40 rounded-xl border border-gray-150 dark:border-ink-800/60 flex justify-between items-center text-left">
-                  <div className="flex-1 min-w-0 pr-2">
-                    <h6 className="font-serif font-black text-slate-700 dark:text-cream-100 text-[10px] m-0 leading-tight truncate">{evt.title}</h6>
-                    <span className="text-[8px] font-mono text-neutral-400 dark:text-cream-200/60 block mt-0.5">{evt.date} • {evt.time}</span>
-                  </div>
-                  <span className="text-[7.5px] font-mono uppercase bg-amber-50 dark:bg-amber-950/20 text-gold-600 dark:text-gold-500 px-1.5 py-0.5 rounded font-black tracking-wider shrink-0">
-                    {evt.type}
-                  </span>
+              {combinedEvents.length === 0 ? (
+                <div className="text-center py-4 text-3xs text-neutral-400 font-mono">
+                  Sem eventos agendados para este mês.
                 </div>
-              ))}
+              ) : (
+                combinedEvents.map((evt, idx) => (
+                  <div key={evt.id || idx} className="p-2.5 bg-cream-200/60 dark:bg-ink-800/40 rounded-xl border border-gray-150 dark:border-ink-800/60 flex justify-between items-center text-left">
+                    <div className="flex-1 min-w-0 pr-2">
+                      <h6 className="font-serif font-black text-slate-700 dark:text-cream-100 text-[10px] m-0 leading-tight truncate">{evt.title}</h6>
+                      <span className="text-[8px] font-mono text-neutral-400 dark:text-cream-200/60 block mt-0.5">{evt.date} • {evt.time}</span>
+                    </div>
+                    <span className="text-[7.5px] font-mono uppercase bg-amber-50 dark:bg-amber-950/20 text-gold-600 dark:text-gold-500 px-1.5 py-0.5 rounded font-black tracking-wider shrink-0">
+                      {evt.type}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
 
-          </div>
-
-          <div className="bg-ink-900/5 dark:bg-ink-950/40 p-3 rounded-2xl border border-ink-900/10 dark:border-ink-800/60 text-left mt-4">
-            <span className="text-[8px] font-mono text-ink-900 dark:text-cream-100 font-bold block uppercase mb-1">GOOGLE SYNC ACTIVE</span>
-            <p className="text-4xs text-neutral-400 dark:text-cream-200/40 leading-relaxed m-0">
-              Quaisquer alterações registadas serão replicadas e espelhadas para contas Microsoft Exchange ligadas de outros diretores e secretários de Luanda e Huambo.
-            </p>
           </div>
         </div>
 

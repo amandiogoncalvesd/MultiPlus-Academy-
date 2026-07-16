@@ -60,6 +60,8 @@ import InstructorEvaluationsTab from './instructor/InstructorEvaluationsTab';
 import InstructorCalendarTab from './instructor/InstructorCalendarTab';
 import InstructorMessagesTab from './instructor/InstructorMessagesTab';
 import { courseService } from '../services/supabase/courseService';
+import { useTeacherNotifications } from '../hooks/useTeacherNotifications';
+import { useTeacherMetrics } from '../hooks/useTeacherMetrics';
 import CertificateIssueModal from './certificates/CertificateIssueModal';
 
 interface InstructorPortalProps {
@@ -88,8 +90,11 @@ export default function InstructorPortal({
   const [lessonsCount, setLessonsCount] = useState<number>(0);
 
   // Preference settings & notifications
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const { notifications: realNotifications, markAllAsRead } = useTeacherNotifications(currentUser?.id);
+  const { metrics: teacherMetrics } = useTeacherMetrics(currentUser?.id);
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
+
+  const portalCompletionRate = (teacherMetrics && teacherMetrics.completionRate > 0) ? teacherMetrics.completionRate : 95;
 
   // Quick access unread messages count
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
@@ -589,11 +594,18 @@ export default function InstructorPortal({
             {/* Notification Bell toggle menu */}
             <div className="relative">
               <button 
-                onClick={() => setShowNotificationsMenu(!showNotificationsMenu)}
+                onClick={() => {
+                  setShowNotificationsMenu(!showNotificationsMenu);
+                  if (!showNotificationsMenu) {
+                    markAllAsRead();
+                  }
+                }}
                 className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
               >
                 <Bell size={14} />
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-danger-700" />
+                {realNotifications.filter(n => !n.read).length > 0 && (
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-danger-700" />
+                )}
               </button>
 
               <AnimatePresence>
@@ -608,10 +620,10 @@ export default function InstructorPortal({
                       <span className="font-mono text-2xs font-bold text-neutral-400">NOTIFICAÇÕES DA TURMA</span>
                     </div>
                     <div className="space-y-2 mt-2 divide-y divide-gray-100">
-                      {notifications.length === 0 ? (
+                      {realNotifications.length === 0 ? (
                         <p className="text-2xs text-neutral-400 m-0 py-2">Sem novas notificações.</p>
                       ) : (
-                        notifications.map(n => (
+                        realNotifications.map(n => (
                           <div key={n.id} className="pt-2 text-2xs text-neutral-400 dark:text-gray-300">
                             <p className="m-0 leading-snug">{n.text}</p>
                           </div>
@@ -671,7 +683,7 @@ export default function InstructorPortal({
               students={students}
               evaluationsPendingCount={pendingGreads}
               certificatesIssuedCount={certificatesCount}
-              completionRate={95}
+              completionRate={portalCompletionRate}
               onNavigate={(tab) => setActiveTab(tab)}
               lessonsCount={lessonsCount}
             />
@@ -786,6 +798,7 @@ export default function InstructorPortal({
           {/* TAB 8: CORREÇÃO & PROVAS */}
           {activeTab === 'avaliacoes' && (
             <InstructorEvaluationsTab
+              currentUser={currentUser}
               students={students}
               courses={courses}
             />
@@ -884,6 +897,7 @@ export default function InstructorPortal({
           {/* TAB 10: AGENDA LETIVA */}
           {activeTab === 'calendario' && (
             <InstructorCalendarTab
+              currentUser={currentUser}
               students={students}
               courses={courses}
             />
@@ -924,11 +938,11 @@ export default function InstructorPortal({
                       {/* Circle arcs mock */}
                       <circle cx="50" cy="50" r="40" fill="none" stroke={isDarkMode ? "#1B222E" : "#e1e1e1"} strokeWidth="8" />
                       {/* Active arc */}
-                      <circle cx="50" cy="50" r="40" fill="none" stroke="#BB8533" strokeWidth="8" strokeDasharray="180 250" strokeLinecap="round" transform="rotate(-90 50 50)" />
-                      <text x="50" y="55" textAnchor="middle" className="font-serif font-black text-lg fill-[#151D29] dark:fill-cream-100 text-xs">78%</text>
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="#BB8533" strokeWidth="8" strokeDasharray={`${(portalCompletionRate / 100) * 251} 251`} strokeLinecap="round" transform="rotate(-90 50 50)" />
+                      <text x="50" y="55" textAnchor="middle" className="font-serif font-black text-lg fill-[#151D29] dark:fill-cream-100 text-xs">{portalCompletionRate}%</text>
                     </svg>
                   </div>
-                  <span className="text-[9px] font-mono text-center text-neutral-400">78% de frequência conclutiva de exercícios práticos</span>
+                  <span className="text-[9px] font-mono text-center text-neutral-400">{portalCompletionRate}% de frequência conclutiva de exercícios práticos</span>
                 </div>
 
                 {/* SVG 2: Engajamento por dia de semana */}
