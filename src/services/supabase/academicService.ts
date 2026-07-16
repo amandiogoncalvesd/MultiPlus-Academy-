@@ -74,7 +74,7 @@ export const academicService = {
         duration: course.duration || course.duracao || '12 Semanas',
         category: course.category || course.categoria || 'Geral',
         status: course.status || 'DRAFT',
-        thumbnail: course.thumbnail || course.imagem || 'https://images.unsplash.com/photo-1518152006812-edab29b069ac?auto=format&fit=crop&q=80&w=300',
+        thumbnail: course.thumbnail || course.imagem || null,
         teacher_id: course.teacher_id
       })
       .select()
@@ -431,11 +431,29 @@ export const academicService = {
           ? Math.round(submissions.reduce((acc, curr) => acc + (Number(curr.score) || 0), 0) / submissions.length)
           : 0;
 
+        // Buscar contagem real de aulas dos cursos do aluno
+        const { data: studentEnrollments } = await supabase
+          .from('enrollments')
+          .select('course_id')
+          .eq('student_id', userId)
+          .eq('status', 'ACTIVE');
+
+        const enrolledCourseIds = (studentEnrollments || []).map((e: any) => e.course_id);
+
+        let totalLessons = 0;
+        if (enrolledCourseIds.length > 0) {
+          const { count } = await supabase
+            .from('lessons')
+            .select('*', { count: 'exact', head: true })
+            .in('course_id', enrolledCourseIds);
+          totalLessons = count || 0;
+        }
+
         return [{
           student_id: userId,
-          total_lessons: 3,
+          total_lessons: totalLessons,
           completed_lessons: completed.length,
-          progress_percent: Math.min(100, Math.round((completed.length / 3) * 100)),
+          progress_percent: totalLessons > 0 ? Math.min(100, Math.round((completed.length / totalLessons) * 100)) : 0,
           avg_quiz_score: avgScore || 0,
           last_activity: new Date().toISOString()
         }];

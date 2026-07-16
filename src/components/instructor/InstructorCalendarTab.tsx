@@ -330,7 +330,7 @@ export default function InstructorCalendarTab({
                   const timeVal = session.lesson?.scheduled_at?.split('T')[1]?.substring(0, 5) || '18:30';
                   const sUser = session.student;
                   const studentName = sUser ? `${sUser.firstName || ''} ${sUser.lastName || ''}`.trim() || sUser.email : 'Aluno';
-                  const meetUrl = 'https://meet.google.com/lookup/mock-multiplus';
+                  const meetUrl = session.lesson?.meeting_url || 'Link indisponível';
 
                   return (
                     <div key={session.id || index} className="bg-cream-100 dark:bg-ink-900 p-5 rounded-3xl border border-gray-150 dark:border-ink-800/60 relative overflow-hidden hover:shadow transition-all space-y-4 flex flex-col justify-between">

@@ -41,7 +41,7 @@ export default function InstructorEvaluationsTab({
     {
       id: 1,
       studentName: 'Dr. António Ferreira Carvalho',
-      studentEmail: 'antonio@advogados.ao',
+      studentEmail: 'aluno@multiplus.academy',
       courseName: 'English for the Legal Field in Angola',
       taskTitle: 'Redação Prática de Cláusula de Isenção (Indemnity) - Mês II',
       submittedText: `ARTICLE 12 - INDEMNIFICATION AND LIABILITY EXCLUSION

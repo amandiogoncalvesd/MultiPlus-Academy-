@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { academicService } from '../../services/supabase/academicService';
 import { supabase } from '../../lib/supabase/client';
+import { Assignment, AssignmentSubmission } from '../../types';
 
 interface StudentTasksTabProps {
   userId?: string;
@@ -52,7 +53,7 @@ export default function StudentTasksTab({ userId }: StudentTasksTabProps) {
     setLoading(true);
     try {
       // 1. Buscar tarefas ativas dos cursos matriculados
-      const rawAssignments = await academicService.getStudentAssignments(userId);
+      const rawAssignments: Assignment[] = await academicService.getStudentAssignments(userId);
       
       // 2. Buscar submissões do aluno para estas tarefas
       const { data: submissions, error: subError } = await supabase
@@ -62,9 +63,9 @@ export default function StudentTasksTab({ userId }: StudentTasksTabProps) {
 
       if (subError) throw subError;
 
-      const submissionsMap = new Map<string, any>();
+      const submissionsMap = new Map<string, AssignmentSubmission>();
       if (submissions) {
-        submissions.forEach(sub => {
+        (submissions as AssignmentSubmission[]).forEach(sub => {
           submissionsMap.set(sub.assignment_id, sub);
         });
       }

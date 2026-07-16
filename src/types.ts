@@ -125,3 +125,27 @@ export interface ContactMessage {
   subject: string;
   message: string;
 }
+
+export interface Assignment {
+  id: string;
+  course_id: string;
+  lesson_id?: string | null;
+  teacher_id: string;
+  titulo: string;
+  descricao?: string | null;
+  due_date?: string | null;
+  status: 'DRAFT' | 'PUBLISHED' | 'CLOSED';
+  course_title?: string;
+  created_at: string;
+}
+
+export interface AssignmentSubmission {
+  id: string;
+  assignment_id: string;
+  student_id: string;
+  submission_url?: string | null;
+  submission_text?: string | null;
+  feedback?: string | null;
+  grade?: number | null;
+  submitted_at: string;
+}

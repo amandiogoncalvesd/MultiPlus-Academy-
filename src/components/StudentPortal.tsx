@@ -638,7 +638,7 @@ export default function StudentPortal({
       icsContent += `DTEND:${endStr}\n`;
       icsContent += `SUMMARY:${courseTitle} - ${title}\n`;
       icsContent += `DESCRIPTION:${description.replace(/\n/g, '\\n')}\n`;
-      icsContent += `LOCATION:Google Meet (https://meet.google.com/lookup/mock-multiplus)\n`;
+      icsContent += `LOCATION:${session.lesson?.meeting_url || ''}\n`;
       icsContent += 'END:VEVENT\n';
     });
 
@@ -1117,14 +1117,16 @@ export default function StudentPortal({
                                 {new Date(nextScheduledLesson.scheduled_at).toLocaleDateString('pt-AO', { weekday: 'long' })} • {new Date(nextScheduledLesson.scheduled_at).toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' })}
                               </span>
                               
-                              <a 
-                                href={nextScheduledLesson.meeting_url || "https://meet.google.com/lookup/mock-multiplus"}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="px-3.5 py-1.5 bg-gold-600 hover:bg-cream-100 hover:text-slate-900 text-ink-900 font-mono text-3xs font-extrabold rounded-lg tracking-wider transition-all inline-flex items-center gap-1"
-                              >
-                                Entrar na Reunião <ExternalLink size={10} />
-                              </a>
+                              {nextScheduledLesson.meeting_url && (
+                                <a 
+                                  href={nextScheduledLesson.meeting_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="px-3.5 py-1.5 bg-gold-600 hover:bg-cream-100 hover:text-slate-900 text-ink-900 font-mono text-3xs font-extrabold rounded-lg tracking-wider transition-all inline-flex items-center gap-1"
+                                >
+                                  Entrar na Reunião <ExternalLink size={10} />
+                                </a>
+                              )}
                             </div>
                           ) : (
                             <div className="bg-cream-100/10 backdrop-blur-md p-4 rounded-2xl border border-white/5 space-y-2 shrink-0 text-left max-w-xs">
@@ -1609,7 +1611,7 @@ export default function StudentPortal({
                           const dateVal = session.lesson.scheduled_at.split('T')[0];
                           const timeVal = session.lesson.scheduled_at.split('T')[1]?.substring(0, 5) || '--:--';
                           const courseTitle = session.lesson?.course?.title || session.lesson?.course?.titulo || 'English for the Legal Field';
-                          const meetUrl = 'https://meet.google.com/lookup/mock-multiplus';
+                          const meetUrl = session.lesson?.meeting_url || null;
 
                           return (
                             <div key={session.id || index} className="p-4 rounded-xl border border-gray-150 bg-cream-100 dark:bg-ink-900 shadow-3xs space-y-3 relative overflow-hidden">
@@ -1624,14 +1626,20 @@ export default function StudentPortal({
                                   Aula agendada pelo seu professor titular para o dia {dateVal}.
                                 </p>
                               </div>
-                              <a 
-                                href={meetUrl}
-                                target="_blank"
-                                referrerPolicy="no-referrer"
-                                className="py-2.5 bg-ink-900 text-cream-100 text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-ink-900 transition-colors"
-                              >
-                                Entrar na Aula Meet
-                              </a>
+                              {meetUrl ? (
+                                <a 
+                                  href={meetUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="py-2.5 bg-ink-900 text-cream-100 text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-gold-600 hover:text-slate-950 transition-colors"
+                                >
+                                  Entrar na Aula
+                                </a>
+                              ) : (
+                                <span className="py-2.5 bg-gray-100 dark:bg-slate-800 text-neutral-400 text-center rounded-lg text-3xs font-mono font-bold uppercase block">
+                                  Link da aula indisponível
+                                </span>
+                              )}
                             </div>
                           );
                         })
