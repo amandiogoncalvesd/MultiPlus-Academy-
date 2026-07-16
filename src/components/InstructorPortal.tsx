@@ -167,7 +167,7 @@ export default function InstructorPortal({
   // Synchronize base academic states
   useEffect(() => {
     loadDatabase();
-  }, []);
+  }, [currentUser?.id, currentUser?.role]);
 
   const loadDatabase = async () => {
     try {
