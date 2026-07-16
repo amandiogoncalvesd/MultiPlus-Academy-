@@ -10,6 +10,12 @@ import QuizArea from './portal/QuizArea';
 import AvatarUpload from './AvatarUpload';
 import { useTheme } from '../contexts/ThemeContext';
 import { messageService } from '../services/supabase/messageService';
+import StudentSidebar from './portal/StudentSidebar';
+import StudentTopbar from './portal/StudentTopbar';
+import StudentDashboardView from './portal/StudentDashboardView';
+import { useStudentData } from '../hooks/useStudentData';
+import { useVideoPlayer } from '../hooks/useVideoPlayer';
+import { useLessonNotes } from '../hooks/useLessonNotes';
 
 
 import { 
@@ -73,40 +79,6 @@ export default function StudentPortal({
   const [globalSearch, setGlobalSearch] = useState('');
   const [searchFeedback, setSearchFeedback] = useState<string | null>(null);
 
-  // Quick access unread messages count
-  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
-
-  const fetchUnreadMessagesCount = async () => {
-    if (!currentUser?.id) return;
-    try {
-      const parts = await messageService.getConversationPartners(currentUser.id);
-      const totalUnread = parts.reduce((acc, p) => acc + (p.unreadCount || 0), 0);
-      setUnreadMessagesCount(totalUnread);
-    } catch (err) {
-      console.warn('Error fetching unread message count:', err);
-    }
-  };
-
-  useEffect(() => {
-    if (!currentUser?.id) return;
-    fetchUnreadMessagesCount();
-
-    const channel = supabase
-      .channel('student-unread-count')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'messages' },
-        () => {
-          fetchUnreadMessagesCount();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [currentUser?.id]);
-
   // Accessibility setups
   const { isDarkMode, toggleTheme, setThemeMode } = useTheme();
   const themeMode = isDarkMode ? 'dark' : 'light';
@@ -119,17 +91,42 @@ export default function StudentPortal({
   const [streakCount, setStreakCount] = useState(0);
   const hours = 0;
 
+  // 1. Centralized Student Data fetching & subscriptions
+  const {
+    enrollments, certificates, realLessons, completedLessons,
+    scheduledLessons, notifications, setNotifications, unreadMessagesCount,
+    loading: academicLoading, selectedCourseId, changeCourse: handleCourseChange,
+    refetch: fetchStudentData
+  } = useStudentData(currentUser?.id);
+
   // Active Video course selections
   const [activeLessonIdx, setActiveLessonIdx] = useState(0);
-  const [videoPlaybackSpeed, setVideoPlaybackSpeed] = useState(1);
-  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
-  const [videoPlaySec, setVideoPlaySec] = useState(0);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [randomWatermark, setRandomWatermark] = useState({ top: '30%', left: '40%' });
 
-  // Student notebook
-  const [notesList, setNotesList] = useState<{ id: string; timestamp: number; text: string; date: string }[]>([]);
-  const [newNoteInput, setNewNoteInput] = useState('');
+  // Lecture list definitions (Flagship Legal course)
+  const activeSyllabus = realLessons.length > 0 ? realLessons.map(l => ({
+    id: l.id,
+    title: l.titulo || l.title || 'Sem título',
+    duration: l.duracao || '15:00',
+    description: l.descricao || l.description || '',
+    scheduled_at: l.scheduled_at,
+    video_url: l.video_url
+  })) : [];
+
+  const currentLecture = activeSyllabus[activeLessonIdx] || activeSyllabus[0] || null;
+
+  // 2. Video Player Integration
+  const {
+    videoRef, isPlaying: isPlayingVideo, setIsPlaying: setIsPlayingVideo,
+    playbackSpeed: videoPlaybackSpeed, changeSpeed: setVideoPlaybackSpeed,
+    currentSeconds: videoPlaySec, setCurrentSeconds: setVideoPlaySec,
+    randomWatermark
+  } = useVideoPlayer(currentUser?.id, selectedCourseId, currentLecture?.id);
+
+  // 3. Lesson Notes Notebook Integration
+  const {
+    notes: notesList, newNote: newNoteInput, setNewNote: setNewNoteInput,
+    saveNote: handleSaveNote
+  } = useLessonNotes(currentUser?.id, selectedCourseId, currentLecture?.id);
 
   // Editable Profile Form state
   const [profileForm, setProfileForm] = useState({
@@ -145,76 +142,6 @@ export default function StudentPortal({
   // Calendar toggle view (Month vs Week)
   const [calendarView, setCalendarView] = useState<'MONTH' | 'WEEK'>('MONTH');
 
-  // Simulated notifications list
-  const [notifications, setNotifications] = useState<any[]>([]);
-
-  // Real-time Supabase state managers
-  const [enrollments, setEnrollments] = useState<any[]>([]);
-  const [certificates, setCertificates] = useState<any[]>([]);
-  const [realLessons, setRealLessons] = useState<any[]>([]);
-  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
-  const [scheduledLessons, setScheduledLessons] = useState<any[]>([]);
-  const [academicLoading, setAcademicLoading] = useState<boolean>(true);
-  const [selectedCourseId, setSelectedCourseId] = useState<string>('');
-
-  const fetchStudentData = async () => {
-    if (!currentUser) return;
-    setAcademicLoading(true);
-    try {
-      // 1. Fetch student enrollments
-      const enrollData = await academicService.getStudentEnrollments(currentUser.id);
-      setEnrollments(enrollData || []);
-      
-      if (enrollData && enrollData.length > 0) {
-        const activeCourseId = selectedCourseId || enrollData[0].course_id;
-        setSelectedCourseId(activeCourseId);
-        
-        // Fetch lessons
-        const lessonsData = await academicService.getLessons(activeCourseId);
-        setRealLessons(lessonsData || []);
-        
-        // Fetch completed lessons
-        const completions = await academicService.getCompletedLessons(currentUser.id, activeCourseId);
-        setCompletedLessons(completions || []);
-      } else {
-        setRealLessons([]);
-        setCompletedLessons([]);
-      }
-
-      // 2. Fetch certificates
-      const certs = await academicService.getStudentCertificates(currentUser.id);
-      setCertificates(certs || []);
-
-      // 3. Fetch scheduled lessons
-      const schedules = await academicService.getScheduledLessonsForStudent(currentUser.id);
-      setScheduledLessons(schedules || []);
-    } catch (err) {
-      console.warn('Silent fallback on dynamic user profiles and enrollments:', err);
-    } finally {
-      setAcademicLoading(false);
-    }
-  };
-
-  const handleCourseChange = async (courseId: string) => {
-    if (!currentUser) return;
-    setSelectedCourseId(courseId);
-    try {
-      setAcademicLoading(true);
-      const lessonsData = await academicService.getLessons(courseId);
-      setRealLessons(lessonsData || []);
-      const completions = await academicService.getCompletedLessons(currentUser.id, courseId);
-      setCompletedLessons(completions || []);
-    } catch (err) {
-      console.error('Error switching course:', err);
-    } finally {
-      setAcademicLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchStudentData();
-  }, [currentUser]);
-
 
   // Update real-time clock every second
   useEffect(() => {
@@ -222,16 +149,6 @@ export default function StudentPortal({
       setCurrentTime(new Date());
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
-
-  // Update video player watermark location every 8 seconds to discourage screen recorders
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const topPct = Math.floor(Math.random() * 55) + 15;
-      const leftPct = Math.floor(Math.random() * 55) + 15;
-      setRandomWatermark({ top: `${topPct}%`, left: `${leftPct}%` });
-    }, 8000);
-    return () => clearInterval(interval);
   }, []);
 
   const { signOut } = useAuth();
@@ -242,13 +159,13 @@ export default function StudentPortal({
       setProfileForm({
         firstName: currentUser.firstName || '',
         lastName: currentUser.lastName || '',
-        phone: currentUser.phone || '+244 923 000 000',
+        phone: currentUser.phone || '',
         email: currentUser.email || '',
         country: 'Angola',
         language: 'Português / Inglês',
         preference: 'Notificações por SMS & E-mail'
       });
-      setStreakCount(currentUser.streak || 5);
+      setStreakCount(currentUser.streak || 0);
     }
   }, [currentUser]);
 
@@ -411,30 +328,8 @@ export default function StudentPortal({
     doc.text('2. CURSO PRINCIPAL E APROVEITAMENTO MODULAR', 15, 87);
 
     // Pull enrollments and certificates database from Supabase state
-    let pdfEnrollments = enrollments && enrollments.length > 0 ? enrollments : [
-      {
-        courseId: 'eng-legal-angola',
-        progressPercent: 66,
-        status: 'ACTIVE',
-        enrolledAt: '2026-06-01'
-      }
-    ];
+    let pdfEnrollments = enrollments && enrollments.length > 0 ? enrollments : [];
     let pdfCertificates = certificates && certificates.length > 0 ? certificates : [];
-    
-    if (pdfCertificates.length === 0 && currentUser.email.includes('antonio')) {
-      pdfCertificates = [
-        {
-          certificateNumber: 'MPA-2026-001',
-          courseName: 'English for the Legal Field in Angola',
-          recipientName: 'Dr. Antonio Ferreira Carvalho',
-          completionDate: '2026-06-01',
-          instructorName: 'Esmeralda Bruno Sumbelelo',
-          finalGrade: '92/100',
-          isValid: true,
-          verificationCode: 'MPA-2026-001'
-        }
-      ];
-    }
 
     let yOffset = 92;
 
@@ -450,7 +345,7 @@ export default function StudentPortal({
       
       const duration = enroll.course?.duracao || (courseId === 'eng-legal-angola' ? '3 Meses (72h)' : '4 Semanas (24h)');
       const enrolledAt = enroll.data_inicio ? enroll.data_inicio.slice(0, 10) : (enroll.enrolledAt || '2026-06-01');
-      const progress = enroll.progress_percent || enroll.progressPercent || 66;
+      const progress = enroll.progress_percent || enroll.progressPercent || 0;
 
 
       doc.setFillColor(255, 255, 255);
@@ -654,88 +549,7 @@ export default function StudentPortal({
     document.body.removeChild(link);
   };
 
-  // Lecture list definitions (Flagship Legal course)
-  const activeSyllabus = realLessons.length > 0 ? realLessons.map(l => ({
-    id: l.id,
-    title: l.titulo || l.title || 'Sem título',
-    duration: l.duracao || '15:00',
-    description: l.descricao || l.description || '',
-    scheduled_at: l.scheduled_at,
-    video_url: l.video_url
-  })) : [];
 
-  const currentLecture = activeSyllabus[activeLessonIdx] || activeSyllabus[0] || null;
-
-  // Carregar progresso do vídeo e apontamentos do aluno ao mudar de aula
-  useEffect(() => {
-    const loadLectureData = async () => {
-      if (!currentUser?.id || !currentLecture?.id) return;
-      try {
-        // 1. Carregar progresso do vídeo
-        const savedProgress = await academicService.getVideoProgress(currentUser.id, currentLecture.id);
-        setVideoPlaySec(savedProgress || 0);
-        if (videoRef.current) {
-          videoRef.current.currentTime = savedProgress || 0;
-        }
-
-        // 2. Carregar apontamentos reais
-        const savedNotes = await academicService.getLessonNotes(currentUser.id, currentLecture.id);
-        const formattedNotes = savedNotes.map((n: any) => ({
-          id: n.id,
-          timestamp: n.video_timestamp,
-          text: n.content,
-          date: new Date(n.created_at).toISOString().replace('T', ' ').slice(0, 16)
-        }));
-        setNotesList(formattedNotes);
-      } catch (err) {
-        console.error('Erro ao carregar dados da aula para o aluno:', err);
-      }
-    };
-    loadLectureData();
-  }, [currentLecture?.id, currentUser?.id]);
-
-  // Salvar progresso do vídeo a cada 15 segundos se estiver tocando
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPlayingVideo && currentUser?.id && selectedCourseId && currentLecture?.id) {
-      interval = setInterval(async () => {
-        try {
-          await academicService.saveVideoProgress(currentUser.id, selectedCourseId, currentLecture.id, videoPlaySec);
-        } catch (err) {
-          console.error('Erro ao salvar progresso do vídeo:', err);
-        }
-      }, 15000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isPlayingVideo, videoPlaySec, currentUser?.id, selectedCourseId, currentLecture?.id]);
-
-  // Notebook handling (persisted via Supabase)
-  const handleSaveNote = async () => {
-    if (!newNoteInput.trim() || !currentUser?.id || !currentLecture?.id || !selectedCourseId) return;
-    try {
-      const savedNote = await academicService.saveLessonNote(
-        currentUser.id,
-        currentLecture.id,
-        selectedCourseId,
-        newNoteInput.trim(),
-        videoPlaySec
-      );
-      
-      const newNote = {
-        id: savedNote.id,
-        timestamp: savedNote.video_timestamp,
-        text: savedNote.content,
-        date: new Date(savedNote.created_at).toISOString().replace('T', ' ').slice(0, 16)
-      };
-      
-      setNotesList([newNote, ...notesList]);
-      setNewNoteInput('');
-    } catch (err) {
-      console.error('Erro ao salvar nota no Supabase:', err);
-    }
-  };
 
   // Accessibility theme class selections
   const containerThemeClass = isHighContrast 
@@ -761,111 +575,23 @@ export default function StudentPortal({
     <div id="multiplus-student-lms-portal" className={`min-h-screen flex items-stretch transition-colors duration-200 ${containerThemeClass}`}>
       
       {/* SIDEBAR NAVIGATION - Collapsible on Mobile, Fixed on Desktop */}
-      <aside 
-        className={`fixed inset-y-0 left-0 z-40 w-64 ${
-          isHighContrast ? 'bg-black border-r-4 border-yellow-500' : themeMode === 'dark' ? 'bg-ink-900 border-ink-800' : 'bg-ink-900 text-white border-r border-ink-800/10'
-        } transition-transform duration-300 transform lg:translate-x-0 ${
-          isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } flex flex-col justify-between`}
-      >
-        <div className="flex flex-col h-full">
-          {/* Sidebar Topbrand */}
-          <div className="p-6 border-b border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img
-                src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png"
-                alt="MultiPlus Logo"
-                className="h-9 w-auto object-contain shrink-0"
-              />
-              <div className="text-left">
-                <h1 className="text-sm font-serif font-black m-0 tracking-wide text-cream-100">MultiPlus</h1>
-                <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block font-bold">Student LMS</span>
-              </div>
-            </div>
-            
-            {/* Mobile close button */}
-            <button 
-              onClick={() => setIsMobileSidebarOpen(false)}
-              className="lg:hidden p-1.5 text-cream-100/70 hover:text-cream-100 rounded bg-transparent border-0 cursor-pointer"
-              aria-label="Fichar lateral"
-            >
-              <X size={18} />
-            </button>
-          </div>
- 
-          {/* Navigation Links List */}
-          <nav className="flex-grow p-4 space-y-1 overflow-y-auto">
-            {[
-              { id: 'dashboard', label: 'Dashboard Académico', icon: <TrendingUp size={15} /> },
-              { id: 'courses', label: 'Videoaulas & Notas', icon: <BookOpen size={15} /> },
-              { id: 'calendar', label: 'Calendário Letivo', icon: <CalendarIcon size={15} /> },
-              { id: 'materials', label: 'Manuais & Modelos', icon: <Download size={15} /> },
-              { id: 'tasks', label: 'Minhas Tarefas', icon: <CheckCircle size={15} /> },
-              { id: 'messages', label: 'Advisories de Tutor', icon: <MessageSquare size={15} /> },
-              { id: 'certificates', label: 'Meus Certificados', icon: <Award size={15} /> },
-              { id: 'progress', label: 'Meu Progresso', icon: <Bell size={15} /> },
-              { id: 'profile', label: 'Coordendas de Perfil', icon: <UserIcon size={15} /> },
-              { id: 'settings', label: 'Acessibilidade & Ajustes', icon: <Settings size={15} /> }
-            ].map((link) => (
-              <button
-                key={link.id}
-                onClick={() => {
-                  if (link.id === 'messages') {
-                    setCurrentPage('messages');
-                  } else {
-                    setActiveTab(link.id as any);
-                  }
-                  setIsMobileSidebarOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wider text-left transition-all cursor-pointer border-0 ${
-                  activeTab === link.id
-                    ? 'bg-gold-600 text-ink-900 shadow-sm font-bold'
-                    : 'text-cream-100/80 hover:text-cream-100 hover:bg-cream-100/10'
-                }`}
-              >
-                {link.icon}
-                <span>{link.label}</span>
-              </button>
-            ))}
-          </nav>
- 
-          {/* Sidebar Footer context banner */}
-          <div className="p-4 border-t border-white/10 space-y-3.5">
-            <div className="flex items-center gap-3">
-              {currentUser?.foto_perfil ? (
-                <img
-                  src={currentUser.foto_perfil}
-                  alt={currentUser.firstName}
-                  className="w-9 h-9 rounded-full object-cover border border-gold-600/30"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div className="w-9 h-9 bg-gold-600 text-ink-900 rounded-full flex items-center justify-center font-bold text-xs shadow-sm capitalize">
-                  {currentUser?.firstName[0] || 'A' }
-                </div>
-              )}
-              <div className="text-left truncate max-w-[130px]">
-                <h4 className="text-xs font-bold text-cream-100 m-0 tracking-wide truncate">{currentUser?.firstName} {currentUser?.lastName}</h4>
-                <span className="text-[10px] font-mono text-gold-600 font-semibold uppercase">{currentUser?.role || 'Aluno'}</span>
-              </div>
-            </div>
-
-            <button
-              onClick={async () => {
-                try {
-                  await signOut();
-                } catch (e) {}
-                setCurrentUser(null);
-                setCurrentPage('login');
-              }}
-              className="w-full py-2 bg-danger-700 hover:bg-red-700 text-cream-100 text-[10px] font-mono font-bold uppercase rounded-lg border-0 cursor-pointer transition-colors flex items-center justify-center gap-1.5"
-            >
-              <LogOut size={11} />
-              <span>Sair do Portal</span>
-            </button>
-          </div>
-        </div>
-      </aside>
+      <StudentSidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        setCurrentPage={setCurrentPage}
+        currentUser={currentUser}
+        onSignOut={async () => {
+          try {
+            await signOut();
+          } catch (e) {}
+          setCurrentUser(null);
+          setCurrentPage('login');
+        }}
+        isMobileSidebarOpen={isMobileSidebarOpen}
+        setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+        isHighContrast={isHighContrast}
+        themeMode={themeMode}
+      />
 
       {/* CENTRAL DISPLAY PANEL (RIGHT WORKSPACE) */}
       <div className="flex-grow flex flex-col overflow-hidden lg:pl-64 relative">
@@ -874,177 +600,36 @@ export default function StudentPortal({
         <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[50%] bg-slate-200/10 dark:bg-slate-800/5 rounded-full blur-[120px] pointer-events-none" />
         
         {/* TOPBAR HEADER ACTIONS */}
-        <header className={`h-16 px-6 border-b flex items-center justify-between sticky top-0 z-30 transition-colors ${
-          isHighContrast ? 'bg-black border-yellow-500 text-yellow-300' : themeMode === 'dark' ? 'bg-ink-900 border-ink-800 text-cream-100' : 'bg-white border-slate-200/60 text-slate-800'
-        }`}>
-          {/* Topbar Left - Hamburger burger and section headers */}
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-all bg-transparent border-0 cursor-pointer text-current"
-              aria-label="Abrir lateral"
-            >
-              <Menu size={20} />
-            </button>
-            
-            <div className="hidden sm:block text-left">
-              <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block">MultiPlus LMS</span>
-              <h2 className="text-sm font-serif font-black tracking-wide m-0 capitalize">{activeTab} • Portal de Aluno</h2>
-            </div>
-          </div>
-
-          {/* Topbar Center Search bar */}
-          <form onSubmit={handleGlobalSearchSubmit} className="hidden md:flex relative w-64">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
-              <Search size={14} />
-            </span>
-            <input
-              type="text"
-              placeholder="Pesquisar certificado, drafting..."
-              value={globalSearch}
-              onChange={(e) => setGlobalSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 placeholder:text-neutral-400 text-slate-800 dark:text-cream-100 focus:outline-none focus:border-gold-600 dark:bg-slate-800/50 dark:border-ink-800"
-            />
-          </form>
-
-          {/* Topbar Right - Actions buttons widgets */}
-          <div className="flex items-center gap-4 text-xs">
-            
-            {/* Streak Indicator widget */}
-            <div className="flex items-center gap-1 bg-orange-50 dark:bg-orange-950/20 px-2.5 py-1 rounded-full border border-orange-100 dark:border-orange-900/30 text-orange-600 font-bold font-mono text-[10px]">
-              <Flame size={12} fill="currentColor" />
-              <span>{streakCount} d</span>
-            </div>
-
-            {/* Accessibility swift switch */}
-            <button 
-              onClick={toggleTheme}
-              className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-gold-600 border-0 cursor-pointer"
-              title="Mudar visual cor"
-            >
-              {themeMode === 'light' ? <Moon size={14} /> : <Sun size={14} />}
-            </button>
-
-            {/* Quick Access Messages Page icon with unread badge */}
-            <button
-              onClick={() => setCurrentPage('messages')}
-              className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
-              title="Abrir Mensagens"
-            >
-              <MessageSquare size={14} className="text-gold-600" />
-              {unreadMessagesCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white flex items-center justify-center text-[8px] font-bold">
-                  {unreadMessagesCount}
-                </span>
-              )}
-            </button>
-
-            {/* Notification Drawer controller */}
-            <div className="relative">
-              <button 
-                onClick={() => { setIsNotificationsOpen(!isNotificationsOpen); setIsUserMenuOpen(false); }}
-                className="p-2 bg-cream-200 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
-              >
-                <Bell size={14} />
-                <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-gold-600 animate-ping" />
-              </button>
-
-              <AnimatePresence>
-                {isNotificationsOpen && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className={`absolute right-0 mt-2 w-72 rounded-2xl p-4 shadow-xl text-left ${cardThemeClass} z-50`}
-                  >
-                    <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                      <span className="font-mono text-2xs font-bold text-neutral-400">NOTIFICAÇÕES</span>
-                      <button 
-                        onClick={() => setNotifications(notifications.map(n => ({...n, read: true})))}
-                        className="text-gold-600 font-mono text-4xs uppercase font-extrabold hover:underline"
-                      >
-                        Marcar tudo lido
-                      </button>
-                    </div>
-                    <div className="space-y-2 mt-2 divide-y divide-gray-100">
-                      {notifications.map(n => (
-                        <div key={n.id} className="pt-2 flex items-start gap-2 text-2xs text-neutral-400 dark:text-gray-300">
-                          <div className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1 ${n.read ? 'bg-gray-200' : 'bg-gold-600'}`} />
-                          <p className="m-0 leading-snug">{n.text}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Quick Profile Dropdown Menu */}
-            <div className="relative">
-              <button 
-                onClick={() => { setIsUserMenuOpen(!isUserMenuOpen); setIsNotificationsOpen(false); }}
-                className="flex items-center gap-1 text-ink-900 dark:text-cream-100 font-semibold cursor-pointer border-0 bg-transparent p-0"
-              >
-                {currentUser?.foto_perfil ? (
-                  <img
-                    src={currentUser.foto_perfil}
-                    alt={currentUser.firstName}
-                    className="h-6 w-6 rounded-full object-cover border border-gold-600/30"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <span className="h-6 w-6 rounded-full bg-gold-600 text-slate-950 font-bold flex items-center justify-center font-mono">
-                    {currentUser?.firstName[0]}
-                  </span>
-                )}
-                <ChevronDown size={12} />
-              </button>
-
-              <AnimatePresence>
-                {isUserMenuOpen && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className={`absolute right-0 mt-2 w-48 rounded-xl p-2 shadow-xl text-left ${cardThemeClass} z-50`}
-                  >
-                    {[
-                      { tab: 'profile', text: 'Meu Perfil Académico', id: <UserIcon size={12} /> },
-                      { tab: 'settings', text: 'Configurações de Ecrã', id: <Settings size={12} /> }
-                    ].map(act => (
-                      <button
-                        key={act.tab}
-                        onClick={() => {
-                          setActiveTab(act.tab as any);
-                          setIsUserMenuOpen(false);
-                        }}
-                        className="w-full flex items-center gap-2 p-2 hover:bg-cream-200 dark:hover:bg-slate-700/50 rounded-lg text-2xs text-neutral-400 dark:text-gray-200 text-left cursor-pointer border-0"
-                      >
-                        {act.id}
-                        <span>{act.text}</span>
-                      </button>
-                    ))}
-                    <div className="border-t border-gray-100 my-1 pb-1" />
-                    <button
-                      onClick={async () => {
-                        try {
-                          await signOut();
-                        } catch (e) {}
-                        setCurrentUser(null);
-                        setCurrentPage('login');
-                      }}
-                      className="w-full flex items-center gap-2 p-2 hover:bg-red-50 text-danger-700 rounded-lg text-2xs text-left cursor-pointer border-0"
-                    >
-                      <LogOut size={12} />
-                      <span>Sair do MultPlus</span>
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-          </div>
-        </header>
+        <StudentTopbar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          setCurrentPage={setCurrentPage}
+          currentUser={currentUser}
+          onSignOut={async () => {
+            try {
+              await signOut();
+            } catch (e) {}
+            setCurrentUser(null);
+            setCurrentPage('login');
+          }}
+          isMobileSidebarOpen={isMobileSidebarOpen}
+          setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+          isHighContrast={isHighContrast}
+          themeMode={themeMode}
+          toggleTheme={toggleTheme}
+          streakCount={streakCount}
+          unreadMessagesCount={unreadMessagesCount}
+          notifications={notifications}
+          setNotifications={setNotifications}
+          isNotificationsOpen={isNotificationsOpen}
+          setIsNotificationsOpen={setIsNotificationsOpen}
+          isUserMenuOpen={isUserMenuOpen}
+          setIsUserMenuOpen={setIsUserMenuOpen}
+          globalSearch={globalSearch}
+          setGlobalSearch={setGlobalSearch}
+          handleGlobalSearchSubmit={handleGlobalSearchSubmit}
+          cardThemeClass={cardThemeClass}
+        />
 
         {/* Global Lookup feed search warning feedbacks notification banner */}
         {searchFeedback && (
@@ -1064,161 +649,21 @@ export default function StudentPortal({
               transition={{ duration: 0.25 }}
             >
               
-              {/* 1. DASHBOARD VIEW PORTAL HOMEPAGE */}
               {activeTab === 'dashboard' && (
-                <div className="space-y-6">
-                  {enrollments.length === 0 ? (
-                    <div className="bg-cream-100 dark:bg-ink-900 border border-gray-150 dark:border-ink-800 rounded-3xl p-8 sm:p-12 text-center max-w-lg mx-auto space-y-6 shadow-sm mt-6">
-                      <div className="w-16 h-16 bg-ink-900/5 text-gold-600 rounded-full flex items-center justify-center mx-auto">
-                        <BookOpen size={28} />
-                      </div>
-                      <div className="space-y-2 text-center">
-                        <h4 className="font-serif font-black text-lg text-ink-900 dark:text-cream-100 leading-tight m-0">
-                          Você ainda não está inscrito em nenhum curso.
-                        </h4>
-                        <p className="text-xs text-neutral-400 dark:text-gray-450 leading-relaxed font-sans m-0">
-                          Entre em contato com o seu instrutor ou administrador da MultiPlus Academy para efetuar a sua matrícula nos cursos disponíveis.
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      {/* Personal Greetings Block with UTC live date clock and progress indicator */}
-                      <div className={`p-6 sm:p-8 rounded-3xl relative overflow-hidden text-left ${
-                        isHighContrast ? 'border-4 border-yellow-500 bg-black text-cream-100' : 'bg-ink-900 text-cream-100 border border-gold-600/20 shadow-sm'
-                      }`}>
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-gold-600/10 to-transparent rounded-full pointer-events-none" />
-                        
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
-                          <div>
-                            {/* Live real-time clock and precise formatted dates */}
-                            <div className="flex items-center gap-3 text-gold-600 text-[10px] font-mono tracking-widest uppercase font-bold">
-                              <span>ASSENTO ACADÉMICO ATIVO • MULTIPLUS</span>
-                              <span className="px-2 py-0.5 rounded bg-black/40 text-cream-100 select-none">
-                                ⏱ {currentTime.toLocaleTimeString()}
-                              </span>
-                            </div>
-
-                            <h2 className="text-2xl sm:text-3xl font-serif font-black m-0 text-cream-100 mt-1.5 leading-tight">
-                              Olá, {profileForm.firstName || 'Doutor(a)'}! 👋
-                            </h2>
-                            <p className="text-xs text-cream-100/70 mt-1 max-w-xl">
-                              Bem-vindo(a) de volta à MultiPlus Academy. Desenvolva as suas competências de oratória ("oral advocacy") e drafting formal de contratos in inglês hoje.
-                            </p>
-                          </div>
-
-                          {nextScheduledLesson ? (
-                            <div className="bg-cream-100/10 backdrop-blur-md p-4 rounded-2xl border border-white/5 space-y-2 shrink-0 max-w-xs text-left">
-                              <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block font-bold">PRÓXIMA AULA SÍNCRONA</span>
-                              <h4 className="text-xs font-serif font-black m-0 truncate max-w-[240px] text-cream-100">
-                                {nextScheduledLesson.titulo || nextScheduledLesson.title || 'Sessão Prática'}
-                              </h4>
-                              <span className="text-[10px] font-mono text-emerald-400 block font-bold uppercase">
-                                {new Date(nextScheduledLesson.scheduled_at).toLocaleDateString('pt-AO', { weekday: 'long' })} • {new Date(nextScheduledLesson.scheduled_at).toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                              
-                              {nextScheduledLesson.meeting_url && (
-                                <a 
-                                  href={nextScheduledLesson.meeting_url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="px-3.5 py-1.5 bg-gold-600 hover:bg-cream-100 hover:text-slate-900 text-ink-900 font-mono text-3xs font-extrabold rounded-lg tracking-wider transition-all inline-flex items-center gap-1"
-                                >
-                                  Entrar na Reunião <ExternalLink size={10} />
-                                </a>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="bg-cream-100/10 backdrop-blur-md p-4 rounded-2xl border border-white/5 space-y-2 shrink-0 text-left max-w-xs">
-                              <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block font-bold">SESSÃO SÍNCRONA</span>
-                              <h4 className="text-xs font-serif font-black m-0 text-cream-100">Sem sessões agendadas</h4>
-                              <span className="text-[10px] font-mono text-neutral-400 block">Novas tutorias em breve.</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Responsive Grid statistics metrics using clean neon SaaS indicators */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {[
-                          { title: 'Cunho de Estudo', value: `${streakCount} Dias`, note: 'Acompanhando a constância', icon: <Flame size={18} fill="currentColor" className="text-orange-600" /> },
-                          { title: 'Aulas Vídeo Concluídas', value: `${completedLessons.length} de ${realLessons.length} sessões`, note: 'Unidade de Isenção em curso', icon: <CheckCircle size={18} className="text-emerald-600" /> },
-                          { title: 'Dedicação Acumulada', value: `${Math.round(completedLessons.length * 1.5)} Horas`, note: 'Meta: 3 horas semanais', icon: <Clock size={18} className="text-blue-600" /> },
-                          { title: 'Certificados Ganhos', value: `${certificates.length} ${certificates.length === 1 ? 'Credencial' : 'Credenciais'}`, note: 'Sincronizados em tempo real', icon: <Award size={18} className="text-amber-500" /> }
-                        ].map((stat, idx) => (
-                          <div key={idx} className={`p-5 rounded-2xl text-left flex flex-col justify-between ${cardThemeClass}`}>
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <span className="text-[8px] font-mono text-neutral-400 uppercase tracking-widest block mb-1">{stat.title}</span>
-                                <span className="text-xl font-serif font-black text-ink-900 dark:text-cream-100 leading-tight">{stat.value}</span>
-                              </div>
-                              <div className="p-2.5 bg-cream-200 dark:bg-ink-900 rounded-xl border border-gray-150 dark:border-ink-800 shrink-0">
-                                {stat.icon}
-                              </div>
-                            </div>
-                            <span className="text-[9px] font-mono text-neutral-400 mt-3 block">{stat.note}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Active Lessons course review and Google meet widgets partition */}
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                        
-                        {/* Flagship Course card retake */}
-                        <div className={`lg:col-span-8 p-6 rounded-3xl text-left space-y-4 flex flex-col justify-between ${cardThemeClass}`}>
-                          <div className="border-b border-gray-150 pb-3 flex justify-between items-center w-full">
-                            <div>
-                              <span className="text-[9px] font-mono text-neutral-400 uppercase font-black tracking-wide">Módulo Ativo</span>
-                              <h3 className="text-base font-serif font-black m-0 text-ink-900 dark:text-cream-100">Retome do Módulo II: Drafting Prático</h3>
-                            </div>
-                            <span className="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded text-[9px] font-mono">66% COMPLETO</span>
-                          </div>
-
-                          <div className="p-4 rounded-xl bg-cream-200 dark:bg-ink-950 border border-gray-150 dark:border-ink-800/50 space-y-3">
-                            <span className="text-[9px] font-mono text-gold-600 tracking-wide block uppercase font-bold">RETOMAR HOJE:</span>
-                            <h4 className="text-xs font-serif font-black text-neutral-400 dark:text-gray-200 mt-1 m-0">
-                              {currentLecture?.title || 'Sem aulas ativas'}
-                            </h4>
-                            <p className="text-2xs text-neutral-400 dark:text-gray-300 leading-relaxed font-sans mt-1 m-0">
-                              {currentLecture?.description || 'Nenhuma aula disponível no seu curso no momento.'}
-                            </p>
-                          </div>
-
-                          <button
-                            onClick={() => setActiveTab('courses')}
-                            className="px-4 py-2.5 bg-[#011a3d] hover:bg-gold-600 text-cream-100 hover:text-slate-900 border-0 transition-colors text-2xs font-mono font-bold uppercase rounded-xl tracking-wider flex items-center justify-center gap-1.5 cursor-pointer w-full"
-                          >
-                            <PlayCircle size={14} />
-                            <span>Abrir Leitor de Videoaulas</span>
-                          </button>
-                        </div>
-
-                        {/* Support block info links */}
-                        <div className={`lg:col-span-4 p-6 rounded-3xl text-left flex flex-col justify-between space-y-4 ${cardThemeClass}`}>
-                          <div className="space-y-3">
-                            <span className="text-[9px] font-mono text-gold-600 uppercase tracking-widest font-black block">Atalhos Úteis</span>
-                            <h3 className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 m-0">Biblioteca de Dicionários</h3>
-                            <p className="text-2xs text-neutral-400 font-sans leading-relaxed m-0">Assegure eficácia na redação perante tribunais descarregando dicionarizações jurídicas na secção de materiais.</p>
-                          </div>
-
-                          <div className="space-y-2.5">
-                            <button
-                              onClick={() => setActiveTab('materials')}
-                              className="w-full py-2 bg-gray-100 hover:bg-gray-200 dark:bg-ink-800 dark:hover:bg-slate-705 text-neutral-400 dark:text-gray-200 border-0 transition-colors rounded-xl text-3xs font-mono font-bold uppercase tracking-wider"
-                            >
-                              Ir para os Manuais
-                            </button>
-                            
-                            <div className="p-3 bg-amber-50 dark:bg-amber-950/10 border border-amber-100 rounded-xl text-[10px] text-amber-800">
-                              <strong>Exame final:</strong> Prático oral agendado no campus de Huambo para data limite em Junho de 2026.
-                            </div>
-                          </div>
-                        </div>
-
-                      </div>
-                    </>
-                  )}
-                </div>
+                <StudentDashboardView
+                  enrollments={enrollments}
+                  currentTime={currentTime}
+                  profileForm={profileForm}
+                  nextScheduledLesson={nextScheduledLesson}
+                  streakCount={streakCount}
+                  completedLessons={completedLessons}
+                  realLessons={realLessons}
+                  certificates={certificates}
+                  currentLecture={currentLecture}
+                  setActiveTab={setActiveTab}
+                  cardThemeClass={cardThemeClass}
+                  isHighContrast={isHighContrast}
+                />
               )}
 
               {/* 2. COURSES ENGINE VIDEO PLAYER VIEW */}
@@ -1331,8 +776,7 @@ export default function StudentPortal({
                                         if (currentUser?.id && selectedCourseId && currentLecture?.id) {
                                           try {
                                             await academicService.markLessonComplete(currentUser.id, selectedCourseId, currentLecture.id, true);
-                                            const completions = await academicService.getCompletedLessons(currentUser.id, selectedCourseId);
-                                            setCompletedLessons(completions || []);
+                                            await fetchStudentData();
                                           } catch (err) {
                                             console.error('Erro ao marcar aula concluída no fim do vídeo:', err);
                                           }
@@ -1436,9 +880,7 @@ export default function StudentPortal({
                             if (currentUser?.id && selectedCourseId && currentLecture.id) {
                               try {
                                 await academicService.markLessonComplete(currentUser.id, selectedCourseId, currentLecture.id, true);
-                                // Refresh completed lessons
-                                const completions = await academicService.getCompletedLessons(currentUser.id, selectedCourseId);
-                                setCompletedLessons(completions || []);
+                                await fetchStudentData();
                               } catch (err) {
                                 console.error('Error marking lesson complete from quiz success:', err);
                               }
@@ -1506,7 +948,7 @@ export default function StudentPortal({
                              </div>
                            ) : (
                              activeSyllabus.map((syll, index) => {
-                               const isLocked = syll.scheduled_at ? new Date(syll.scheduled_at) > new Date() : true;
+                               const isLocked = syll.scheduled_at ? new Date(syll.scheduled_at) > new Date() : false;
                                return (
                                  <button
                                    key={index}

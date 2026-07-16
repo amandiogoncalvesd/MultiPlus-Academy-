@@ -141,7 +141,7 @@ export const enrollmentService = {
         firstName: student.nome_completo?.split(' ')[0] || student.firstName || '',
         lastName: student.nome_completo?.split(' ').slice(1).join(' ') || student.lastName || '',
         role: student.role,
-        avatarUrl: student.foto_perfil || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150&h=150',
+        avatarUrl: student.foto_perfil || null,
         phone: student.telefone || '',
         status: student.status || 'ACTIVE',
         enrolled_at: enrollment?.created_at,
@@ -228,7 +228,7 @@ export const enrollmentService = {
       email: student.email,
       firstName: student.nome_completo?.split(' ')[0] || student.firstName || '',
       lastName: student.nome_completo?.split(' ').slice(1).join(' ') || student.lastName || '',
-      avatarUrl: student.foto_perfil || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150&h=150',
+      avatarUrl: student.foto_perfil || null,
       phone: student.telefone || '',
       status: student.status || 'ACTIVE'
     }));

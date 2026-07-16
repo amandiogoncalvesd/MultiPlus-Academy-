@@ -94,7 +94,7 @@ export const courseService = {
       title: titleVal,
       slug: slugVal,
       description: course.description || '',
-      thumbnail: course.thumbnail || 'https://images.unsplash.com/photo-1518152006812-edab29b069ac?auto=format&fit=crop&q=80&w=300',
+      thumbnail: course.thumbnail || null,
       category: course.category || 'Geral',
       level: course.level || 'Intermédio',
       duration: course.duration || '12 Semanas',

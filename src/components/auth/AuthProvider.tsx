@@ -88,7 +88,7 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
             firstName: uMeta?.nome_completo?.split(' ')[0] || uMeta?.firstName || '',
             lastName: uMeta?.nome_completo?.split(' ').slice(1).join(' ') || uMeta?.lastName || '',
             role: mappedRole,
-            avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150&h=150',
+            avatarUrl: null,
             status: 'ACTIVE',
             streak: 3,
             longestStreak: 5,

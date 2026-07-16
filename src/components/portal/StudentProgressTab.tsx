@@ -41,12 +41,12 @@ export default function StudentProgressTab({ currentUser }: StudentProgressTabPr
     loadMetrics();
   }, [currentUser]);
 
-  const streak = currentUser?.streak || 5;
-  const hours = currentUser?.totalHoursLearned || 24;
+  const streak = currentUser?.streak || 0;
+  const hours = currentUser?.totalHoursLearned || 0;
 
   const completedCount = metrics?.completed_lessons ?? 0;
-  const totalLessons = metrics?.total_lessons ?? 3;
-  const progressPct = metrics?.progress_percent ?? Math.min(100, Math.round((completedCount / (totalLessons || 3)) * 100));
+  const totalLessons = metrics?.total_lessons ?? 0;
+  const progressPct = metrics?.progress_percent ?? (totalLessons > 0 ? Math.min(100, Math.round((completedCount / totalLessons) * 100)) : 0);
   const avgScore = metrics?.avg_quiz_score ?? 0;
 
   // Render elegant progress benchmarks dynamically based on completed lessons count
