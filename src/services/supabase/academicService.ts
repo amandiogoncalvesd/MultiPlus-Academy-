@@ -445,5 +445,135 @@ export const academicService = {
       }
     }
     return data || [];
+  },
+
+  // Salvar progresso do vídeo
+  async saveVideoProgress(studentId: string, courseId: string, lessonId: string, secondsWatched: number): Promise<void> {
+    const { error } = await supabase
+      .from('lesson_progress')
+      .upsert({
+        student_id: studentId,
+        lesson_id: lessonId,
+        course_id: courseId,
+        video_progress_seconds: secondsWatched,
+      }, { onConflict: 'student_id,lesson_id' });
+    if (error) console.error('Erro ao salvar progresso do vídeo:', error);
+  },
+
+  // Buscar progresso do vídeo de uma aula
+  async getVideoProgress(studentId: string, lessonId: string): Promise<number> {
+    const { data } = await supabase
+      .from('lesson_progress')
+      .select('video_progress_seconds')
+      .eq('student_id', studentId)
+      .eq('lesson_id', lessonId)
+      .maybeSingle();
+    return data?.video_progress_seconds || 0;
+  },
+
+  // Buscar apontamentos do aluno para uma aula
+  async getLessonNotes(studentId: string, lessonId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('lesson_notes')
+      .select('*')
+      .eq('student_id', studentId)
+      .eq('lesson_id', lessonId)
+      .order('video_timestamp', { ascending: true });
+    if (error) { console.error('Erro ao buscar apontamentos:', error); return []; }
+    return data || [];
+  },
+
+  // Salvar apontamento do aluno
+  async saveLessonNote(studentId: string, lessonId: string, courseId: string, content: string, videoTimestamp: number): Promise<any> {
+    const { data, error } = await supabase
+      .from('lesson_notes')
+      .insert({
+        student_id: studentId,
+        lesson_id: lessonId,
+        course_id: courseId,
+        content,
+        video_timestamp: videoTimestamp
+      })
+      .select()
+      .single();
+    if (error) { console.error('Erro ao salvar apontamento:', error); throw error; }
+    return data;
+  },
+
+  // Buscar materiais de todos os cursos matriculados do aluno
+  async getStudentMaterials(studentId: string): Promise<any[]> {
+    // 1. Buscar cursos matriculados
+    const { data: enrollments } = await supabase
+      .from('enrollments')
+      .select('course_id')
+      .eq('student_id', studentId)
+      .eq('status', 'ACTIVE');
+    
+    if (!enrollments || enrollments.length === 0) return [];
+    
+    const courseIds = enrollments.map(e => e.course_id);
+    
+    // 2. Buscar aulas desses cursos
+    const { data: lessons } = await supabase
+      .from('lessons')
+      .select('id, course_id, titulo')
+      .in('course_id', courseIds);
+    
+    if (!lessons || lessons.length === 0) return [];
+    
+    const lessonIds = lessons.map(l => l.id);
+    
+    // 3. Buscar materiais associados
+    const { data: materials, error } = await supabase
+      .from('materials')
+      .select('*')
+      .in('lesson_id', lessonIds);
+    
+    if (error) { console.error('Erro ao buscar materiais:', error); return []; }
+    
+    // Enriquecer com informações do curso
+    return (materials || []).map(m => ({
+      ...m,
+      course_id: lessons.find(l => l.id === m.lesson_id)?.course_id,
+      lesson_title: lessons.find(l => l.id === m.lesson_id)?.titulo
+    }));
+  },
+
+  // Buscar tarefas do aluno
+  async getStudentAssignments(studentId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('enrollments')
+      .select('course_id, course:courses(id, title)')
+      .eq('student_id', studentId)
+      .eq('status', 'ACTIVE');
+    
+    if (error || !data) return [];
+    
+    const courseIds = data.map(e => e.course_id);
+    
+    const { data: assignments, error: aError } = await supabase
+      .from('assignments')
+      .select('*')
+      .in('course_id', courseIds)
+      .eq('status', 'PUBLISHED');
+    
+    if (aError) { console.error('Erro ao buscar tarefas:', aError); return []; }
+    return assignments || [];
+  },
+
+  // Submeter tarefa
+  async submitAssignment(assignmentId: string, studentId: string, submission: { text?: string; url?: string }): Promise<any> {
+    const { data, error } = await supabase
+      .from('assignment_submissions')
+      .upsert({
+        assignment_id: assignmentId,
+        student_id: studentId,
+        submission_text: submission.text || null,
+        submission_url: submission.url || null,
+      }, { onConflict: 'assignment_id,student_id' })
+      .select()
+      .single();
+    if (error) { console.error('Erro ao submeter tarefa:', error); throw error; }
+    return data;
   }
 };

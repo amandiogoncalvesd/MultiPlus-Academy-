@@ -11,6 +11,8 @@ export interface SupabaseLesson {
   quiz?: any[] | null;
   scheduled_at?: string | null;
   status?: 'DRAFT' | 'PUBLISHED';
+  meeting_url?: string | null;      // NOVO
+  created_by?: string | null;        // NOVO
 }
 
 export interface SupabaseMaterial {
@@ -100,6 +102,18 @@ export const lessonService = {
     
     if (error) {
       console.error(`Error deleting lesson ${id}:`, error);
+      throw error;
+    }
+    return true;
+  },
+
+  async deleteMaterial(materialId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('materials')
+      .delete()
+      .eq('id', materialId);
+    if (error) {
+      console.error('Erro ao deletar material:', error);
       throw error;
     }
     return true;

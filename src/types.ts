@@ -22,6 +22,7 @@ export interface User {
   lastName: string;
   role: UserRole;
   avatarUrl?: string;
+  foto_perfil?: string;
   phone?: string;
   whatsapp?: string;
   status: 'ACTIVE' | 'SUSPENDED';

@@ -1,17 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   ClipboardList, 
   Calendar, 
   CheckCircle, 
   AlertTriangle, 
-  Plus, 
   ArrowRight,
   Upload,
   Paperclip,
   Check,
-  Award
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
+import { academicService } from '../../services/supabase/academicService';
+import { supabase } from '../../lib/supabase/client';
+
+interface StudentTasksTabProps {
+  userId?: string;
+}
 
 interface TaskItem {
   id: string;
@@ -27,53 +33,94 @@ interface TaskItem {
   };
 }
 
-export default function StudentTasksTab() {
+export default function StudentTasksTab({ userId }: StudentTasksTabProps) {
   const [activeTab, setActiveTab] = useState<'PENDING' | 'COMPLETED' | 'OVERDUE'>('PENDING');
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState<string>('task_1');
-  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string>('');
+  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [successAnimation, setSuccessAnimation] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
 
-  const [tasks, setTasks] = useState<TaskItem[]>([
-    {
-      id: 'task_1',
-      title: 'Structural translation: Oil and Gas Concession regulations',
-      description: 'Traduzir os artigos 5 a 12 da regulamentação nacional de Conteúdo Local (Lei 27/21 de Angola) para inglês técnico, justificando a escolha dos verbos modais (shall, may, must).',
-      dueDate: '',
-      points: 100,
-      status: 'PENDING'
-    },
-    {
-      id: 'task_2',
-      title: 'Minuting draft: Indemnification and Limitation of Liability Boilerplates',
-      description: 'Estruturar rascunho de compromisso de isenção mútua de perdas comerciais entre um consórcio contratual no Porto do Huambo e operadora marítima transnacional.',
-      dueDate: '',
-      points: 100,
-      status: 'PENDING'
-    },
-    {
-      id: 'task_3',
-      title: 'Quiz 1: Civil Law vs Common Law foundational concepts',
-      description: 'Questionário de fixação automatizado cobrindo as origens, Stare Decisis, doutrinas e diferenças estruturais para juristas de países lusófonos.',
-      dueDate: '',
-      points: 50,
-      status: 'COMPLETED',
-      submittedFile: 'quiz_1_submission_dr_antonio.pdf',
-      feedback: {
-        score: 48,
-        text: 'Excelente clareza conceitual demonstrada ao diferenciar a codificação estrita do nosso direito e a maleabilidade das cortes judiciais saxónicas.'
-      }
-    },
-    {
-      id: 'task_4',
-      title: 'Grammar exercise: Formal Legal Advisory Writing Ethics',
-      description: 'Análise de e-mails formais e substituição de expressões redundantes ou coloquiais por verbos latinos aceitáveis no direito internacional.',
-      dueDate: '',
-      points: 100,
-      status: 'OVERDUE'
+  const fetchTasksAndSubmissions = async () => {
+    if (!userId) {
+      setLoading(false);
+      return;
     }
-  ]);
+    setLoading(true);
+    try {
+      // 1. Buscar tarefas ativas dos cursos matriculados
+      const rawAssignments = await academicService.getStudentAssignments(userId);
+      
+      // 2. Buscar submissões do aluno para estas tarefas
+      const { data: submissions, error: subError } = await supabase
+        .from('assignment_submissions')
+        .select('*')
+        .eq('student_id', userId);
+
+      if (subError) throw subError;
+
+      const submissionsMap = new Map<string, any>();
+      if (submissions) {
+        submissions.forEach(sub => {
+          submissionsMap.set(sub.assignment_id, sub);
+        });
+      }
+
+      const formattedTasks: TaskItem[] = rawAssignments.map(asm => {
+        const submission = submissionsMap.get(asm.id);
+        const hasSubmission = !!submission;
+        
+        let status: 'PENDING' | 'COMPLETED' | 'OVERDUE' = 'PENDING';
+        if (hasSubmission) {
+          status = 'COMPLETED';
+        } else if (asm.due_date && new Date(asm.due_date) < new Date()) {
+          status = 'OVERDUE';
+        }
+
+        // Formatar data
+        let formattedDate = '';
+        if (asm.due_date) {
+          const d = new Date(asm.due_date);
+          formattedDate = d.toLocaleDateString('pt-AO') + ' ' + d.toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        return {
+          id: asm.id,
+          title: asm.titulo,
+          description: asm.descricao || 'Nenhuma instrução complementar fornecida.',
+          dueDate: formattedDate,
+          points: 100, // Pontuação padrão recomendada
+          status,
+          submittedFile: submission?.submission_url 
+            ? submission.submission_url.split('/').pop() || 'Ficheiro de Submissão'
+            : undefined,
+          feedback: submission?.feedback || submission?.grade !== null && submission?.grade !== undefined
+            ? {
+                score: Number(submission.grade) || 0,
+                text: submission.feedback || 'Tarefa avaliada pelo corpo docente.'
+              }
+            : undefined
+        };
+      });
+
+      setTasks(formattedTasks);
+      
+      if (formattedTasks.length > 0 && !selectedTaskId) {
+        setSelectedTaskId(formattedTasks[0].id);
+      }
+    } catch (err) {
+      console.error('Erro ao carregar tarefas do aluno:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasksAndSubmissions();
+  }, [userId]);
 
   const filteredTasks = tasks.filter(t => t.status === activeTab);
 
@@ -90,40 +137,60 @@ export default function StudentTasksTab() {
     e.preventDefault();
     setDragOver(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      setUploadedFile(e.dataTransfer.files[0].name);
+      const file = e.dataTransfer.files[0];
+      setFileToUpload(file);
+      setUploadedFileName(file.name);
     }
   };
 
   const handleFileChange = (e: any) => {
     if (e.target.files && e.target.files.length > 0) {
-      setUploadedFile(e.target.files[0].name);
+      const file = e.target.files[0];
+      setFileToUpload(file);
+      setUploadedFileName(file.name);
     }
   };
 
-  // Process task upload state change
-  const handleSubmitTask = () => {
-    if (!uploadedFile) return;
+  const handleSubmitTask = async () => {
+    if (!fileToUpload || !selectedTaskId || !userId) return;
     
     setSuccessAnimation(true);
-    setTimeout(() => {
-      // update task state
-      setTasks(prev => prev.map(t => {
-        if (t.id === selectedTaskId) {
-          return {
-            ...t,
-            status: 'COMPLETED',
-            submittedFile: uploadedFile
-          };
-        }
-        return t;
-      }));
+    try {
+      // 1. Upload do arquivo para o Supabase Storage no bucket 'media'
+      const fileExt = fileToUpload.name.split('.').pop();
+      const filePath = `assignments/${userId}/${selectedTaskId}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('media')
+        .upload(filePath, fileToUpload, { upsert: true });
 
-      // reset upload drawer helper variables
-      setUploadedFile(null);
-      setIsSubmitOpen(false);
+      if (uploadError) throw uploadError;
+
+      // 2. Obter a URL pública do arquivo
+      const { data } = supabase.storage.from('media').getPublicUrl(filePath);
+      const publicUrl = data.publicUrl;
+
+      // 3. Registrar a submissão de tarefa no banco
+      await academicService.submitAssignment(selectedTaskId, userId, {
+        url: publicUrl,
+        text: `Submissão do ficheiro ${fileToUpload.name}`
+      });
+
+      // 4. Sucesso! Recarregar
+      setTimeout(async () => {
+        await fetchTasksAndSubmissions();
+        setFileToUpload(null);
+        setUploadedFileName(null);
+        setIsSubmitOpen(false);
+        setSuccessAnimation(false);
+        setActiveTab('COMPLETED');
+      }, 1000);
+      
+    } catch (err) {
+      console.error('Erro ao submeter tarefa para o Supabase:', err);
+      alert('Erro ao submeter arquivo: ' + (err as any).message);
       setSuccessAnimation(false);
-      setActiveTab('COMPLETED');
-    }, 1500);
+    }
   };
 
   const currentUploadTask = tasks.find(t => t.id === selectedTaskId);
@@ -161,10 +228,18 @@ export default function StudentTasksTab() {
 
         {/* Display tasks mapping */}
         <div className="space-y-3">
-          {filteredTasks.length === 0 ? (
+          {loading ? (
+            <div className="py-16 bg-cream-100 dark:bg-ink-900 rounded-3xl border border-gray-150 dark:border-ink-800/60 text-center text-neutral-400 font-mono text-xs flex flex-col items-center justify-center gap-2">
+              <Loader2 className="w-6 h-6 animate-spin text-gold-600" />
+              <p className="m-0">A carregar tarefas académicas...</p>
+            </div>
+          ) : filteredTasks.length === 0 ? (
             <div className="py-16 bg-cream-100 dark:bg-ink-900 rounded-3xl border border-gray-150 dark:border-ink-800/60 text-center text-neutral-400 font-mono text-xs flex flex-col items-center justify-center">
               <CheckCircle size={24} className="text-emerald-600 mb-2" />
-              <p className="m-0">Sem tarefas nesta pasta. Tudo em ordem em sua agenda acadêmica!</p>
+              <h4 className="font-serif font-black text-ink-900 dark:text-cream-100 text-sm mb-1">Sem tarefas nesta pasta</h4>
+              <p className="m-0 max-w-xs text-center text-[11px] text-neutral-400">
+                Tudo em ordem em sua agenda académica para esta secção!
+              </p>
             </div>
           ) : (
             filteredTasks.map(task => (
@@ -182,7 +257,9 @@ export default function StudentTasksTab() {
                       VALOR: {task.points} PONTOS
                     </span>
                     {task.status === 'PENDING' && (
-                      <span className="text-[9px] font-mono text-amber-600 dark:text-[#E2B755] font-bold">⏱ {task.dueDate ? `EXPIRA EM: ${task.dueDate}` : 'Sem prazo definido'}</span>
+                      <span className="text-[9px] font-mono text-amber-600 dark:text-[#E2B755] font-bold">
+                        ⏱ {task.dueDate ? `EXPIRA EM: ${task.dueDate}` : 'Sem prazo definido'}
+                      </span>
                     )}
                   </div>
 
@@ -244,7 +321,7 @@ export default function StudentTasksTab() {
                 <h4 className="text-xs font-serif font-black text-ink-900 dark:text-cream-100 m-0">Enviar Minuta Jurídica</h4>
               </div>
               <button 
-                onClick={() => { setIsSubmitOpen(false); setUploadedFile(null); }}
+                onClick={() => { setIsSubmitOpen(false); setUploadedFileName(null); setFileToUpload(null); }}
                 className="text-neutral-400 hover:text-gold-600 text-xs font-mono font-bold hover:underline bg-transparent border-0 cursor-pointer"
               >
                 Cancelar
@@ -270,27 +347,28 @@ export default function StudentTasksTab() {
                 id="file-task-upload"
                 className="absolute inset-0 opacity-0 cursor-pointer"
                 onChange={handleFileChange}
+                accept=".pdf,.docx,.doc"
               />
               <Upload size={24} className="text-gold-600 mb-2 fill-transparent" />
               <p className="text-xs font-medium text-neutral-400 dark:text-cream-100/80 m-0">Arraste a minuta em PDF ou DOCX</p>
               <p className="text-[10px] font-mono text-neutral-400 dark:text-cream-150 mt-1 m-0">ou clique para selecionar do computador</p>
             </div>
 
-            {uploadedFile && (
+            {uploadedFileName && (
               <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-400 rounded-xl flex items-center justify-between relative z-10">
-                <span className="font-mono truncate max-w-[170px] block">{uploadedFile}</span>
+                <span className="font-mono truncate max-w-[170px] block">{uploadedFileName}</span>
                 <CheckCircle size={14} className="text-emerald-600 flex-shrink-0" />
               </div>
             )}
 
             <button
               onClick={handleSubmitTask}
-              disabled={!uploadedFile || successAnimation}
+              disabled={!fileToUpload || successAnimation}
               className="w-full py-2.5 bg-gradient-to-r from-gold-600 to-[#E2B755] text-cream-100 hover:scale-[1.02] active:scale-95 disabled:opacity-40 rounded-xl text-2xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-0 relative z-10"
             >
               {successAnimation ? (
                 <>
-                  <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
+                  <Loader2 size={14} className="animate-spin text-cream-100 mr-1" />
                   Salvando Cópia no LMS...
                 </>
               ) : (

@@ -1,17 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { 
   Award, 
   Download, 
   ExternalLink, 
   CheckCircle2, 
-  Lock,
-  QrCode,
+  QrCode, 
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { User, PageId } from '../../types';
 import StarBorder from '../ui/StarBorder';
+import { academicService } from '../../services/supabase/academicService';
 
 interface StudentCertificatesTabProps {
   currentUser: User | null;
@@ -24,34 +25,38 @@ export default function StudentCertificatesTab({
   setCurrentPage,
   setVerificationCode
 }: StudentCertificatesTabProps) {
-  const studentFull = currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Doutor Aluno';
-  const isCompletedUser = currentUser?.email.includes('antonio') || false; // Dr. Antonio starts completed
-  
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const [certificates, setCertificates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const certificates = [
-    {
-      id: 'cert_1',
-      title: 'English for the Legal Field in Angola',
-      level: 'CEFR C1 • Professional Proficiency',
-      serial: 'MPA-2026-001',
-      issueDate: '07 de Junho de 2026',
-      unlocked: true,
-      signature: 'Prof. Esmeralda Sumbelelo'
-    },
-    {
-      id: 'cert_2',
-      title: 'Advanced Legal Writing & Contract Drafting',
-      level: 'CEFR C1 • Practical Masterclass',
-      serial: 'MPA-2026-009',
-      issueDate: 'Pendente',
-      unlocked: isCompletedUser, // unlocked if completed
-      signature: 'Prof. Esmeralda Sumbelelo'
+  const studentFull = currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Doutor Aluno';
+
+  useEffect(() => {
+    const fetchCertificates = async () => {
+      if (!currentUser?.id) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        const data = await academicService.getStudentCertificates(currentUser.id);
+        setCertificates(data || []);
+      } catch (err) {
+        console.error('Erro ao carregar certificados do aluno:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCertificates();
+  }, [currentUser]);
+
+  const triggerExport = (id: string, title: string, pdfUrl?: string) => {
+    if (pdfUrl) {
+      window.open(pdfUrl, '_blank');
+      return;
     }
-  ];
-
-  const triggerExport = (id: string, title: string) => {
+    
     setDownloadingId(id);
     setExportMessage("Processando dados e assinaturas digitais da gerência...");
     setTimeout(() => {
@@ -59,7 +64,7 @@ export default function StudentCertificatesTab({
       setTimeout(() => {
         setDownloadingId(null);
         setExportMessage(null);
-        alert(`Parabéns! O seu certificado em "${title}" foi exportado localmente com sucesso.\nCódigo Hash de Identificação: MPA-2026-001-A6`);
+        alert(`O seu certificado em "${title}" foi exportado localmente com sucesso.\nCódigo Hash de Autenticidade: ${id}`);
       }, 1500);
     }, 1200);
   };
@@ -90,8 +95,26 @@ export default function StudentCertificatesTab({
 
       {/* Grid of Certificates Card lists */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-        {certificates.map(cert => {
-          if (cert.unlocked) {
+        {loading ? (
+          <div className="col-span-2 py-16 text-center text-neutral-400 font-mono text-xs flex flex-col items-center justify-center gap-2">
+            <Loader2 className="w-6 h-6 animate-spin text-gold-600" />
+            <p className="m-0">A carregar certificados académicos...</p>
+          </div>
+        ) : certificates.length === 0 ? (
+          <div className="col-span-2 py-16 bg-cream-100 dark:bg-ink-900 rounded-3xl border border-gray-150 dark:border-ink-800/60 text-center text-neutral-400 font-mono text-xs flex flex-col items-center justify-center">
+            <Award size={32} className="text-gold-600/40 mb-2 animate-pulse" />
+            <h4 className="font-serif font-black text-ink-900 dark:text-cream-100 text-sm mb-1">Sem Certificados Emitidos</h4>
+            <p className="m-0 max-w-xs text-center text-[11px] text-neutral-400 leading-relaxed">
+              O seu diploma digital será disponibilizado e assinado nesta secção assim que concluir todas as aulas, quizzes e avaliações letivas correspondentes ao plano curricular do seu curso.
+            </p>
+          </div>
+        ) : (
+          certificates.map(cert => {
+            const courseTitle = cert.course?.title || 'Curso Académico';
+            const serial = cert.codigo_validacao || 'Pendente';
+            const rawDate = cert.emitido_em ? new Date(cert.emitido_em).toLocaleDateString('pt-AO') : '---';
+            const gradeText = cert.final_grade ? `Nota Final: ${cert.final_grade}` : 'Aprovado';
+
             return (
               <StarBorder 
                 key={cert.id}
@@ -110,7 +133,7 @@ export default function StudentCertificatesTab({
                     <span className="text-gold-600 text-[9px] font-mono tracking-widest uppercase font-bold block mb-1">
                       MULTIPLUS ACADEMY • ANGOLA
                     </span>
-                    <span className="text-xs font-mono text-neutral-400 font-semibold block">{cert.level}</span>
+                    <span className="text-xs font-mono text-neutral-400 font-semibold block">{gradeText}</span>
                   </div>
                   
                   <div className="p-1.5 bg-gold-600 rounded-lg text-slate-950 text-3xs font-mono font-bold uppercase tracking-wider flex items-center gap-1 select-none shrink-0">
@@ -130,19 +153,19 @@ export default function StudentCertificatesTab({
 
                   <div className="space-y-1">
                     <span className="text-[9px] font-mono text-neutral-400 block uppercase">CONCLUIU COM ÊXITO O PROGRAMA ACADÉMICO</span>
-                    <p className="text-sm font-serif font-black text-gold-600 m-0">
-                      {cert.title}
+                    <p className="text-sm font-serif font-black text-gold-600 m-0 leading-normal">
+                      {courseTitle}
                     </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-[10px] font-mono pt-2">
                     <div>
                       <span className="text-neutral-400 block text-[8px] uppercase">DATA DE EMISSÃO</span>
-                      <span className="text-cream-100 font-bold">{cert.issueDate}</span>
+                      <span className="text-cream-100 font-bold">{rawDate}</span>
                     </div>
                     <div>
                       <span className="text-neutral-400 block text-[8px] uppercase">CÓDIGO DE REGISTO</span>
-                      <span className="text-cream-100 font-bold">{cert.serial}</span>
+                      <span className="text-cream-100 font-bold">{serial}</span>
                     </div>
                   </div>
                 </div>
@@ -156,7 +179,7 @@ export default function StudentCertificatesTab({
                     <div>
                       <span className="text-[8px] font-mono text-neutral-400 block tracking-widest uppercase">AUTENTICAÇÃO INTEGRAL</span>
                       <button 
-                        onClick={() => handleVerifyOnPortal(cert.serial)}
+                        onClick={() => handleVerifyOnPortal(serial)}
                         className="text-gold-600 font-mono font-bold text-[9px] uppercase hover:underline flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0"
                       >
                         Verificar Online <ExternalLink size={10} />
@@ -165,7 +188,7 @@ export default function StudentCertificatesTab({
                   </div>
 
                   <button
-                    onClick={() => triggerExport(cert.id, cert.title)}
+                    onClick={() => triggerExport(cert.id, courseTitle, cert.certificate_pdf_url)}
                     disabled={downloadingId !== null}
                     className="px-4 py-2 bg-gradient-to-r from-gold-600 to-[#E2B755] hover:scale-105 active:scale-95 text-ink-900 rounded-xl text-3xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-0"
                   >
@@ -181,66 +204,8 @@ export default function StudentCertificatesTab({
                 </div>
               </StarBorder>
             );
-          } else {
-            return (
-              <div 
-                key={cert.id}
-                className="bg-cream-100 dark:bg-ink-900 border border-gray-150 dark:border-ink-800/60 text-neutral-400 dark:text-cream-200/60 rounded-3xl p-6 text-left flex flex-col justify-between min-h-[380px] shadow-xs select-none"
-              >
-                {/* Top row */}
-                <div className="flex justify-between items-start border-b border-gray-200 dark:border-ink-800/60 pb-4">
-                  <div>
-                    <span className="text-neutral-400 dark:text-cream-200/40 text-[9px] font-mono tracking-widest uppercase font-bold block mb-1">
-                      MULTIPLUS ACADEMY • ANGOLA
-                    </span>
-                    <span className="text-xs font-mono text-neutral-400 dark:text-cream-200/40 font-semibold block">{cert.level}</span>
-                  </div>
-                  
-                  <div className="p-1.5 bg-cream-200 dark:bg-ink-800 text-neutral-400 dark:text-cream-200/60 rounded-lg text-3xs font-mono font-bold uppercase tracking-wider flex items-center gap-1 border border-gray-150 dark:border-ink-750">
-                    <Lock size={10} />
-                    <span>Pendente</span>
-                  </div>
-                </div>
-
-                {/* Core certificate name */}
-                <div className="py-4 space-y-4">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-mono text-neutral-400/60 block uppercase">CERTIFICA-SE QUE</span>
-                    <h4 className="text-lg sm:text-xl font-serif font-bold text-neutral-400/60 tracking-wide m-0 italic">
-                      Nome do Aluno
-                    </h4>
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-mono text-neutral-400/60 block uppercase">CONCLUIU COM ÊXITO O PROGRAMA ACADÉMICO</span>
-                    <p className="text-sm font-serif font-black text-neutral-400/60 m-0">
-                      {cert.title}
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 text-[10px] font-mono pt-2">
-                    <div>
-                      <span className="text-neutral-400/60 block text-[8px] uppercase">DATA DE EMISSÃO</span>
-                      <span className="text-neutral-400/60 font-bold">---</span>
-                    </div>
-                    <div>
-                      <span className="text-neutral-400/60 block text-[8px] uppercase">CÓDIGO DE REGISTO</span>
-                      <span className="text-neutral-400/60 font-bold">Pendente</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom Actions footer */}
-                <div className="border-t border-gray-200 dark:border-ink-800/60 pt-4 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mt-4">
-                  <div className="flex items-center gap-2 text-2xs text-neutral-400 dark:text-cream-200/60 leading-normal">
-                    <AlertCircle size={14} className="text-yellow-500 flex-shrink-0" />
-                    <span>Requisições de moderação ocorrem no fecho curricular.</span>
-                  </div>
-                </div>
-              </div>
-            );
-          }
-        })}
+          })
+        )}
       </div>
 
     </div>

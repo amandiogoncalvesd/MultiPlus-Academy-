@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PageId, User } from '../types';
 import { jsPDF } from 'jspdf';
@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase/client';
 import { userService } from '../services/supabase/userService';
 import { academicService } from '../services/supabase/academicService';
 import QuizArea from './portal/QuizArea';
+import AvatarUpload from './AvatarUpload';
 import { useTheme } from '../contexts/ThemeContext';
 import { messageService } from '../services/supabase/messageService';
 
@@ -123,6 +124,7 @@ export default function StudentPortal({
   const [videoPlaybackSpeed, setVideoPlaybackSpeed] = useState(1);
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
   const [videoPlaySec, setVideoPlaySec] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [randomWatermark, setRandomWatermark] = useState({ top: '30%', left: '40%' });
 
   // Student notebook
@@ -657,23 +659,82 @@ export default function StudentPortal({
     id: l.id,
     title: l.titulo || l.title || 'Sem título',
     duration: l.duracao || '15:00',
-    description: l.descricao || '',
-    scheduled_at: l.scheduled_at
+    description: l.descricao || l.description || '',
+    scheduled_at: l.scheduled_at,
+    video_url: l.video_url
   })) : [];
 
   const currentLecture = activeSyllabus[activeLessonIdx] || activeSyllabus[0] || null;
 
-  // Notebook handling
-  const handleSaveNote = () => {
-    if (!newNoteInput.trim()) return;
-    const note = {
-      id: 'n_' + Date.now(),
-      timestamp: videoPlaySec,
-      text: newNoteInput.trim(),
-      date: new Date().toISOString().replace('T', ' ').slice(0, 16)
+  // Carregar progresso do vídeo e apontamentos do aluno ao mudar de aula
+  useEffect(() => {
+    const loadLectureData = async () => {
+      if (!currentUser?.id || !currentLecture?.id) return;
+      try {
+        // 1. Carregar progresso do vídeo
+        const savedProgress = await academicService.getVideoProgress(currentUser.id, currentLecture.id);
+        setVideoPlaySec(savedProgress || 0);
+        if (videoRef.current) {
+          videoRef.current.currentTime = savedProgress || 0;
+        }
+
+        // 2. Carregar apontamentos reais
+        const savedNotes = await academicService.getLessonNotes(currentUser.id, currentLecture.id);
+        const formattedNotes = savedNotes.map((n: any) => ({
+          id: n.id,
+          timestamp: n.video_timestamp,
+          text: n.content,
+          date: new Date(n.created_at).toISOString().replace('T', ' ').slice(0, 16)
+        }));
+        setNotesList(formattedNotes);
+      } catch (err) {
+        console.error('Erro ao carregar dados da aula para o aluno:', err);
+      }
     };
-    setNotesList([note, ...notesList]);
-    setNewNoteInput('');
+    loadLectureData();
+  }, [currentLecture?.id, currentUser?.id]);
+
+  // Salvar progresso do vídeo a cada 15 segundos se estiver tocando
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPlayingVideo && currentUser?.id && selectedCourseId && currentLecture?.id) {
+      interval = setInterval(async () => {
+        try {
+          await academicService.saveVideoProgress(currentUser.id, selectedCourseId, currentLecture.id, videoPlaySec);
+        } catch (err) {
+          console.error('Erro ao salvar progresso do vídeo:', err);
+        }
+      }, 15000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPlayingVideo, videoPlaySec, currentUser?.id, selectedCourseId, currentLecture?.id]);
+
+  // Notebook handling (persisted via Supabase)
+  const handleSaveNote = async () => {
+    if (!newNoteInput.trim() || !currentUser?.id || !currentLecture?.id || !selectedCourseId) return;
+    try {
+      const savedNote = await academicService.saveLessonNote(
+        currentUser.id,
+        currentLecture.id,
+        selectedCourseId,
+        newNoteInput.trim(),
+        videoPlaySec
+      );
+      
+      const newNote = {
+        id: savedNote.id,
+        timestamp: savedNote.video_timestamp,
+        text: savedNote.content,
+        date: new Date(savedNote.created_at).toISOString().replace('T', ' ').slice(0, 16)
+      };
+      
+      setNotesList([newNote, ...notesList]);
+      setNewNoteInput('');
+    } catch (err) {
+      console.error('Erro ao salvar nota no Supabase:', err);
+    }
   };
 
   // Accessibility theme class selections
@@ -688,6 +749,13 @@ export default function StudentPortal({
     : themeMode === 'dark'
       ? 'bg-ink-800 border border-ink-800/40 shadow-xs text-cream-100'
       : 'bg-white border border-slate-200/80 shadow-xs text-slate-800';
+
+  // Encontrar a próxima aula agendada futura síncrona real
+  const nextScheduledLesson = scheduledLessons && scheduledLessons.length > 0
+    ? scheduledLessons
+        .filter(l => l.scheduled_at && new Date(l.scheduled_at) > new Date())
+        .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())[0]
+    : null;
 
   return (
     <div id="multiplus-student-lms-portal" className={`min-h-screen flex items-stretch transition-colors duration-200 ${containerThemeClass}`}>
@@ -764,9 +832,18 @@ export default function StudentPortal({
           {/* Sidebar Footer context banner */}
           <div className="p-4 border-t border-white/10 space-y-3.5">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gold-600 text-ink-900 rounded-full flex items-center justify-center font-bold text-xs shadow-sm capitalize">
-                {currentUser?.firstName[0] || 'A' }
-              </div>
+              {currentUser?.foto_perfil ? (
+                <img
+                  src={currentUser.foto_perfil}
+                  alt={currentUser.firstName}
+                  className="w-9 h-9 rounded-full object-cover border border-gold-600/30"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-9 h-9 bg-gold-600 text-ink-900 rounded-full flex items-center justify-center font-bold text-xs shadow-sm capitalize">
+                  {currentUser?.firstName[0] || 'A' }
+                </div>
+              )}
               <div className="text-left truncate max-w-[130px]">
                 <h4 className="text-xs font-bold text-cream-100 m-0 tracking-wide truncate">{currentUser?.firstName} {currentUser?.lastName}</h4>
                 <span className="text-[10px] font-mono text-gold-600 font-semibold uppercase">{currentUser?.role || 'Aluno'}</span>
@@ -908,9 +985,18 @@ export default function StudentPortal({
                 onClick={() => { setIsUserMenuOpen(!isUserMenuOpen); setIsNotificationsOpen(false); }}
                 className="flex items-center gap-1 text-ink-900 dark:text-cream-100 font-semibold cursor-pointer border-0 bg-transparent p-0"
               >
-                <span className="h-6 w-6 rounded-full bg-gold-600 text-slate-950 font-bold flex items-center justify-center font-mono">
-                  {currentUser?.firstName[0]}
-                </span>
+                {currentUser?.foto_perfil ? (
+                  <img
+                    src={currentUser.foto_perfil}
+                    alt={currentUser.firstName}
+                    className="h-6 w-6 rounded-full object-cover border border-gold-600/30"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <span className="h-6 w-6 rounded-full bg-gold-600 text-slate-950 font-bold flex items-center justify-center font-mono">
+                    {currentUser?.firstName[0]}
+                  </span>
+                )}
                 <ChevronDown size={12} />
               </button>
 
@@ -1021,19 +1107,32 @@ export default function StudentPortal({
                             </p>
                           </div>
 
-                          <div className="bg-cream-100/10 backdrop-blur-md p-4 rounded-2xl border border-white/5 space-y-2 shrink-0">
-                            <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block font-bold">PRÓXIMA AULA SÍNCRONA</span>
-                            <h4 className="text-xs font-serif font-black m-0">Tuesday Legal Advisory Class</h4>
-                            <span className="text-[10px] font-mono text-emerald-400 block font-bold">TERÇA-FEIRA • 18h30 - 20h30</span>
-                            
-                            <a 
-                              href="https://meet.google.com/lookup/mock-multiplus"
-                              target="_blank"
-                              className="px-3.5 py-1.5 bg-gold-600 hover:bg-cream-100 hover:text-slate-900 text-ink-900 font-mono text-3xs font-extrabold rounded-lg tracking-wider transition-all inline-flex items-center gap-1"
-                            >
-                              Entrar Meet do Google <ExternalLink size={10} />
-                            </a>
-                          </div>
+                          {nextScheduledLesson ? (
+                            <div className="bg-cream-100/10 backdrop-blur-md p-4 rounded-2xl border border-white/5 space-y-2 shrink-0 max-w-xs text-left">
+                              <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block font-bold">PRÓXIMA AULA SÍNCRONA</span>
+                              <h4 className="text-xs font-serif font-black m-0 truncate max-w-[240px] text-cream-100">
+                                {nextScheduledLesson.titulo || nextScheduledLesson.title || 'Sessão Prática'}
+                              </h4>
+                              <span className="text-[10px] font-mono text-emerald-400 block font-bold uppercase">
+                                {new Date(nextScheduledLesson.scheduled_at).toLocaleDateString('pt-AO', { weekday: 'long' })} • {new Date(nextScheduledLesson.scheduled_at).toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                              
+                              <a 
+                                href={nextScheduledLesson.meeting_url || "https://meet.google.com/lookup/mock-multiplus"}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="px-3.5 py-1.5 bg-gold-600 hover:bg-cream-100 hover:text-slate-900 text-ink-900 font-mono text-3xs font-extrabold rounded-lg tracking-wider transition-all inline-flex items-center gap-1"
+                              >
+                                Entrar na Reunião <ExternalLink size={10} />
+                              </a>
+                            </div>
+                          ) : (
+                            <div className="bg-cream-100/10 backdrop-blur-md p-4 rounded-2xl border border-white/5 space-y-2 shrink-0 text-left max-w-xs">
+                              <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block font-bold">SESSÃO SÍNCRONA</span>
+                              <h4 className="text-xs font-serif font-black m-0 text-cream-100">Sem sessões agendadas</h4>
+                              <span className="text-[10px] font-mono text-neutral-400 block">Novas tutorias em breve.</span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -1041,9 +1140,9 @@ export default function StudentPortal({
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {[
                           { title: 'Cunho de Estudo', value: `${streakCount} Dias`, note: 'Acompanhando a constância', icon: <Flame size={18} fill="currentColor" className="text-orange-600" /> },
-                          { title: 'Aulas Vídeo Concluídas', value: '2 de 3 sessões', note: 'Unidade de Isenção em curso', icon: <CheckCircle size={18} className="text-emerald-600" /> },
-                          { title: 'Dedicação Acumulada', value: `${hours} Horas`, note: 'Meta: 3 horas semanais', icon: <Clock size={18} className="text-blue-600" /> },
-                          { title: 'Certificados Ganhos', value: currentUser?.email.includes('antonio') ? '2 Credenciais' : '1 Credencial', note: 'Sincronizados em tempo real', icon: <Award size={18} className="text-amber-500" /> }
+                          { title: 'Aulas Vídeo Concluídas', value: `${completedLessons.length} de ${realLessons.length} sessões`, note: 'Unidade de Isenção em curso', icon: <CheckCircle size={18} className="text-emerald-600" /> },
+                          { title: 'Dedicação Acumulada', value: `${Math.round(completedLessons.length * 1.5)} Horas`, note: 'Meta: 3 horas semanais', icon: <Clock size={18} className="text-blue-600" /> },
+                          { title: 'Certificados Ganhos', value: `${certificates.length} ${certificates.length === 1 ? 'Credencial' : 'Credenciais'}`, note: 'Sincronizados em tempo real', icon: <Award size={18} className="text-amber-500" /> }
                         ].map((stat, idx) => (
                           <div key={idx} className={`p-5 rounded-2xl text-left flex flex-col justify-between ${cardThemeClass}`}>
                             <div className="flex justify-between items-start">
@@ -1166,7 +1265,7 @@ export default function StudentPortal({
                     {/* Left Frame column: Video placeholder plus legal notebooks */}
                     <div className="lg:col-span-8 space-y-4">
                       
-                      {/* Interactive player mock card */}
+                      {/* Interactive player card */}
                       <div className="aspect-video bg-slate-900 border border-gold-600/35 rounded-2xl overflow-hidden relative flex flex-col justify-between items-stretch p-4 select-none shadow">
                         
                         {!currentLecture ? (
@@ -1183,7 +1282,7 @@ export default function StudentPortal({
                           <>
                             {/* Video streaming top logs */}
                             <div className="flex justify-between items-center text-[10px] font-mono text-cream-100/50 z-10">
-                              <span className="bg-black/40 px-2 py-0.5 rounded border border-white/5">Cloudinary Segment Stream v2</span>
+                              <span className="bg-black/40 px-2 py-0.5 rounded border border-white/5">Reprodução LMS Multimédia</span>
                               <span className="bg-emerald-600 font-extrabold text-cream-100 px-2 py-0.5 rounded">AUTO 1080P</span>
                             </div>
 
@@ -1212,32 +1311,81 @@ export default function StudentPortal({
                               </div>
                             ) : (
                               <>
-                                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,rgba(10,46,93,0.3)_0%,#040c1a_100%)]">
-                                  <Video size={44} className="text-gold-600/40 mb-2 animate-pulse" />
-                                  <h4 className="text-cream-100 text-xs sm:text-sm font-serif font-black text-center max-w-sm mt-1 mb-0 leading-snug">
-                                    {currentLecture.title}
-                                  </h4>
-                                  <span className="text-[10px] font-mono text-neutral-400 mt-2 block">
-                                    {isPlayingVideo ? `A reproduzir a ${videoPlaybackSpeed}x` : 'Pausado'} • {Math.floor(videoPlaySec / 60)}:{(videoPlaySec % 60).toString().padStart(2, '0')} / {currentLecture.duration}
-                                  </span>
+                                <div className="absolute inset-0 w-full h-full">
+                                  {currentLecture.video_url ? (
+                                    <video
+                                      ref={videoRef}
+                                      src={currentLecture.video_url}
+                                      className="w-full h-full object-contain"
+                                      onTimeUpdate={() => {
+                                        if (videoRef.current) {
+                                          setVideoPlaySec(Math.floor(videoRef.current.currentTime));
+                                        }
+                                      }}
+                                      onPlay={() => setIsPlayingVideo(true)}
+                                      onPause={() => setIsPlayingVideo(false)}
+                                      onEnded={async () => {
+                                        setIsPlayingVideo(false);
+                                        if (currentUser?.id && selectedCourseId && currentLecture?.id) {
+                                          try {
+                                            await academicService.markLessonComplete(currentUser.id, selectedCourseId, currentLecture.id, true);
+                                            const completions = await academicService.getCompletedLessons(currentUser.id, selectedCourseId);
+                                            setCompletedLessons(completions || []);
+                                          } catch (err) {
+                                            console.error('Erro ao marcar aula concluída no fim do vídeo:', err);
+                                          }
+                                        }
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,rgba(10,46,93,0.3)_0%,#040c1a_100%)]">
+                                      <Video size={44} className="text-gold-600/40 mb-2 animate-pulse" />
+                                      <h4 className="text-cream-100 text-xs sm:text-sm font-serif font-black text-center max-w-sm mt-1 mb-0 leading-snug">
+                                        {currentLecture.title}
+                                      </h4>
+                                      <span className="text-[10px] font-mono text-neutral-400 mt-2 block">
+                                        Vídeo indisponível para esta aula.
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
 
                                 {/* Play control bars row footer */}
-                                <div className="z-10 bg-black/70 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 flex items-center justify-between gap-4 mt-auto">
+                                <div className="z-10 bg-black/75 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 flex items-center justify-between gap-4 mt-auto">
                                   <div className="flex items-center gap-3">
                                     <button
-                                      onClick={() => setIsPlayingVideo(!isPlayingVideo)}
+                                      onClick={() => {
+                                        if (videoRef.current) {
+                                          if (isPlayingVideo) {
+                                            videoRef.current.pause();
+                                          } else {
+                                            videoRef.current.play().catch(e => console.error(e));
+                                          }
+                                        } else {
+                                          setIsPlayingVideo(!isPlayingVideo);
+                                        }
+                                      }}
                                       className="px-3.5 py-1 bg-gold-600 text-slate-950 font-mono text-[10px] font-bold rounded-lg uppercase cursor-pointer"
                                     >
                                       {isPlayingVideo ? 'Pausar' : 'Reproduzir'}
                                     </button>
                                     <button
-                                      onClick={() => setVideoPlaySec(prev => prev + 15)}
+                                      onClick={() => {
+                                        if (videoRef.current) {
+                                          videoRef.current.currentTime = Math.min(videoRef.current.duration || 0, videoRef.current.currentTime + 15);
+                                        } else {
+                                          setVideoPlaySec(prev => prev + 15);
+                                        }
+                                      }}
                                       className="text-cream-100/75 hover:text-gold-600 text-3xs font-mono"
                                     >
                                       +15 segundos
                                     </button>
                                   </div>
+
+                                  <span className="text-[10px] font-mono text-neutral-400 z-10 bg-black/40 px-2 py-0.5 rounded">
+                                    {Math.floor(videoPlaySec / 60)}:{(videoPlaySec % 60).toString().padStart(2, '0')} / {currentLecture.duration}
+                                  </span>
 
                                   {/* Speed dial switches */}
                                   <div className="flex items-center gap-1.5">
@@ -1245,7 +1393,12 @@ export default function StudentPortal({
                                     {[1, 1.25, 1.5, 2].map(spd => (
                                       <button
                                         key={spd}
-                                        onClick={() => setVideoPlaybackSpeed(spd)}
+                                        onClick={() => {
+                                          setVideoPlaybackSpeed(spd);
+                                          if (videoRef.current) {
+                                            videoRef.current.playbackRate = spd;
+                                          }
+                                        }}
                                         className={`px-1.5 py-0.5 rounded text-4xs font-mono ${
                                           videoPlaybackSpeed === spd ? 'bg-gold-600 text-slate-950 font-bold' : 'text-neutral-400 hover:text-cream-100 hover:bg-cream-100/10'
                                         }`}
@@ -1268,7 +1421,7 @@ export default function StudentPortal({
                           Acessibilidade • Transcrição Segmentada Escrita
                         </span>
                         <p className="text-xs sm:text-sm text-gray-650 dark:text-gray-300 leading-relaxed font-sans italic pt-2 mb-0">
-                          "Diferenças fundamentais entre o modelo codificado Civil Law vigente em toda a República de Angola e o sistema do Common Law anglo-saxónico com enfoque em precedentes e regimentos para contratos de extração petrolífera de joint ventures."
+                          {currentLecture?.descricao || currentLecture?.description || 'Transcrição não disponível para esta aula.'}
                         </p>
                       </div>
 
@@ -1502,12 +1655,12 @@ export default function StudentPortal({
 
               {/* 4. ACADEMIC MATERIALS FILTERABLE DIR */}
               {activeTab === 'materials' && (
-                <StudentMaterialsTab />
+                <StudentMaterialsTab userId={currentUser?.id} />
               )}
 
               {/* 5. TASKS MANAGER AND FILE SUBMISSION */}
               {activeTab === 'tasks' && (
-                <StudentTasksTab />
+                <StudentTasksTab userId={currentUser?.id} />
               )}
 
               {/* 6. MESSAGE CENTER */}
@@ -1572,6 +1725,30 @@ export default function StudentPortal({
                         <Download size={13} />
                         <span>Exportar Registo</span>
                       </button>
+                    </div>
+
+                    {/* FOTOGRAFIA DE PERFIL ACADÉMICO */}
+                    <div className="flex flex-col items-center sm:items-start gap-3 bg-ink-900/5 dark:bg-slate-800/50 p-5 rounded-2xl border border-gold-600/10">
+                      <span className="text-[10px] font-mono text-neutral-400 uppercase block font-bold">Fotografia de Perfil Académico</span>
+                      {currentUser?.id && (
+                        <AvatarUpload
+                          userId={currentUser.id}
+                          currentAvatarUrl={currentUser.foto_perfil}
+                          userName={`${currentUser.firstName} ${currentUser.lastName}`}
+                          size="xl"
+                          onAvatarUpdated={(newUrl) => {
+                            if (currentUser) {
+                              setCurrentUser({
+                                ...currentUser,
+                                foto_perfil: newUrl
+                              });
+                            }
+                          }}
+                        />
+                      )}
+                      <p className="text-3xs text-neutral-400 m-0 leading-normal">
+                        Clique sobre o círculo acima para carregar ou atualizar a sua foto oficial de perfil académico (Formatos válidos: JPEG, PNG, WebP, máx. 5MB).
+                      </p>
                     </div>
 
                     <form onSubmit={handleSaveProfile} className="space-y-4">
