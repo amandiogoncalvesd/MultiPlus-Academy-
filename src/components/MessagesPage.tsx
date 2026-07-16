@@ -17,7 +17,7 @@ export default function MessagesPage({ setCurrentPage, previousDashboardPage }: 
   // Map database roles to ChatShell expected role props ('ADMIN' | 'PROFESSOR' | 'ALUNO')
   const getChatRole = (role?: string): 'ADMIN' | 'PROFESSOR' | 'ALUNO' => {
     if (role === 'ADMIN') return 'ADMIN';
-    if (role === 'INSTRUCTOR') return 'PROFESSOR';
+    if (role === 'PROFESSOR') return 'PROFESSOR';
     return 'ALUNO';
   };
 

@@ -67,9 +67,9 @@ export default function Navbar({
       navigateTo('login');
       return;
     }
-    if (currentUser.role === 'STUDENT') {
+    if (currentUser.role === 'ALUNO') {
       navigateTo('student-dashboard');
-    } else if (currentUser.role === 'INSTRUCTOR') {
+    } else if (currentUser.role === 'PROFESSOR') {
       navigateTo('instructor-dashboard');
     } else if (currentUser.role === 'ADMIN') {
       navigateTo('admin-dashboard');

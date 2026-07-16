@@ -298,24 +298,6 @@ export const academicService = {
     return data || [];
   },
 
-  async issueCertificate(studentId: string, courseId: string, codigo: string): Promise<any> {
-    const { data, error } = await supabase
-      .from('certificates')
-      .insert({
-        student_id: studentId,
-        course_id: courseId,
-        codigo_validacao: codigo
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error issuing certificate in database:', error);
-      throw error;
-    }
-    return data;
-  },
-
   async verifyCertificate(codigo: string): Promise<any> {
     const { data, error } = await supabase
       .from('certificates')

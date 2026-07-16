@@ -18,7 +18,7 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [mobilePhone, setMobilePhone] = useState('');
-  const [userRole, setUserRole] = useState<UserRole>('STUDENT');
+  const [userRole, setUserRole] = useState<UserRole>('ALUNO');
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -36,9 +36,7 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
           return;
         }
 
-        const dbRole: 'ALUNO' | 'PROFESSOR' | 'ADMIN' = 
-          userRole === 'STUDENT' ? 'ALUNO' : 
-          userRole === 'INSTRUCTOR' ? 'PROFESSOR' : 'ADMIN';
+        const dbRole: 'ALUNO' | 'PROFESSOR' | 'ADMIN' = userRole;
 
         const fullName = `${firstName.trim()} ${lastName.trim()}`;
 
@@ -65,9 +63,9 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
   };
 
   const routeAccordingToRole = (role: UserRole) => {
-    if (role === 'STUDENT') {
+    if (role === 'ALUNO') {
       setCurrentPage('student-dashboard');
-    } else if (role === 'INSTRUCTOR') {
+    } else if (role === 'PROFESSOR') {
       setCurrentPage('instructor-dashboard');
     } else if (role === 'ADMIN') {
       setCurrentPage('admin-dashboard');
@@ -185,8 +183,8 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
                         onChange={(e) => setUserRole(e.target.value as UserRole)}
                         className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-sans focus:outline-none focus:border-[#C89B3C] text-slate-900 shadow-2xs"
                       >
-                        <option value="STUDENT">Aluno de Elite</option>
-                        <option value="INSTRUCTOR">Corpo de Formadores</option>
+                        <option value="ALUNO">Aluno de Elite</option>
+                        <option value="PROFESSOR">Corpo de Formadores</option>
                         <option value="ADMIN">Administrador Geral</option>
                       </select>
                     </div>

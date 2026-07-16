@@ -13,7 +13,7 @@ export type PageId =
   | 'verify-certificate'
   | 'messages';
 
-export type UserRole = 'STUDENT' | 'INSTRUCTOR' | 'ADMIN';
+export type UserRole = 'ALUNO' | 'PROFESSOR' | 'ADMIN';
 
 export interface User {
   id: string;
@@ -77,6 +77,11 @@ export interface Course {
     topics: string[];
   }[];
   teacher_id?: string;
+  teacher?: {
+    id: string;
+    nome_completo: string;
+    email: string;
+  };
   status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   level?: string;
   category?: string;

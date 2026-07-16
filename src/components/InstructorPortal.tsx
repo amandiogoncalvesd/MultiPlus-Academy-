@@ -206,7 +206,7 @@ export default function InstructorPortal({
           email: u.email,
           firstName: u.nome_completo?.split(' ')[0] || '',
           lastName: u.nome_completo?.split(' ').slice(1).join(' ') || '',
-          role: 'STUDENT' as const,
+          role: 'ALUNO' as const,
           status: u.status || 'ACTIVE',
           streak: 0,
           longestStreak: 0,

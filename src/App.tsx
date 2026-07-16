@@ -66,7 +66,7 @@ export default function App() {
         const { data, error } = await supabase
           .from('courses')
           .select('*')
-          .eq('status', 'ACTIVE');
+          .eq('status', 'PUBLISHED');
         if (!error && data) {
           setCourses(data);
           if (data.length > 0) {
@@ -125,7 +125,7 @@ export default function App() {
         return <LoginPanel setCurrentPage={setCurrentPage} currentUser={currentUser} setCurrentUser={setCurrentUser} />;
       case 'student-dashboard':
         return (
-          <ProtectedRoute allowedRoles={['STUDENT', 'INSTRUCTOR', 'ADMIN']} setCurrentPage={setCurrentPage}>
+          <ProtectedRoute allowedRoles={['ALUNO', 'PROFESSOR', 'ADMIN']} setCurrentPage={setCurrentPage}>
             <StudentPortal 
               setCurrentPage={setCurrentPage} 
               currentUser={currentUser} 
@@ -136,7 +136,7 @@ export default function App() {
         );
       case 'instructor-dashboard':
         return (
-          <ProtectedRoute allowedRoles={['INSTRUCTOR', 'ADMIN']} setCurrentPage={setCurrentPage}>
+          <ProtectedRoute allowedRoles={['PROFESSOR', 'ADMIN']} setCurrentPage={setCurrentPage}>
             <InstructorPortal setCurrentPage={setCurrentPage} currentUser={currentUser} setCurrentUser={setCurrentUser} />
           </ProtectedRoute>
         );
@@ -156,7 +156,7 @@ export default function App() {
         );
       case 'messages':
         return (
-          <ProtectedRoute allowedRoles={['STUDENT', 'INSTRUCTOR', 'ADMIN']} setCurrentPage={setCurrentPage}>
+          <ProtectedRoute allowedRoles={['ALUNO', 'PROFESSOR', 'ADMIN']} setCurrentPage={setCurrentPage}>
             <MessagesPage setCurrentPage={setCurrentPage} previousDashboardPage={previousDashboardPage} />
           </ProtectedRoute>
         );

@@ -34,14 +34,14 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
   // Map Supabase role to local UserRole
   const mapSupabaseRole = (sbRole: string): UserRole => {
     if (sbRole === 'ADMIN') return 'ADMIN';
-    if (sbRole === 'PROFESSOR') return 'INSTRUCTOR';
-    return 'STUDENT';
+    if (sbRole === 'PROFESSOR') return 'PROFESSOR';
+    return 'ALUNO';
   };
 
   // Map local UserRole to Supabase role
   const mapLocalRole = (localRole: UserRole): 'ADMIN' | 'PROFESSOR' | 'ALUNO' => {
     if (localRole === 'ADMIN') return 'ADMIN';
-    if (localRole === 'INSTRUCTOR') return 'PROFESSOR';
+    if (localRole === 'PROFESSOR') return 'PROFESSOR';
     return 'ALUNO';
   };
 

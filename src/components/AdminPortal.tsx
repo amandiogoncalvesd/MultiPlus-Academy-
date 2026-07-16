@@ -74,7 +74,7 @@ export default function AdminPortal({
   const [showCertificateIssueModal, setShowCertificateIssueModal] = useState(false);
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
-  const [newUserRole, setNewUserRole] = useState<UserRole>('STUDENT');
+  const [newUserRole, setNewUserRole] = useState<UserRole>('ALUNO');
   const [newUserStatus, setNewUserStatus] = useState<'ACTIVE' | 'SUSPENDED'>('ACTIVE');
   const [newUserPassword, setNewUserPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -126,14 +126,13 @@ export default function AdminPortal({
   const [notifEmailCertificados, setNotifEmailCertificados] = useState(false);
   const [preferredTheme, setPreferredTheme] = useState<'light' | 'dark'>('light');
 
-  const [roleFilter, setRoleFilter] = useState<'ALL' | 'STUDENT' | 'INSTRUCTOR' | 'ADMIN'>('ALL');
+  const [roleFilter, setRoleFilter] = useState<'ALL' | 'ALUNO' | 'PROFESSOR' | 'ADMIN'>('ALL');
   
   // Course form states
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
   const [courseTitle, setCourseTitle] = useState('');
   const [coursePrice, setCoursePrice] = useState('€350');
-  const [courseInstructor, setCourseInstructor] = useState('Dra. Esmeralda Sumbelelo');
   const [courseStatus, setCourseStatus] = useState<'ATIVO' | 'RASCUNHO' | 'ARQUIVADO'>('ATIVO');
 
   // Integrations states
@@ -194,7 +193,7 @@ export default function AdminPortal({
           email: u.email,
           firstName: u.nome_completo?.split(' ')[0] || '',
           lastName: u.nome_completo?.split(' ').slice(1).join(' ') || '',
-          role: u.role === 'ALUNO' ? 'STUDENT' : u.role === 'PROFESSOR' ? 'INSTRUCTOR' : 'ADMIN',
+          role: (u.role || 'ALUNO') as UserRole,
           status: u.status || 'ACTIVE',
           phone: u.telefone || '',
           streak: 0,
@@ -215,23 +214,26 @@ export default function AdminPortal({
           final_grade,
           student_id,
           course_id,
-          certificate_pdf_url
+          certificate_pdf_url,
+          issued_by
         `);
       
       if (certData) {
         // Fetch users and courses for resolving relationships
         const { data: usersList } = await supabase.from('users').select('id, nome_completo');
-        const { data: coursesList } = await supabase.from('courses').select('id, title');
+        const { data: coursesList } = await supabase.from('courses').select('id, title, teacher_id');
         
         const mappedCerts = certData.map((c: any) => {
           const matchedUser = usersList?.find(u => u.id === c.student_id);
           const matchedCourse = coursesList?.find(crs => crs.id === c.course_id);
+          const matchedTeacher = usersList?.find(u => u.id === matchedCourse?.teacher_id);
+          const matchedIssuer = usersList?.find(u => u.id === c.issued_by);
           return {
             certificateNumber: c.codigo_validacao,
             courseName: matchedCourse?.title || 'English for the Legal Field in Angola',
             recipientName: matchedUser?.nome_completo || 'Aluno MultiPlus',
             completionDate: c.emitido_em ? c.emitido_em.slice(0, 10) : '2026-06-01',
-            instructorName: 'Esmeralda Bruno Sumbelelo',
+            instructorName: matchedTeacher?.nome_completo || matchedIssuer?.nome_completo || 'Docente MultiPlus',
             finalGrade: c.final_grade || '92/100',
             institution: 'MultiPlus Academy (Angola)',
             isValid: true,
@@ -245,7 +247,15 @@ export default function AdminPortal({
       // 3. Fetch courses
       const { data: dbCourses, error: courseErr } = await supabase
         .from('courses')
-        .select('*');
+        .select(`
+          *,
+          teacher:users!courses_teacher_id_fkey (
+            id,
+            nome_completo,
+            email
+          )
+        `)
+        .order('created_at', { ascending: false });
       if (!courseErr && dbCourses) {
         setCourses(dbCourses.map((c: any) => ({
           id: c.id,
@@ -263,7 +273,8 @@ export default function AdminPortal({
           targetAudience: [],
           modules: [],
           status: c.status,
-          teacher_id: c.teacher_id
+          teacher_id: c.teacher_id,
+          teacher: c.teacher
         })));
       }
 
@@ -348,11 +359,6 @@ export default function AdminPortal({
     }
   };
 
-  const syncToLocalStorage = async (newUsers: User[], newCerts?: any[]) => {
-    setDbUsers(newUsers);
-    if (newCerts) setCertificates(newCerts);
-  };
-
   // User Management
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -373,7 +379,7 @@ export default function AdminPortal({
           email: newUserEmail,
           password: newUserPassword,
           nome_completo: newUserName,
-          role: newUserRole === 'STUDENT' ? 'ALUNO' : newUserRole === 'INSTRUCTOR' ? 'PROFESSOR' : 'ADMIN'
+          role: newUserRole
         }
       });
 
@@ -433,7 +439,7 @@ export default function AdminPortal({
       };
 
       const updated = [...dbUsers, newUser];
-      await syncToLocalStorage(updated);
+      setDbUsers(updated);
       addAuditLog("CRIAÇÃO UTILIZADOR", `Nova conta criada via Edge Function: ${newUserEmail} (${newUserRole})`);
       
       // Save created credentials so the admin can copy them
@@ -472,7 +478,7 @@ export default function AdminPortal({
         }
         return u;
       });
-      await syncToLocalStorage(updated);
+      setDbUsers(updated);
     } catch (err: any) {
       console.error(err);
       alert(`Erro ao reajustar estado: ${err.message || err}`);
@@ -494,7 +500,7 @@ export default function AdminPortal({
       }
 
       const updated = dbUsers.filter(u => u.id !== userId);
-      await syncToLocalStorage(updated);
+      setDbUsers(updated);
       addAuditLog("REMOCÃO UTILIZADOR", `Removida conta ID: ${userId}`);
       alert('Utilizador removido com sucesso!');
     } catch (err: any) {
@@ -507,8 +513,8 @@ export default function AdminPortal({
   const handleImpersonate = (user: User) => {
     setCurrentUser(user);
     addAuditLog("PRE-VISUALIZAÇÃO DE PORTAL", `${currentUser?.firstName || 'Administrador'} simulou perfil: ${user.firstName} (${user.role})`);
-    if (user.role === 'STUDENT') setCurrentPage('student-dashboard');
-    else if (user.role === 'INSTRUCTOR') setCurrentPage('instructor-dashboard');
+    if (user.role === 'ALUNO') setCurrentPage('student-dashboard');
+    else if (user.role === 'PROFESSOR') setCurrentPage('instructor-dashboard');
     else setCurrentPage('admin-dashboard');
     alert(`Modo de pré-visualização activo para: ${user.firstName} ${user.lastName}`);
   };
@@ -604,11 +610,11 @@ export default function AdminPortal({
   };
 
   // Filtered lists
-  const filteredStudents = dbUsers.filter(u => u.role === 'STUDENT').filter(u => 
+  const filteredStudents = dbUsers.filter(u => u.role === 'ALUNO').filter(u => 
     globalSearch ? `${u.firstName} ${u.lastName} ${u.email}`.toLowerCase().includes(globalSearch.toLowerCase()) : true
   );
 
-  const filteredInstructors = dbUsers.filter(u => u.role === 'INSTRUCTOR').filter(u => 
+  const filteredInstructors = dbUsers.filter(u => u.role === 'PROFESSOR').filter(u => 
     globalSearch ? `${u.firstName} ${u.lastName} ${u.email}`.toLowerCase().includes(globalSearch.toLowerCase()) : true
   );
 
@@ -890,8 +896,8 @@ export default function AdminPortal({
                 {/* 4 Dynamic Real KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
-                    { title: "Total de Alunos", val: filteredStudents.length, icon: <Users className="text-blue-500" />, desc: "Matrículas Activas", onClick: () => { setActiveTab('utilizadores'); setRoleFilter('STUDENT'); } },
-                    { title: "Total de Professores", val: filteredInstructors.length, icon: <Award className="text-amber-500" />, desc: "Docentes Titulares", onClick: () => { setActiveTab('utilizadores'); setRoleFilter('INSTRUCTOR'); } },
+                    { title: "Total de Alunos", val: filteredStudents.length, icon: <Users className="text-blue-500" />, desc: "Matrículas Activas", onClick: () => { setActiveTab('utilizadores'); setRoleFilter('ALUNO'); } },
+                    { title: "Total de Professores", val: filteredInstructors.length, icon: <Award className="text-amber-500" />, desc: "Docentes Titulares", onClick: () => { setActiveTab('utilizadores'); setRoleFilter('PROFESSOR'); } },
                     { title: "Cursos Ativos", val: courses.length, icon: <BookOpen className="text-indigo-500" />, desc: "Programas no Ar", onClick: () => { setActiveTab('cursos'); } },
                     { title: "Certificados Emitidos", val: certificates.length, icon: <QrCode className="text-danger-700" />, desc: "Assinaturas Gravadas", onClick: () => { setActiveTab('certificados'); } }
                   ].map((card, idx) => (
@@ -972,8 +978,8 @@ export default function AdminPortal({
                       className="p-2 border border-gray-250 dark:border-ink-800 rounded-xl text-xs bg-cream-100 dark:bg-ink-900 text-slate-800 dark:text-cream-100 focus:outline-none"
                     >
                       <option value="ALL">Todos os Membros</option>
-                      <option value="STUDENT">Alunos (STUDENT)</option>
-                      <option value="INSTRUCTOR">Professores (INSTRUCTOR)</option>
+                      <option value="ALUNO">Alunos (ALUNO)</option>
+                      <option value="PROFESSOR">Professores (PROFESSOR)</option>
                       <option value="ADMIN">Administradores (ADMIN)</option>
                     </select>
                   </div>
@@ -1010,8 +1016,8 @@ export default function AdminPortal({
                       onChange={(e) => setNewUserRole(e.target.value as UserRole)}
                       className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl text-xs text-current focus:outline-none focus:border-gold-600"
                     >
-                      <option value="STUDENT">Aluno de Elite (STUDENT)</option>
-                      <option value="INSTRUCTOR">Professor Titular (INSTRUCTOR)</option>
+                      <option value="ALUNO">Aluno de Elite (ALUNO)</option>
+                      <option value="PROFESSOR">Professor Titular (PROFESSOR)</option>
                       <option value="ADMIN">Administrador Geral (ADMIN)</option>
                     </select>
                   </div>
@@ -1262,7 +1268,7 @@ export default function AdminPortal({
                         </div>
 
                         <div className="flex justify-between items-center pt-3 border-t border-gray-150 dark:border-ink-800 mt-4 text-[10px] font-mono">
-                          <span className="text-neutral-400">Responsável: {courseInstructor}</span>
+                          <span className="text-neutral-400">Responsável: {course.teacher?.nome_completo || 'Não atribuído'}</span>
                           <div className="flex gap-1.5 items-center">
                             <button 
                               onClick={() => setEditingCourse(course)} 

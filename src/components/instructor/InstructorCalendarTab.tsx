@@ -60,7 +60,7 @@ export default function InstructorCalendarTab({
 
   useEffect(() => {
     if (students && students.length > 0) {
-      const onlyAlunos = students.filter(s => s.role === 'STUDENT');
+      const onlyAlunos = students.filter(s => s.role === 'ALUNO');
       const targetList = onlyAlunos.length > 0 ? onlyAlunos : students;
       setSelectedStudent(targetList[0].id || '');
     }
@@ -138,9 +138,9 @@ export default function InstructorCalendarTab({
     alert('Link copiado para a Área de Transferência!');
   };
 
-  // Filter students with role 'STUDENT' for select dropdown
-  const studentDropdownList = students.filter(s => s.role === 'STUDENT').length > 0
-    ? students.filter(s => s.role === 'STUDENT')
+  // Filter students with role 'ALUNO' for select dropdown
+  const studentDropdownList = students.filter(s => s.role === 'ALUNO').length > 0
+    ? students.filter(s => s.role === 'ALUNO')
     : students;
 
   // Compile combined events array for the calendar grid mapping
