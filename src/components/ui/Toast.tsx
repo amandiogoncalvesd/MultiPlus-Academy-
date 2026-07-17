@@ -1,169 +1,87 @@
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CheckCircle2, AlertCircle, Info, X, AlertTriangle } from 'lucide-react';
+import { CheckCircle, XCircle, Info, X } from 'lucide-react';
 
-export type ToastType = 'success' | 'error' | 'info' | 'warning';
+type ToastType = 'success' | 'error' | 'info';
 
-export interface Toast {
+interface Toast {
   id: string;
   message: string;
   type: ToastType;
-  duration?: number;
 }
 
 interface ToastContextType {
-  showToast: (message: string, type?: ToastType, duration?: number) => void;
-  removeToast: (id: string) => void;
+  success: (msg: string) => void;
+  error: (msg: string) => void;
+  info: (msg: string) => void;
 }
 
-const ToastContext = createContext<ToastContextType | undefined>(undefined);
+const ToastContext = createContext<ToastContextType>({
+  success: () => {},
+  error: () => {},
+  info: () => {}
+});
 
-export function ToastProvider({ children }: { children: ReactNode }) {
+export const useToast = () => useContext(ToastContext);
+
+export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  const addToast = useCallback((message: string, type: ToastType) => {
+    const id = Date.now().toString() + Math.random();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 4000);
   }, []);
 
-  const showToast = useCallback((message: string, type: ToastType = 'info', duration = 4000) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, message, type, duration }]);
-    
-    setTimeout(() => {
-      removeToast(id);
-    }, duration);
-  }, [removeToast]);
+  const removeToast = useCallback((id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
 
-  // High-fidelity auto-routing of standard window.alert calls
-  useEffect(() => {
-    const originalAlert = window.alert;
-    window.alert = (message: string) => {
-      if (!message) return;
-      
-      const lower = message.toLowerCase();
-      let type: ToastType = 'info';
-      
-      if (
-        lower.includes('sucesso') || 
-        lower.includes('concluíd') || 
-        lower.includes('salv') || 
-        lower.includes('parabéns') ||
-        lower.includes('êxito') ||
-        lower.includes('reconhecido') ||
-        lower.includes('grato')
-      ) {
-        type = 'success';
-      } else if (
-        lower.includes('erro') || 
-        lower.includes('falha') || 
-        lower.includes('eliminar') || 
-        lower.includes('excluír') ||
-        lower.includes('cancelada') ||
-        lower.includes('inexistente')
-      ) {
-        type = 'error';
-      } else if (
-        lower.includes('atenção') || 
-        lower.includes('aviso') || 
-        lower.includes('suspenso') ||
-        lower.includes('remover')
-      ) {
-        type = 'warning';
-      }
-      
-      showToast(message, type);
-    };
+  const value: ToastContextType = {
+    success: (msg) => addToast(msg, 'success'),
+    error: (msg) => addToast(msg, 'error'),
+    info: (msg) => addToast(msg, 'info')
+  };
 
-    return () => {
-      window.alert = originalAlert;
-    };
-  }, [showToast]);
+  const iconMap = {
+    success: <CheckCircle size={16} className="text-emerald-500" />,
+    error: <XCircle size={16} className="text-red-500" />,
+    info: <Info size={16} className="text-blue-500" />
+  };
+
+  const bgMap = {
+    success: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/40',
+    error: 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800/40',
+    info: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/40'
+  };
 
   return (
-    <ToastContext.Provider value={{ showToast, removeToast }}>
+    <ToastContext.Provider value={value}>
       {children}
-      
-      {/* Toast container aligned to top-right with high z-index and padding */}
-      <div className="fixed top-5 right-5 z-[99999] flex flex-col gap-3.5 w-full max-w-sm pointer-events-none">
+      <div className="fixed top-4 right-4 z-[9999] space-y-2 pointer-events-none" style={{ maxWidth: '380px' }}>
         <AnimatePresence>
-          {toasts.map((toast) => {
-            // Setup status styles
-            let bgStyle = 'bg-cream-100/95 border-l-4 shadow-xl border-ink-900 text-slate-800';
-            let iconColor = 'text-ink-900';
-            let progressBg = 'bg-ink-900';
-            let Icon = Info;
-
-            if (toast.type === 'success') {
-              bgStyle = 'bg-white/95 border-l-4 border-emerald-500 shadow-xl text-slate-800';
-              iconColor = 'text-emerald-500';
-              progressBg = 'bg-emerald-500';
-              Icon = CheckCircle2;
-            } else if (toast.type === 'error') {
-              bgStyle = 'bg-white/95 border-l-4 border-rose-500 shadow-xl text-slate-800';
-              iconColor = 'text-rose-500';
-              progressBg = 'bg-rose-500';
-              Icon = AlertCircle;
-            } else if (toast.type === 'warning') {
-              bgStyle = 'bg-white/95 border-l-4 border-amber-500 shadow-xl text-slate-800';
-              iconColor = 'text-amber-500';
-              progressBg = 'bg-amber-500';
-              Icon = AlertTriangle;
-            }
-
-            return (
-              <motion.div
-                key={toast.id}
-                layout
-                initial={{ opacity: 0, y: -20, scale: 0.9, x: 20 }}
-                animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0.95, x: 50 }}
-                transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-                className={`${bgStyle} rounded-xl overflow-hidden p-4 flex gap-3.5 pointer-events-auto shadow-2xl backdrop-blur-md relative border border-slate-100/50`}
+          {toasts.map(toast => (
+            <motion.div
+              key={toast.id}
+              initial={{ opacity: 0, x: 80, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 80, scale: 0.95 }}
+              className={`pointer-events-auto p-3 rounded-xl border shadow-lg flex items-start gap-2.5 ${bgMap[toast.type]}`}
+            >
+              <div className="shrink-0 mt-0.5">{iconMap[toast.type]}</div>
+              <p className="text-xs text-ink-900 dark:text-cream-100 flex-1 leading-relaxed m-0">{toast.message}</p>
+              <button
+                onClick={() => removeToast(toast.id)}
+                className="shrink-0 p-0.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-cream-200 border-0 bg-transparent cursor-pointer"
               >
-                {/* Status Indicator Icon */}
-                <div className={`p-1 rounded-lg ${iconColor}/10 shrink-0`}>
-                  <Icon size={20} className={iconColor} />
-                </div>
-
-                {/* Toast Message */}
-                <div className="flex-grow pr-4 space-y-1">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono text-[9px]">
-                    {toast.type === 'success' ? 'Sucesso' : toast.type === 'error' ? 'Aviso de Erro' : toast.type === 'warning' ? 'Atenção' : 'Notificação'}
-                  </p>
-                  <p className="text-xs font-medium leading-relaxed text-slate-700">
-                    {toast.message}
-                  </p>
-                </div>
-
-                {/* Manual Close Button */}
-                <button
-                  onClick={() => removeToast(toast.id)}
-                  className="p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100/50 transition-all shrink-0 self-start"
-                  aria-label="Fechar"
-                >
-                  <X size={14} />
-                </button>
-
-                {/* Premium countdown visual line */}
-                <motion.div
-                  initial={{ width: '100%' }}
-                  animate={{ width: '0%' }}
-                  transition={{ duration: (toast.duration || 4000) / 1000, ease: 'linear' }}
-                  className={`absolute bottom-0 left-0 h-[3px] ${progressBg} opacity-85`}
-                />
-              </motion.div>
-            );
-          })}
+                <X size={12} />
+              </button>
+            </motion.div>
+          ))}
         </AnimatePresence>
       </div>
     </ToastContext.Provider>
   );
-}
-
-export function useToast() {
-  const context = useContext(ToastContext);
-  if (context === undefined) {
-    throw new Error('useToast must be used within a ToastProvider');
-  }
-  return context;
 }

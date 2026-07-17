@@ -18,6 +18,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { User, Course } from '../../types';
+import { useToast } from '../ui/Toast';
 
 interface InstructorStudentsTabProps {
   students: User[];
@@ -36,6 +37,7 @@ export default function InstructorStudentsTab({
   onEmitCertificate,
   onUpdateStudentsList
 }: InstructorStudentsTabProps) {
+  const toast = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourseFilter, setSelectedCourseFilter] = useState('all');
   const [selectedProgressFilter, setSelectedProgressFilter] = useState('all');
@@ -47,7 +49,7 @@ export default function InstructorStudentsTab({
 
   // Editable grades state
   const [editingGradeStudentId, setEditingGradeStudentId] = useState<string | null>(null);
-  const [editScore, setEditScore] = useState(88);
+  const [editScore, setEditScore] = useState(0);
   const [customGrades, setCustomGrades] = useState<Record<string, number>>({});
 
   // Real database metrics state from vw_student_progress view
@@ -101,10 +103,10 @@ export default function InstructorStudentsTab({
         read: false
       });
       if (error) throw error;
-      alert(`Mensagem com carimbo de urgência enviada com sucesso para ${name}: "${customAlertText}"`);
+      toast.success(`Mensagem com carimbo de urgência enviada com sucesso para ${name}: "${customAlertText}"`);
     } catch (err) {
       console.error('Error writing notification alert to DB:', err);
-      alert('Não foi possível registrar o alerta oficial na base de dados.');
+      toast.error('Não foi possível registrar o alerta oficial na base de dados.');
     }
 
     setAlertingStudentId(null);
@@ -117,7 +119,7 @@ export default function InstructorStudentsTab({
       [id]: editScore
     }));
     setEditingGradeStudentId(null);
-    alert('Nota académica guardada e vinculada ao percurso letivo com sucesso!');
+    toast.success('Nota académica guardada e vinculada ao percurso letivo com sucesso!');
   };
 
   // Perform advanced filter matches

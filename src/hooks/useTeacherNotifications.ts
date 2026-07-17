@@ -1,83 +1,60 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase/client';
 
-export function useTeacherNotifications(userId: string | undefined) {
-  const [notifications, setNotifications] = useState<any[]>([]);
+interface Notification {
+  id: string;
+  user_id: string;
+  text: string;
+  read: boolean;
+  created_at: string;
+}
+
+export function useTeacherNotifications(teacherId: string | undefined) {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const fetchNotifications = useCallback(async () => {
-    if (!userId) return;
+    if (!teacherId) { setLoading(false); return; }
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', teacherId)
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (error) throw error;
       setNotifications(data || []);
+      setUnreadCount((data || []).filter((n: Notification) => !n.read).length);
     } catch (err) {
       console.error('Error fetching notifications:', err);
     } finally {
       setLoading(false);
     }
-  }, [userId]);
-
-  const markAllAsRead = async () => {
-    if (!userId) return;
-    try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('user_id', userId);
-
-      if (error) throw error;
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    } catch (err) {
-      console.error('Error marking notifications as read:', err);
-    }
-  };
-
-  const markAsRead = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('id', id);
-
-      if (error) throw error;
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    } catch (err) {
-      console.error('Error marking notification as read:', err);
-    }
-  };
+  }, [teacherId]);
 
   useEffect(() => {
-    if (!userId) {
-      setNotifications([]);
-      setLoading(false);
-      return;
-    }
-
     fetchNotifications();
+  }, [fetchNotifications]);
 
-    const channel = supabase
-      .channel(`teacher-notifications-${userId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
-        () => {
-          fetchNotifications();
-        }
-      )
-      .subscribe();
+  const markAsRead = useCallback(async (notificationId: string) => {
+    await supabase.from('notifications').update({ read: true }).eq('id', notificationId);
+    fetchNotifications();
+  }, [fetchNotifications]);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId, fetchNotifications]);
+  const markAllAsRead = useCallback(async () => {
+    if (!teacherId) return;
+    await supabase.from('notifications').update({ read: true }).eq('user_id', teacherId).eq('read', false);
+    fetchNotifications();
+  }, [teacherId, fetchNotifications]);
 
-  return { notifications, loading, refetch: fetchNotifications, markAllAsRead, markAsRead };
+  const markAsReadMultiple = useCallback(async (notificationIds: string[]) => {
+    if (notificationIds.length === 0) return;
+    await supabase.from('notifications').update({ read: true }).in('id', notificationIds);
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  return { notifications, unreadCount, loading, refetch: fetchNotifications, markAsRead, markAllAsRead, markAsReadMultiple };
 }

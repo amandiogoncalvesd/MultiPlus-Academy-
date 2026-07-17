@@ -19,6 +19,7 @@ import { X, GraduationCap, CheckCircle2, Phone, Award, Scale } from 'lucide-reac
 import { useAuth } from './components/auth/AuthProvider';
 import { supabase } from './lib/supabase/client';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import { ToastProvider } from './components/ui/Toast';
 
 export default function App() {
   const { user } = useAuth();
@@ -166,7 +167,8 @@ export default function App() {
   };
 
   return (
-    <div id="multiplus-portal-root" className="min-h-screen bg-[#F8F8F6] text-[#1C1C1C] flex flex-col font-sans select-none antialiased">
+    <ToastProvider>
+      <div id="multiplus-portal-root" className="min-h-screen bg-[#F8F8F6] text-[#1C1C1C] flex flex-col font-sans select-none antialiased">
       
       {/* Premium Luxury Splash Screen on First Visit */}
       <AnimatePresence>
@@ -518,6 +520,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-    </div>
+      </div>
+    </ToastProvider>
   );
 }

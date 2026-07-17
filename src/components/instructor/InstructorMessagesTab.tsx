@@ -3,6 +3,7 @@ import ChatShell from '../messaging/ChatShell';
 import { messageService, SupabaseAnnouncement } from '../../services/supabase/messageService';
 import { useAuth } from '../auth/AuthProvider';
 import { Volume2, Megaphone, Loader2, MessageSquare } from 'lucide-react';
+import { useToast } from '../ui/Toast';
 
 interface InstructorMessagesTabProps {
   students?: any[];
@@ -12,7 +13,9 @@ interface InstructorMessagesTabProps {
 
 export default function InstructorMessagesTab({ setCurrentPage }: InstructorMessagesTabProps) {
   const { user } = useAuth();
+  const toast = useToast();
   const [selectedChatType, setSelectedChatType] = useState<'individual' | 'mural'>('individual');
+  const [muralAnnouncementTitle, setMuralAnnouncementTitle] = useState('Aviso do Professor');
   const [muralAnnouncementText, setMuralAnnouncementText] = useState('');
   const [muralFeed, setMuralFeed] = useState<SupabaseAnnouncement[]>([]);
   const [loadingMural, setLoadingMural] = useState(false);
@@ -42,16 +45,17 @@ export default function InstructorMessagesTab({ setCurrentPage }: InstructorMess
     try {
       await messageService.createAnnouncement({
         author_id: user.id,
-        titulo: 'Aviso do Professor',
+        titulo: muralAnnouncementTitle.trim() || 'Aviso do Professor',
         mensagem: muralAnnouncementText.trim(),
         destinatarios: 'ALUNO' // Target students
       });
 
-      alert('Mural de Avisos atualizado com sucesso no Supabase!');
+      toast.success('Mural de Avisos atualizado com sucesso no Supabase!');
       setMuralAnnouncementText('');
+      setMuralAnnouncementTitle('Aviso do Professor');
       loadMuralAnnouncements();
     } catch (err: any) {
-      alert(`Erro ao publicar no mural: ${err.message || err}`);
+      toast.error(`Erro ao publicar no mural: ${err.message || err}`);
     }
   };
 
@@ -119,14 +123,29 @@ export default function InstructorMessagesTab({ setCurrentPage }: InstructorMess
             </div>
 
             <form onSubmit={handlePublishAnnouncement} className="space-y-4">
-              <textarea
-                rows={4}
-                required
-                placeholder="Redija o informe para os formandos..."
-                value={muralAnnouncementText}
-                onChange={(e) => setMuralAnnouncementText(e.target.value)}
-                className="w-full p-3 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-200 dark:border-ink-750 rounded-xl text-slate-800 dark:text-cream-100 focus:outline-none focus:border-gold-600"
-              />
+              <div>
+                <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">Título do Aviso</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: Aviso do Professor"
+                  value={muralAnnouncementTitle}
+                  onChange={(e) => setMuralAnnouncementTitle(e.target.value)}
+                  className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-200 dark:border-ink-750 rounded-xl text-slate-800 dark:text-cream-100 focus:outline-none focus:border-gold-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">Mensagem do Comunicado</label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="Redija o informe para os formandos..."
+                  value={muralAnnouncementText}
+                  onChange={(e) => setMuralAnnouncementText(e.target.value)}
+                  className="w-full p-3 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-200 dark:border-ink-750 rounded-xl text-slate-800 dark:text-cream-100 focus:outline-none focus:border-gold-600"
+                />
+              </div>
 
               <button
                 type="submit"
@@ -156,7 +175,7 @@ export default function InstructorMessagesTab({ setCurrentPage }: InstructorMess
                 {muralFeed.map((feedItem) => (
                   <div key={feedItem.id} className="p-4 bg-cream-200/50 dark:bg-ink-800/40 border border-gray-150 dark:border-ink-800/60 rounded-2xl text-left space-y-1.5 hover:border-amber-250 dark:hover:border-gold-600/30 transition-all">
                     <div className="flex justify-between items-center text-[8px] font-mono font-bold text-gold-600">
-                      <span className="uppercase">INFORMATIVO GERAL</span>
+                      <span className="uppercase">{feedItem.titulo || feedItem.title || 'INFORMATIVO GERAL'}</span>
                       <span className="text-neutral-400 dark:text-cream-200/40 font-semibold">
                         {new Date(feedItem.created_at).toLocaleDateString()}
                       </span>

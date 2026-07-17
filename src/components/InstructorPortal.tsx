@@ -62,7 +62,9 @@ import InstructorMessagesTab from './instructor/InstructorMessagesTab';
 import { courseService } from '../services/supabase/courseService';
 import { useTeacherNotifications } from '../hooks/useTeacherNotifications';
 import { useTeacherMetrics } from '../hooks/useTeacherMetrics';
+import { useTeacherEvaluations } from '../hooks/useTeacherEvaluations';
 import CertificateIssueModal from './certificates/CertificateIssueModal';
+import { useToast } from './ui/Toast';
 
 interface InstructorPortalProps {
   setCurrentPage: (page: PageId) => void;
@@ -76,6 +78,7 @@ export default function InstructorPortal({
   setCurrentUser,
 }: InstructorPortalProps) {
   const { signOut } = useAuth();
+  const toast = useToast();
   
   // Navigation active tab index
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -92,6 +95,7 @@ export default function InstructorPortal({
   // Preference settings & notifications
   const { notifications: realNotifications, markAllAsRead } = useTeacherNotifications(currentUser?.id);
   const { metrics: teacherMetrics } = useTeacherMetrics(currentUser?.id);
+  const { pendingCount: dynamicPendingCount } = useTeacherEvaluations(currentUser?.id);
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
 
   const portalCompletionRate = (teacherMetrics && teacherMetrics.completionRate > 0) ? teacherMetrics.completionRate : 95;
@@ -110,23 +114,68 @@ export default function InstructorPortal({
     }
   };
 
+  // Unified Realtime channel subscription
   useEffect(() => {
     if (!currentUser?.id) return;
+
     fetchUnreadMessagesCount();
 
-    const channel = supabase
-      .channel('instructor-unread-count')
+    const unifiedChannel = supabase
+      .channel(`instructor-unified-${currentUser.id}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'messages' },
         () => {
           fetchUnreadMessagesCount();
+          loadDatabase();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'courses' },
+        () => {
+          loadDatabase();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'enrollments' },
+        () => {
+          loadDatabase();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'certificates' },
+        () => {
+          loadDatabase();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'assignment_submissions' },
+        () => {
+          loadDatabase();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications' },
+        () => {
+          loadDatabase();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'lesson_targets' },
+        () => {
+          loadDatabase();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(unifiedChannel);
     };
   }, [currentUser?.id]);
 
@@ -274,10 +323,10 @@ export default function InstructorPortal({
 
       if (error) throw error;
       await loadDatabase();
-      alert(`Estado da matrícula reajustado no Supabase para ${nextStatus}.`);
+      toast.success(`Estado da matrícula reajustado no Supabase para ${nextStatus}.`);
     } catch (e: any) {
       console.error('Erro ao reajustar matrícula:', e);
-      alert(`Erro ao reajustar matrícula: ${e.message || e}`);
+      toast.error(`Erro ao reajustar matrícula: ${e.message || e}`);
     }
   };
 
@@ -322,7 +371,7 @@ export default function InstructorPortal({
       };
 
       setCourses(prev => [...prev, dynamicCourse]);
-      alert(`Sucesso! O curso "${newCourseTitle}" está indexado sob estado "Rascunho" no Supabase.`);
+      toast.success(`Sucesso! O curso "${newCourseTitle}" está indexado sob estado "Rascunho" no Supabase.`);
       
       setNewCourseTitle('');
       setNewCourseSubtitle('');
@@ -330,7 +379,7 @@ export default function InstructorPortal({
       setActiveTab('cursos');
     } catch (err: any) {
       console.error('Erro ao registrar curso no Supabase:', err);
-      alert(`Falha ao registrar curso: ${err.message || err}`);
+      toast.error(`Falha ao registrar curso: ${err.message || err}`);
     }
   };
 
@@ -348,7 +397,7 @@ export default function InstructorPortal({
       }
     ]);
     setNewPlannerModuleTitle('');
-    alert('Nova categoria de ementa anexada no mapa lógico.');
+    toast.success('Nova categoria de ementa anexada no mapa lógico.');
   };
 
   // File Repository uploads simulator
@@ -369,7 +418,7 @@ export default function InstructorPortal({
       ...libraryFiles
     ]);
     setNewLibraryFileName('');
-    alert('Documento adicionado à biblioteca comum dos formandos!');
+    toast.success('Documento adicionado à biblioteca comum dos formandos!');
   };
 
   // Certificados validation hash test
@@ -400,7 +449,7 @@ export default function InstructorPortal({
   };
 
   // Derived variables
-  const pendingGreads = 3;
+  const pendingGreads = dynamicPendingCount || 0;
 
   // Accessibility theme class selections
   const containerThemeClass = highContrast 
@@ -638,7 +687,7 @@ export default function InstructorPortal({
             {/* Tutor Assistant info help icon */}
             <button
               onClick={() => {
-                alert('Tutor assistente MultiPlus: Por favor envie um e-mail para: suporte@multiplus.ao com a sua credencial Huambo.');
+                toast.info('Tutor assistente MultiPlus: Por favor envie um e-mail para: suporte@multiplus.ao com a sua credencial Huambo.');
               }}
               className="p-2 bg-cream-200 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-neutral-400 border-0 cursor-pointer"
               title="Ajuda ao Docente"
@@ -1021,7 +1070,7 @@ export default function InstructorPortal({
 
                   <button
                     onClick={() => {
-                      alert('O seu currículo e perfil de oradora titular foram guardados. O site institucional atualizará as informações na próxima sincronização pública.');
+                      toast.success('O seu currículo e perfil de oradora titular foram guardados. O site institucional atualizará as informações na próxima sincronização pública.');
                     }}
                     className="px-4 py-2 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 hover:bg-gold-600 hover:text-slate-900 border-0 text-xs font-mono font-bold uppercase rounded-xl transition-colors cursor-pointer"
                   >
@@ -1068,7 +1117,7 @@ export default function InstructorPortal({
                     checked={highContrast}
                     onChange={(e) => {
                       setHighContrast(e.target.checked);
-                      alert('Modo alto contraste ativado com integridade estrutural.');
+                      toast.success('Modo alto contraste ativado com integridade estrutural.');
                     }}
                     className="w-4 h-4 accent-[#BB8533] cursor-pointer"
                   />

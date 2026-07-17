@@ -1,59 +1,64 @@
 import { supabase } from '../../lib/supabase/client';
 import { Assignment, AssignmentSubmission } from '../../types';
 
-export interface CreateAssignmentDTO {
-  course_id: string;
-  lesson_id?: string | null;
-  teacher_id: string;
-  titulo: string;
-  descricao?: string | null;
-  due_date?: string | null;
-  status: 'DRAFT' | 'PUBLISHED' | 'CLOSED';
-}
-
 export const assignmentService = {
-  // =========================================================================
-  // 1. ASSIGNMENTS CRUD
-  // =========================================================================
+  // ──────────────── PROFESSOR: ASSIGNMENTS ────────────────
+
+  /**
+   * Listar todas as avaliações criadas por um professor
+   */
+  async getAssignmentsByTeacher(teacherId: string): Promise<Assignment[]> {
+    const { data, error } = await supabase
+      .from('assignments')
+      .select('*, course:courses(id, title)')
+      .eq('teacher_id', teacherId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching teacher assignments:', error);
+      return [];
+    }
+    return (data || []).map((a: any) => ({
+      ...a,
+      course_title: a.course?.title || ''
+    }));
+  },
+
+  /**
+   * Listar avaliações de um curso específico
+   */
   async getAssignmentsByCourse(courseId: string): Promise<Assignment[]> {
     const { data, error } = await supabase
       .from('assignments')
       .select('*')
       .eq('course_id', courseId)
+      .eq('status', 'PUBLISHED')
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error(`Error fetching assignments for course ${courseId}:`, error);
-      throw error;
+      console.error('Error fetching course assignments:', error);
+      return [];
     }
     return data || [];
   },
 
-  async getAssignmentsByTeacher(teacherId: string): Promise<Assignment[]> {
+  /**
+   * Criar nova avaliação
+   */
+  async createAssignment(assignment: {
+    course_id: string;
+    teacher_id: string;
+    titulo: string;
+    descricao?: string;
+    due_date?: string;
+    lesson_id?: string;
+    status?: 'DRAFT' | 'PUBLISHED';
+  }): Promise<Assignment> {
     const { data, error } = await supabase
       .from('assignments')
-      .select('*')
-      .eq('teacher_id', teacherId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error(`Error fetching assignments for teacher ${teacherId}:`, error);
-      throw error;
-    }
-    return data || [];
-  },
-
-  async createAssignment(data: CreateAssignmentDTO): Promise<Assignment> {
-    const { data: created, error } = await supabase
-      .from('assignments')
       .insert({
-        course_id: data.course_id,
-        lesson_id: data.lesson_id || null,
-        teacher_id: data.teacher_id,
-        titulo: data.titulo,
-        descricao: data.descricao || null,
-        due_date: data.due_date || null,
-        status: data.status || 'DRAFT'
+        ...assignment,
+        status: assignment.status || 'PUBLISHED'
       })
       .select()
       .single();
@@ -62,31 +67,30 @@ export const assignmentService = {
       console.error('Error creating assignment:', error);
       throw error;
     }
-    return created;
+    return data;
   },
 
+  /**
+   * Atualizar avaliação existente
+   */
   async updateAssignment(id: string, updates: Partial<Assignment>): Promise<Assignment> {
-    const payload: any = {};
-    if (updates.titulo !== undefined) payload.titulo = updates.titulo;
-    if (updates.descricao !== undefined) payload.descricao = updates.descricao;
-    if (updates.due_date !== undefined) payload.due_date = updates.due_date;
-    if (updates.status !== undefined) payload.status = updates.status;
-    if (updates.lesson_id !== undefined) payload.lesson_id = updates.lesson_id;
-
     const { data, error } = await supabase
       .from('assignments')
-      .update(payload)
+      .update(updates)
       .eq('id', id)
       .select()
       .single();
 
     if (error) {
-      console.error(`Error updating assignment ${id}:`, error);
+      console.error('Error updating assignment:', error);
       throw error;
     }
     return data;
   },
 
+  /**
+   * Eliminar avaliação
+   */
   async deleteAssignment(id: string): Promise<boolean> {
     const { error } = await supabase
       .from('assignments')
@@ -94,116 +98,148 @@ export const assignmentService = {
       .eq('id', id);
 
     if (error) {
-      console.error(`Error deleting assignment ${id}:`, error);
+      console.error('Error deleting assignment:', error);
       throw error;
     }
     return true;
   },
 
-  // =========================================================================
-  // 2. SUBMISSIONS & GRADING
-  // =========================================================================
-  async getPendingSubmissions(teacherId: string): Promise<AssignmentSubmission[]> {
-    // Fetch assignments by this teacher first
-    const assignments = await this.getAssignmentsByTeacher(teacherId);
-    const assignmentIds = assignments.map(a => a.id);
+  // ──────────────── PROFESSOR: SUBMISSÕES ────────────────
 
-    if (assignmentIds.length === 0) return [];
-
+  /**
+   * Buscar submissões pendentes (sem nota) para o professor
+   */
+  async getPendingSubmissions(teacherId: string): Promise<any[]> {
     const { data, error } = await supabase
       .from('assignment_submissions')
-      .select('*')
-      .in('assignment_id', assignmentIds)
+      .select(`
+        *,
+        assignment:assignments!inner(id, titulo, course_id, teacher_id, course:courses(id, title)),
+        student:users(id, nome_completo, email, foto_perfil)
+      `)
       .is('grade', null)
-      .order('submitted_at', { ascending: false });
+      .eq('assignment.teacher_id', teacherId)
+      .order('submitted_at', { ascending: true });
 
     if (error) {
       console.error('Error fetching pending submissions:', error);
-      throw error;
+      return [];
     }
     return data || [];
   },
 
-  async getSubmissionsByAssignment(assignmentId: string): Promise<AssignmentSubmission[]> {
+  /**
+   * Buscar TODAS as submissões (pendentes + corrigidas) para o professor
+   */
+  async getAllSubmissions(teacherId: string): Promise<any[]> {
     const { data, error } = await supabase
       .from('assignment_submissions')
-      .select('*')
-      .eq('assignment_id', assignmentId)
+      .select(`
+        *,
+        assignment:assignments!inner(id, titulo, course_id, teacher_id, course:courses(id, title)),
+        student:users(id, nome_completo, email, foto_perfil)
+      `)
+      .eq('assignment.teacher_id', teacherId)
       .order('submitted_at', { ascending: false });
 
     if (error) {
-      console.error(`Error fetching submissions for assignment ${assignmentId}:`, error);
-      throw error;
+      console.error('Error fetching all submissions:', error);
+      return [];
     }
     return data || [];
   },
 
-  async gradeSubmission(submissionId: string, grade: number, feedback: string): Promise<AssignmentSubmission> {
+  /**
+   * Buscar submissões de uma avaliação específica
+   */
+  async getSubmissionsByAssignment(assignmentId: string): Promise<AssignmentSubmission[]> {
+    const { data, error } = await supabase
+      .from('assignment_submissions')
+      .select('*, student:users(id, nome_completo, email, foto_perfil)')
+      .eq('assignment_id', assignmentId);
+
+    if (error) {
+      console.error('Error fetching submissions for assignment:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  /**
+   * Atribuir nota e feedback a uma submissão
+   */
+  async gradeSubmission(
+    submissionId: string,
+    grade: number,
+    feedback?: string
+  ): Promise<AssignmentSubmission> {
     const { data, error } = await supabase
       .from('assignment_submissions')
       .update({
         grade,
-        feedback,
+        feedback: feedback || null
       })
       .eq('id', submissionId)
       .select()
       .single();
 
     if (error) {
-      console.error(`Error grading submission ${submissionId}:`, error);
+      console.error('Error grading submission:', error);
       throw error;
     }
-
-    // Send a real-time notification to the student
-    try {
-      if (data && data.student_id) {
-        await supabase.from('notifications').insert({
-          user_id: data.student_id,
-          text: `A tua submissão de tarefa foi avaliada com a nota ${grade}/100.`,
-          read: false
-        });
-      }
-    } catch (e) {
-      console.warn('Could not trigger notification for submission grading:', e);
-    }
-
     return data;
   },
 
-  // =========================================================================
-  // 3. BROADCAST NOTIFICATION
-  // =========================================================================
-  async broadcastFeedback(teacherId: string, courseId: string, message: string): Promise<void> {
-    // Get all students enrolled in this course
-    const { data: enrollments, error: enrollError } = await supabase
+  /**
+   * Contar submissões pendentes (sem nota) para o professor
+   */
+  async getPendingSubmissionsCount(teacherId: string): Promise<number> {
+    const { count, error } = await supabase
+      .from('assignment_submissions')
+      .select('id, assignment:assignments!inner(teacher_id)', { count: 'exact', head: true })
+      .is('grade', null)
+      .eq('assignment.teacher_id', teacherId);
+
+    if (error) {
+      console.error('Error counting pending submissions:', error);
+      return 0;
+    }
+    return count || 0;
+  },
+
+  // ──────────────── BROADCAST FEEDBACK ────────────────
+
+  /**
+   * Enviar feedback coletivo como notificação para todos os alunos do curso
+   */
+  async broadcastFeedback(
+    teacherId: string,
+    courseId: string,
+    message: string
+  ): Promise<void> {
+    // 1. Buscar todos os alunos matriculados no curso
+    const { data: enrollments } = await supabase
       .from('enrollments')
       .select('student_id')
-      .eq('course_id', courseId);
-
-    if (enrollError) {
-      console.error(`Error getting enrolled students for course ${courseId}:`, enrollError);
-      throw enrollError;
-    }
+      .eq('course_id', courseId)
+      .eq('status', 'ACTIVE');
 
     if (!enrollments || enrollments.length === 0) return;
 
-    // Filter unique student IDs
-    const studentIds = Array.from(new Set(enrollments.map(e => e.student_id)));
-
-    // Insert notifications for all enrolled students
-    const notificationsToInsert = studentIds.map(studentId => ({
-      user_id: studentId,
+    // 2. Criar notificação para cada aluno
+    const notifications = enrollments.map(e => ({
+      user_id: e.student_id,
       text: message,
       read: false
     }));
 
-    const { error: notifError } = await supabase
+    const { error } = await supabase
       .from('notifications')
-      .insert(notificationsToInsert);
+      .insert(notifications);
 
-    if (notifError) {
-      console.error('Error inserting broadcast notifications:', notifError);
-      throw notifError;
+    if (error) {
+      console.error('Error broadcasting feedback:', error);
+      throw error;
     }
   }
 };

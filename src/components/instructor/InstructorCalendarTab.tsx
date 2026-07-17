@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { User, Course } from '../../types';
 import { academicService } from '../../services/supabase/academicService';
+import { useToast } from '../ui/Toast';
 
 interface InstructorCalendarTabProps {
   currentUser: User | null;
@@ -26,6 +27,7 @@ export default function InstructorCalendarTab({
   students = [],
   courses = []
 }: InstructorCalendarTabProps) {
+  const toast = useToast();
   const [calendarView, setCalendarView] = useState<'month' | 'week' | 'day'>('month');
 
   // Database lesson and student agendamento state
@@ -98,7 +100,7 @@ export default function InstructorCalendarTab({
   const handleCreateMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedMeetingCourse || !selectedStudent || !selectedLesson) {
-      alert('Por favor, selecione um curso, aluno e lição para efetuar o agendamento.');
+      toast.error('Por favor, selecione um curso, aluno e lição para efetuar o agendamento.');
       return;
     }
 
@@ -117,10 +119,10 @@ export default function InstructorCalendarTab({
       // Refresh list
       await loadAllScheduled();
       
-      alert('Aula síncrona agendada e guardada no Supabase com sucesso! O aluno será notificado em tempo real.');
+      toast.success('Aula síncrona agendada e guardada no Supabase com sucesso! O aluno será notificado em tempo real.');
     } catch (err) {
       console.error('Error scheduling lesson:', err);
-      alert('Ocorreu um erro ao guardar o agendamento no Supabase.');
+      toast.error('Ocorreu um erro ao guardar o agendamento no Supabase.');
     } finally {
       setScheduling(false);
     }
@@ -128,7 +130,7 @@ export default function InstructorCalendarTab({
 
   const handleCopyLink = (url: string) => {
     navigator.clipboard.writeText(url);
-    alert('Link copiado com sucesso!');
+    toast.success('Link copiado com sucesso!');
   };
 
   // Filter students with role 'ALUNO' for select dropdown

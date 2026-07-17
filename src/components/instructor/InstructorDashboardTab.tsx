@@ -27,6 +27,7 @@ interface InstructorDashboardTabProps {
   completionRate: number;
   onNavigate: (tab: string) => void;
   lessonsCount?: number;
+  recentNotifications?: any[];
 }
 
 export default function InstructorDashboardTab({
@@ -37,7 +38,8 @@ export default function InstructorDashboardTab({
   certificatesIssuedCount: initialCertsCount,
   completionRate: initialCompletionRate,
   onNavigate,
-  lessonsCount = 0
+  lessonsCount = 0,
+  recentNotifications
 }: InstructorDashboardTabProps) {
   const [activeMetricChart, setActiveMetricChart] = useState<'completion' | 'engagement'>('completion');
 
@@ -56,8 +58,9 @@ export default function InstructorDashboardTab({
   const activeCompletionRate = metrics.completionRate > 0 ? metrics.completionRate : initialCompletionRate;
 
   // Format notifications for the Action Queue
-  const alertsQueue = notifications.length > 0 
-    ? notifications.map((n) => {
+  const finalNotifications = recentNotifications && recentNotifications.length > 0 ? recentNotifications : notifications;
+  const alertsQueue = finalNotifications.length > 0 
+    ? finalNotifications.slice(0, 5).map((n) => {
         let type = 'enrollment';
         if (n.text.toLowerCase().includes('tarefa') || n.text.toLowerCase().includes('submiss') || n.text.toLowerCase().includes('avalia')) {
           type = 'assignment';
@@ -115,8 +118,8 @@ export default function InstructorDashboardTab({
 
   // Dynamic Insights
   const insightText = activeCompletionRate > 0
-    ? `A taxa média de conclusão dos seus programas letivos está em ${activeCompletionRate}%. O engajamento com materiais e exercícios práticos subiu substancialmente.`
-    : "Nenhum dado de progresso calculado ainda. Adicione lições e acompanhe a taxa de frequência de estudo dos formandos em tempo real.";
+    ? `A taxa de conclusão geral dos seus cursos é de ${activeCompletionRate}%. Continue acompanhando o progresso dos alunos para identificar oportunidades de melhoria.`
+    : 'Os insights analíticos serão gerados automaticamente quando houver dados de progresso dos alunos registados no sistema.';
 
   return (
     <div className="space-y-6 text-left relative">
@@ -211,46 +214,13 @@ export default function InstructorDashboardTab({
             </div>
           </div>
 
-          <div className="relative pt-6 flex-grow flex items-end z-10">
-            {/* Pure Responsive SVG Graph Curve */}
-            <div className="w-full h-48 relative">
-              <svg viewBox="0 0 500 120" className="w-full h-full overflow-visible" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#C89B3C" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#151D29" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                
-                {linePath && (
-                  <>
-                    <path
-                      d={linePath}
-                      fill="none"
-                      stroke="#C89B3C"
-                      strokeWidth="3.5"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d={`${linePath} L 500,120 L 0,120 Z`}
-                      fill="url(#chartGradient)"
-                    />
-                  </>
-                )}
-                
-                {/* Data Points */}
-                {(activeMetricChart === 'completion' ? ratePoints : subsPoints).map((p, i) => (
-                  <circle key={i} cx={p.x} cy={p.y} r="5" fill="#151D29" stroke="#C89B3C" strokeWidth="2" />
-                ))}
-              </svg>
-              
-              {/* Graph axis labels */}
-              <div className="absolute inset-x-0 bottom-0 flex justify-between text-[9px] font-mono text-neutral-400 pt-2 border-t border-gray-150 dark:border-ink-800/60">
-                <span>SEMANA 1</span>
-                <span>SEMANA 4 (DRAFTING)</span>
-                <span>SEMANA 8 (ORAL EXAM)</span>
-                <span>SEMANA 12 (HOJE)</span>
-              </div>
+          <div className="relative pt-6 flex-grow flex items-end z-10 w-full">
+            <div className="w-full h-48 flex flex-col items-center justify-center text-center space-y-3">
+              <Activity className="w-10 h-10 text-gold-600/30" />
+              <p className="text-xs text-neutral-400 max-w-sm">
+                Os gráficos analíticos serão exibidos quando houver dados suficientes de progresso dos alunos. 
+                As métricas serão calculadas automaticamente a partir das submissões e conclusões de aulas.
+              </p>
             </div>
           </div>
 
