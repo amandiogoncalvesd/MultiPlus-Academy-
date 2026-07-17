@@ -43,14 +43,13 @@ export default function InstructorStudentsTab({
   const [selectedProgressFilter, setSelectedProgressFilter] = useState('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('all');
 
-  // Interactive student alert state
+  // Interactive student note/alert state
   const [alertingStudentId, setAlertingStudentId] = useState<string | null>(null);
   const [customAlertText, setCustomAlertText] = useState('');
 
   // Editable grades state
   const [editingGradeStudentId, setEditingGradeStudentId] = useState<string | null>(null);
   const [editScore, setEditScore] = useState(0);
-  const [customGrades, setCustomGrades] = useState<Record<string, number>>({});
 
   // Real database metrics state from vw_student_progress view
   const [progressMetrics, setProgressMetrics] = useState<Record<string, {
@@ -88,54 +87,68 @@ export default function InstructorStudentsTab({
     fetchMetrics();
   }, []);
 
+  const getMetricsForStudent = (studentId: string) => {
+    const metrics = progressMetrics[studentId];
+    if (metrics) {
+      return {
+        grade: Math.round(metrics.avg_quiz_score || 0),
+        presence: Math.round(metrics.progress_percent || 0)
+      };
+    }
+    return { grade: 0, presence: 0 };
+  };
+
   const getEnrollment = (studentId: string) => {
     const enroll = enrollments.find(e => e.userId === studentId);
     return enroll || null;
   };
 
-  const handleSendInstantAlert = async (id: string, name: string) => {
+  const handleSendInstantAlert = async (studentId: string, studentName: string) => {
     if (!customAlertText.trim()) return;
-    
     try {
-      const { error } = await supabase.from('notifications').insert({
-        user_id: id,
-        text: `[ADVERTÊNCIA FORMAL] ${customAlertText}`,
+      await supabase.from('notifications').insert({
+        user_id: studentId,
+        text: customAlertText.trim(),
         read: false
       });
-      if (error) throw error;
-      toast.success(`Mensagem com carimbo de urgência enviada com sucesso para ${name}: "${customAlertText}"`);
-    } catch (err) {
-      console.error('Error writing notification alert to DB:', err);
-      toast.error('Não foi possível registrar o alerta oficial na base de dados.');
+      toast.success(`Alerta enviado com sucesso para ${studentName}!`);
+      setCustomAlertText('');
+      setAlertingStudentId(null);
+    } catch (err: any) {
+      toast.error(`Erro ao enviar alerta: ${err.message || err}`);
     }
-
-    setAlertingStudentId(null);
-    setCustomAlertText('');
   };
 
   const saveGradeScore = (id: string) => {
-    setCustomGrades(prev => ({
+    setProgressMetrics(prev => ({
       ...prev,
-      [id]: editScore
+      [id]: {
+        ...prev[id] || { progress_percent: 0 },
+        avg_quiz_score: editScore
+      }
     }));
     setEditingGradeStudentId(null);
-    toast.success('Nota académica guardada e vinculada ao percurso letivo com sucesso!');
+    toast.success('Nota académica guardada e vinculada ao percurso letivo.');
   };
 
   // Perform advanced filter matches
   const filteredList = students.filter(student => {
+    // 1. Text lookup
     const term = searchQuery.toLowerCase();
     const textMatch = student.firstName.toLowerCase().includes(term) ||
                       student.lastName.toLowerCase().includes(term) ||
                       student.email.toLowerCase().includes(term) ||
                       (student.phone && student.phone.includes(term));
 
+    // 2. Course matching
     const enrollment = getEnrollment(student.id);
     if (!enrollment && selectedCourseFilter !== 'all') return false;
-    
     const courseMatch = selectedCourseFilter === 'all' || (enrollment && enrollment.courseId === selectedCourseFilter);
+
+    // 3. Status filter matching
     const statusMatch = selectedStatusFilter === 'all' || student.status === selectedStatusFilter;
 
+    // 4. Progress criteria
     let progressMatch = true;
     const progressPercent = progressMetrics[student.id]?.progress_percent ?? 0;
     if (selectedProgressFilter === 'low') {
@@ -151,7 +164,7 @@ export default function InstructorStudentsTab({
 
   return (
     <div className="space-y-6 text-left relative">
-      <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] bg-gradient-to-br from-gold-600/5 to-transparent rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-[-5%] right-[-5%] w-[40%] h-[40%] bg-gradient-to-br from-gold-600/5 to-transparent rounded-full blur-[100px] pointer-events-none" />
       
       {/* Title section with quick stats */}
       <div className="bg-cream-100 dark:bg-ink-900 p-6 rounded-3xl border border-gray-150 dark:border-ink-800/60 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
@@ -266,15 +279,8 @@ export default function InstructorStudentsTab({
                 filteredList.map((student) => {
                   const enroll = getEnrollment(student.id);
                   const isBlocked = student.status === 'SUSPENDED';
-                  
+                  const activeMetric = getMetricsForStudent(student.id);
                   const progressPercent = progressMetrics[student.id]?.progress_percent ?? 0;
-                  const completedLessons = progressMetrics[student.id]?.completed_lessons ?? 0;
-                  const totalLessons = progressMetrics[student.id]?.total_lessons ?? 1;
-                  const presenceRate = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : progressPercent;
-
-                  const avgScore = customGrades[student.id] !== undefined
-                    ? customGrades[student.id]
-                    : (progressMetrics[student.id]?.avg_quiz_score ? Math.round(progressMetrics[student.id].avg_quiz_score!) : 85);
 
                   return (
                     <tr key={student.id} className="hover:bg-cream-200/50 dark:hover:bg-ink-800/40 transition-colors">
@@ -300,15 +306,15 @@ export default function InstructorStudentsTab({
                       <td className="p-4 sm:p-5">
                         <div className="space-y-1.5 w-44">
                           <span className="text-[9px] font-mono text-neutral-400 dark:text-cream-200/60 block uppercase truncate max-w-[170px]">
-                            {(enroll && courses.find(c => c.id === enroll.courseId)?.title) || 'English for the Legal Field'}
+                            {enroll ? (courses.find(c => c.id === enroll.courseId)?.title || 'English for the Legal Field') : 'Não Matriculado'}
                           </span>
                           
-                          {/* Progress indicator */}
+                          {/* Progress indicator from vw_student_progress */}
                           <div className="flex flex-col w-full gap-1">
                             <div className="w-full bg-cream-250 dark:bg-ink-800 rounded-full h-1.5 overflow-hidden">
                               <div
-                                className="bg-[#C89B3C] h-full transition-all duration-500"
-                                style={{ width: `${progressPercent}%` }}
+                                  className="bg-[#C89B3C] h-full transition-all duration-500"
+                                  style={{ width: `${progressPercent}%` }}
                               />
                             </div>
                             <span className="text-[9px] font-mono font-bold text-neutral-400 dark:text-cream-200/60">
@@ -341,12 +347,12 @@ export default function InstructorStudentsTab({
                           <button
                             onClick={() => {
                               setEditingGradeStudentId(student.id);
-                              setEditScore(avgScore);
+                              setEditScore(activeMetric.grade);
                             }}
                             className="bg-transparent border-0 p-0 text-left cursor-pointer hover:underline text-neutral-400 hover:text-gold-600 transition-colors"
                             title="Clique para redefinir nota final de exames"
                           >
-                            <span className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 block">{avgScore}</span>
+                            <span className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 block">{activeMetric.grade}</span>
                             <span className="text-[8px] font-mono text-neutral-400 dark:text-cream-200/60 block">/ 100 • EDITAR</span>
                           </button>
                         )}
@@ -355,7 +361,7 @@ export default function InstructorStudentsTab({
                       {/* Attendance presence tracker */}
                       <td className="p-4 sm:p-5">
                         <span className="text-sm font-serif font-black text-neutral-400 dark:text-cream-200/60 block">
-                          {presenceRate}%
+                          {activeMetric.presence}%
                         </span>
                         <span className="text-[8px] font-mono text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider block">
                           REGULADO
@@ -417,15 +423,7 @@ export default function InstructorStudentsTab({
               filteredList.map((student) => {
                 const enroll = getEnrollment(student.id);
                 const isBlocked = student.status === 'SUSPENDED';
-                
-                const progressPercent = progressMetrics[student.id]?.progress_percent ?? 0;
-                const completedLessons = progressMetrics[student.id]?.completed_lessons ?? 0;
-                const totalLessons = progressMetrics[student.id]?.total_lessons ?? 1;
-                const presenceRate = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : progressPercent;
-
-                const avgScore = customGrades[student.id] !== undefined
-                  ? customGrades[student.id]
-                  : (progressMetrics[student.id]?.avg_quiz_score ? Math.round(progressMetrics[student.id].avg_quiz_score!) : 85);
+                const activeMetric = getMetricsForStudent(student.id);
 
                 return (
                   <div key={student.id} className="bg-cream-100 dark:bg-ink-900 p-4 rounded-2xl border border-gray-150 dark:border-ink-800/60 space-y-3 text-left">
@@ -448,22 +446,22 @@ export default function InstructorStudentsTab({
                       <div>
                         <span className="text-[8px] font-mono text-neutral-400 dark:text-cream-200/60 block uppercase">Curso</span>
                         <span className="font-semibold text-neutral-400 dark:text-cream-100 block text-[11px] truncate">
-                          {enroll && courses.find(c => c.id === enroll.courseId)?.title}
+                          {enroll ? (courses.find(c => c.id === enroll.courseId)?.title || 'English for the Legal Field') : 'Não Matriculado'}
                         </span>
                       </div>
 
                       <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono bg-cream-200 dark:bg-ink-800 p-2 rounded-xl text-ink-900 dark:text-cream-100">
                         <div>
                           <span className="block text-[8px] text-neutral-400 dark:text-cream-200/60 uppercase">Progresso</span>
-                          <span className="font-bold">{progressPercent}%</span>
+                          <span className="font-bold">{progressMetrics[student.id]?.progress_percent ?? 0}%</span>
                         </div>
                         <div>
                           <span className="block text-[8px] text-neutral-400 dark:text-cream-200/60 uppercase">Rendimento</span>
-                          <span className="font-bold">{avgScore}/100</span>
+                          <span className="font-bold">{activeMetric.grade}/100</span>
                         </div>
                         <div>
                           <span className="block text-[8px] text-neutral-400 dark:text-cream-200/60 uppercase">Presença</span>
-                          <span className="font-bold">{presenceRate}%</span>
+                          <span className="font-bold">{activeMetric.presence}%</span>
                         </div>
                       </div>
                     </div>
@@ -516,7 +514,7 @@ export default function InstructorStudentsTab({
         </div>
       </div>
 
-      {/* Send Urgent Alert popup modal */}
+      {/* Send Urgent Alert popup modal drawer inside */}
       {alertingStudentId && (
         <div className="p-5 bg-amber-50 dark:bg-[#1a1712] rounded-2xl border border-gold-600/30 dark:border-gold-600/10 text-left space-y-3 relative z-20 shadow-lg">
           <div className="flex justify-between items-center">

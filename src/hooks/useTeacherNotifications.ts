@@ -44,17 +44,5 @@ export function useTeacherNotifications(teacherId: string | undefined) {
     fetchNotifications();
   }, [fetchNotifications]);
 
-  const markAllAsRead = useCallback(async () => {
-    if (!teacherId) return;
-    await supabase.from('notifications').update({ read: true }).eq('user_id', teacherId).eq('read', false);
-    fetchNotifications();
-  }, [teacherId, fetchNotifications]);
-
-  const markAsReadMultiple = useCallback(async (notificationIds: string[]) => {
-    if (notificationIds.length === 0) return;
-    await supabase.from('notifications').update({ read: true }).in('id', notificationIds);
-    fetchNotifications();
-  }, [fetchNotifications]);
-
-  return { notifications, unreadCount, loading, refetch: fetchNotifications, markAsRead, markAllAsRead, markAsReadMultiple };
+  return { notifications, unreadCount, loading, refetch: fetchNotifications, markAsRead };
 }

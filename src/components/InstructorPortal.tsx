@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase/client';
 import { academicService } from '../services/supabase/academicService';
 import { useTheme } from '../contexts/ThemeContext';
 import { messageService } from '../services/supabase/messageService';
+import { useToast } from './ui/Toast';
 import { MessageSquare, Bell, Sun, Moon } from 'lucide-react';
 
 import { 
@@ -60,11 +61,7 @@ import InstructorEvaluationsTab from './instructor/InstructorEvaluationsTab';
 import InstructorCalendarTab from './instructor/InstructorCalendarTab';
 import InstructorMessagesTab from './instructor/InstructorMessagesTab';
 import { courseService } from '../services/supabase/courseService';
-import { useTeacherNotifications } from '../hooks/useTeacherNotifications';
-import { useTeacherMetrics } from '../hooks/useTeacherMetrics';
-import { useTeacherEvaluations } from '../hooks/useTeacherEvaluations';
 import CertificateIssueModal from './certificates/CertificateIssueModal';
-import { useToast } from './ui/Toast';
 
 interface InstructorPortalProps {
   setCurrentPage: (page: PageId) => void;
@@ -93,12 +90,8 @@ export default function InstructorPortal({
   const [lessonsCount, setLessonsCount] = useState<number>(0);
 
   // Preference settings & notifications
-  const { notifications: realNotifications, markAllAsRead } = useTeacherNotifications(currentUser?.id);
-  const { metrics: teacherMetrics } = useTeacherMetrics(currentUser?.id);
-  const { pendingCount: dynamicPendingCount } = useTeacherEvaluations(currentUser?.id);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
-
-  const portalCompletionRate = (teacherMetrics && teacherMetrics.completionRate > 0) ? teacherMetrics.completionRate : 95;
 
   // Quick access unread messages count
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
@@ -114,22 +107,38 @@ export default function InstructorPortal({
     }
   };
 
-  // Unified Realtime channel subscription
+  // 8. Consolidated Realtime subscription
   useEffect(() => {
     if (!currentUser?.id) return;
-
     fetchUnreadMessagesCount();
 
-    const unifiedChannel = supabase
-      .channel(`instructor-unified-${currentUser.id}`)
+    const channel = supabase
+      .channel('instructor-portal-realtime')
+      // Listen to messages table to update unread count and fetch database
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'messages' },
         () => {
           fetchUnreadMessagesCount();
-          loadDatabase();
         }
       )
+      // Listen to notifications table for user specific notifications
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${currentUser.id}` },
+        () => {
+          // Re-load notifications
+          supabase.from('notifications')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false })
+            .limit(20)
+            .then(({ data }) => {
+              setNotifications(data || []);
+            });
+        }
+      )
+      // Listen to courses table to update courses list
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'courses' },
@@ -137,6 +146,7 @@ export default function InstructorPortal({
           loadDatabase();
         }
       )
+      // Listen to enrollments table to update students and enrollments
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'enrollments' },
@@ -144,38 +154,10 @@ export default function InstructorPortal({
           loadDatabase();
         }
       )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'certificates' },
-        () => {
-          loadDatabase();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'assignment_submissions' },
-        () => {
-          loadDatabase();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'notifications' },
-        () => {
-          loadDatabase();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'lesson_targets' },
-        () => {
-          loadDatabase();
-        }
-      )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(unifiedChannel);
+      supabase.removeChannel(channel);
     };
   }, [currentUser?.id]);
 
@@ -216,7 +198,7 @@ export default function InstructorPortal({
   // Synchronize base academic states
   useEffect(() => {
     loadDatabase();
-  }, [currentUser?.id, currentUser?.role]);
+  }, []);
 
   const loadDatabase = async () => {
     try {
@@ -306,6 +288,17 @@ export default function InstructorPortal({
         setLessonsCount(totalLessons);
       } else {
         setLessonsCount(0);
+      }
+
+      // 6. Load notifications
+      if (currentUser?.id) {
+        const { data: notifsData } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false })
+          .limit(20);
+        setNotifications(notifsData || []);
       }
     } catch (err) {
       console.warn('Error fetching instructor data from Supabase:', err);
@@ -449,7 +442,7 @@ export default function InstructorPortal({
   };
 
   // Derived variables
-  const pendingGreads = dynamicPendingCount || 0;
+  const pendingGreads = 3;
 
   // Accessibility theme class selections
   const containerThemeClass = highContrast 
@@ -643,18 +636,11 @@ export default function InstructorPortal({
             {/* Notification Bell toggle menu */}
             <div className="relative">
               <button 
-                onClick={() => {
-                  setShowNotificationsMenu(!showNotificationsMenu);
-                  if (!showNotificationsMenu) {
-                    markAllAsRead();
-                  }
-                }}
+                onClick={() => setShowNotificationsMenu(!showNotificationsMenu)}
                 className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
               >
                 <Bell size={14} />
-                {realNotifications.filter(n => !n.read).length > 0 && (
-                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-danger-700" />
-                )}
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-danger-700" />
               </button>
 
               <AnimatePresence>
@@ -669,10 +655,10 @@ export default function InstructorPortal({
                       <span className="font-mono text-2xs font-bold text-neutral-400">NOTIFICAÇÕES DA TURMA</span>
                     </div>
                     <div className="space-y-2 mt-2 divide-y divide-gray-100">
-                      {realNotifications.length === 0 ? (
+                      {notifications.length === 0 ? (
                         <p className="text-2xs text-neutral-400 m-0 py-2">Sem novas notificações.</p>
                       ) : (
-                        realNotifications.map(n => (
+                        notifications.map(n => (
                           <div key={n.id} className="pt-2 text-2xs text-neutral-400 dark:text-gray-300">
                             <p className="m-0 leading-snug">{n.text}</p>
                           </div>
@@ -732,7 +718,7 @@ export default function InstructorPortal({
               students={students}
               evaluationsPendingCount={pendingGreads}
               certificatesIssuedCount={certificatesCount}
-              completionRate={portalCompletionRate}
+              completionRate={95}
               onNavigate={(tab) => setActiveTab(tab)}
               lessonsCount={lessonsCount}
             />
@@ -847,9 +833,9 @@ export default function InstructorPortal({
           {/* TAB 8: CORREÇÃO & PROVAS */}
           {activeTab === 'avaliacoes' && (
             <InstructorEvaluationsTab
-              currentUser={currentUser}
               students={students}
               courses={courses}
+              currentUser={currentUser}
             />
           )}
 
@@ -946,7 +932,6 @@ export default function InstructorPortal({
           {/* TAB 10: AGENDA LETIVA */}
           {activeTab === 'calendario' && (
             <InstructorCalendarTab
-              currentUser={currentUser}
               students={students}
               courses={courses}
             />
@@ -987,11 +972,11 @@ export default function InstructorPortal({
                       {/* Circle arcs mock */}
                       <circle cx="50" cy="50" r="40" fill="none" stroke={isDarkMode ? "#1B222E" : "#e1e1e1"} strokeWidth="8" />
                       {/* Active arc */}
-                      <circle cx="50" cy="50" r="40" fill="none" stroke="#BB8533" strokeWidth="8" strokeDasharray={`${(portalCompletionRate / 100) * 251} 251`} strokeLinecap="round" transform="rotate(-90 50 50)" />
-                      <text x="50" y="55" textAnchor="middle" className="font-serif font-black text-lg fill-[#151D29] dark:fill-cream-100 text-xs">{portalCompletionRate}%</text>
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="#BB8533" strokeWidth="8" strokeDasharray="180 250" strokeLinecap="round" transform="rotate(-90 50 50)" />
+                      <text x="50" y="55" textAnchor="middle" className="font-serif font-black text-lg fill-[#151D29] dark:fill-cream-100 text-xs">78%</text>
                     </svg>
                   </div>
-                  <span className="text-[9px] font-mono text-center text-neutral-400">{portalCompletionRate}% de frequência conclutiva de exercícios práticos</span>
+                  <span className="text-[9px] font-mono text-center text-neutral-400">78% de frequência conclutiva de exercícios práticos</span>
                 </div>
 
                 {/* SVG 2: Engajamento por dia de semana */}
@@ -1117,7 +1102,9 @@ export default function InstructorPortal({
                     checked={highContrast}
                     onChange={(e) => {
                       setHighContrast(e.target.checked);
-                      toast.success('Modo alto contraste ativado com integridade estrutural.');
+                      if (e.target.checked) {
+                        toast.info('Modo alto contraste ativado com integridade estrutural.');
+                      }
                     }}
                     className="w-4 h-4 accent-[#BB8533] cursor-pointer"
                   />

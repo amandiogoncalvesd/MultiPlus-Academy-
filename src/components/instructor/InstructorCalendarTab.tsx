@@ -17,13 +17,11 @@ import { academicService } from '../../services/supabase/academicService';
 import { useToast } from '../ui/Toast';
 
 interface InstructorCalendarTabProps {
-  currentUser: User | null;
   students: User[];
   courses: Course[];
 }
 
 export default function InstructorCalendarTab({
-  currentUser,
   students = [],
   courses = []
 }: InstructorCalendarTabProps) {
@@ -60,11 +58,7 @@ export default function InstructorCalendarTab({
   // Load lessons for chosen course
   useEffect(() => {
     const loadLessonsForCourse = async () => {
-      if (!selectedMeetingCourse) {
-        setDbLessons([]);
-        setSelectedLesson('');
-        return;
-      }
+      if (!selectedMeetingCourse) return;
       setLoadingLessons(true);
       try {
         const data = await academicService.getLessons(selectedMeetingCourse);
@@ -100,7 +94,7 @@ export default function InstructorCalendarTab({
   const handleCreateMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedMeetingCourse || !selectedStudent || !selectedLesson) {
-      toast.error('Por favor, selecione um curso, aluno e lição para efetuar o agendamento.');
+      toast.error('Por favor, preencha todos os campos para efetuar o agendamento.');
       return;
     }
 
@@ -130,7 +124,7 @@ export default function InstructorCalendarTab({
 
   const handleCopyLink = (url: string) => {
     navigator.clipboard.writeText(url);
-    toast.success('Link copiado com sucesso!');
+    toast.success('Link copiado para a Área de Transferência!');
   };
 
   // Filter students with role 'ALUNO' for select dropdown
@@ -138,8 +132,8 @@ export default function InstructorCalendarTab({
     ? students.filter(s => s.role === 'ALUNO')
     : students;
 
-  // Compile combined events array for the calendar grid mapping (Real Database Only)
-  const combinedEvents = scheduledLessons.map((sl, index) => {
+  // Compile combined events array for the calendar grid mapping
+  const calendarEvents = scheduledLessons.map((sl: any, index: number) => {
     const title = sl.lesson?.titulo || sl.lesson?.title || 'Aula Síncrona';
     const sUser = sl.student;
     const studentName = sUser ? `${sUser.firstName || ''} ${sUser.lastName || ''}`.trim() || sUser.email : 'Aluno';
@@ -152,18 +146,11 @@ export default function InstructorCalendarTab({
     };
   });
 
-  // Calculate Calendar Days dynamically for the current month
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth(); // 0-indexed
-  const monthName = currentDate.toLocaleDateString('pt-AO', { month: 'long', year: 'numeric' });
-  
-  const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay(); // Sunday=0, Monday=1 etc
-  const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const currentMonthLabel = new Date().toLocaleDateString('pt-AO', { month: 'long', year: 'numeric' });
 
   return (
     <div className="space-y-6 text-left animate-fade-in relative">
-      <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] bg-gradient-to-br from-gold-600/5 to-transparent rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-[-5%] right-[-5%] w-[40%] h-[40%] bg-gradient-to-br from-gold-600/5 to-transparent rounded-full blur-[100px] pointer-events-none" />
       
       {/* View Selector top navigation header */}
       <div className="bg-cream-100 dark:bg-ink-900 p-5 rounded-3xl border border-gray-150 dark:border-ink-800/60 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
@@ -254,7 +241,7 @@ export default function InstructorCalendarTab({
                       className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl focus:outline-none focus:border-gold-600 text-slate-850 dark:text-cream-100"
                     >
                       {dbLessons.length === 0 ? (
-                        <option value="" disabled>Nenhuma lição cadastrada para este curso</option>
+                        <option value="" disabled>Nenhuma lição disponível para este curso</option>
                       ) : (
                         dbLessons.map(l => (
                           <option key={l.id} value={l.id}>{l.titulo || l.title}</option>
@@ -289,7 +276,7 @@ export default function InstructorCalendarTab({
 
               <button
                 type="submit"
-                disabled={scheduling || loadingLessons || !selectedLesson}
+                disabled={scheduling || loadingLessons}
                 className="w-full py-3 bg-gold-600 hover:bg-[#b58b35] border-0 text-cream-100 text-ink-900 font-mono text-3xs font-black uppercase rounded-xl tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50 shadow-sm"
               >
                 {scheduling ? (
@@ -327,7 +314,7 @@ export default function InstructorCalendarTab({
                   const timeVal = session.lesson?.scheduled_at?.split('T')[1]?.substring(0, 5) || '18:30';
                   const sUser = session.student;
                   const studentName = sUser ? `${sUser.firstName || ''} ${sUser.lastName || ''}`.trim() || sUser.email : 'Aluno';
-                  const meetUrl = session.lesson?.meeting_url || `https://meet.google.com/mqp-${session.lesson_id?.slice(0,4) || 'live'}`;
+                  const meetUrl = session.lesson?.meeting_url || 'Link indisponível';
 
                   return (
                     <div key={session.id || index} className="bg-cream-100 dark:bg-ink-900 p-5 rounded-3xl border border-gray-150 dark:border-ink-800/60 relative overflow-hidden hover:shadow transition-all space-y-4 flex flex-col justify-between">
@@ -389,7 +376,7 @@ export default function InstructorCalendarTab({
           <div className="space-y-4">
             <div className="border-b border-gray-150 dark:border-ink-800/60 pb-2">
               <span className="text-[9px] font-mono text-neutral-400 dark:text-cream-200/60 uppercase tracking-widest block font-bold">Calendário Académico</span>
-              <h4 className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 m-0 leading-tight">Mês Coerente ({monthName})</h4>
+              <h4 className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 m-0 leading-tight capitalize">{currentMonthLabel}</h4>
             </div>
 
             {/* Custom Monthly Render Grid Map */}
@@ -397,13 +384,16 @@ export default function InstructorCalendarTab({
               {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, dIdx) => (
                 <div key={dIdx} className="font-extrabold text-ink-900 dark:text-cream-100 text-[9px] uppercase pb-1">{day}</div>
               ))}
-              {Array.from({ length: firstDayIndex }).map((_, emptyIdx) => (
+              {Array.from({ length: 4 }).map((_, emptyIdx) => (
                 <div key={`empty-${emptyIdx}`} className="p-2 text-gray-300"></div>
               ))}
-              {Array.from({ length: totalDaysInMonth }).map((_, dayIdx) => {
+              {Array.from({ length: 30 }).map((_, dayIdx) => {
                 const dayNum = dayIdx + 1;
-                const formattedDate = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`;
-                const matchesEvent = combinedEvents.some(e => e.date === formattedDate);
+                const now = new Date();
+                const yearStr = now.getFullYear();
+                const monthStr = String(now.getMonth() + 1).padStart(2, '0');
+                const formattedDate = `${yearStr}-${monthStr}-${dayNum < 10 ? '0' + dayNum : dayNum}`;
+                const matchesEvent = calendarEvents.some(e => e.date === formattedDate);
                 return (
                   <div 
                     key={dayNum} 
@@ -412,7 +402,7 @@ export default function InstructorCalendarTab({
                         ? 'bg-gold-600/15 text-gold-600 dark:text-gold-500 font-black border border-gold-600/30' 
                         : 'hover:bg-cream-200 dark:hover:bg-ink-800 text-slate-700 dark:text-cream-200/80'
                     }`}
-                    title={matchesEvent ? combinedEvents.find(e => e.date === formattedDate)?.title : `Sem compromisso no dia ${dayNum}`}
+                    title={matchesEvent ? calendarEvents.find(e => e.date === formattedDate)?.title : `Sem compromisso no dia ${dayNum}`}
                   >
                     <span>{dayNum}</span>
                     {matchesEvent && <span className="w-1 h-1 bg-gold-600 rounded-full absolute bottom-1"></span>}
@@ -425,12 +415,12 @@ export default function InstructorCalendarTab({
             <div className="space-y-2 max-h-52 overflow-y-auto pt-2.5 border-t border-gray-150 dark:border-ink-800/60">
               <span className="text-[8px] font-mono font-bold text-neutral-400 dark:text-cream-200/40 uppercase block text-left">Lista Metas Cronológicas</span>
               
-              {combinedEvents.length === 0 ? (
-                <div className="text-center py-4 text-3xs text-neutral-400 font-mono">
-                  Sem eventos agendados para este mês.
+              {calendarEvents.length === 0 ? (
+                <div className="text-center py-4 text-xs text-neutral-400">
+                  Nenhuma aula este mês
                 </div>
               ) : (
-                combinedEvents.map((evt, idx) => (
+                calendarEvents.map((evt, idx) => (
                   <div key={evt.id || idx} className="p-2.5 bg-cream-200/60 dark:bg-ink-800/40 rounded-xl border border-gray-150 dark:border-ink-800/60 flex justify-between items-center text-left">
                     <div className="flex-1 min-w-0 pr-2">
                       <h6 className="font-serif font-black text-slate-700 dark:text-cream-100 text-[10px] m-0 leading-tight truncate">{evt.title}</h6>
