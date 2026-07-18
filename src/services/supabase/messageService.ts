@@ -34,9 +34,17 @@ export interface SendMessagePayload {
   voiceData?: any;
 }
 
+const validateUUID = (id: string): void => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(id)) {
+    throw new Error(`ID inválido: ${id}. Apenas UUIDs são aceites.`);
+  }
+};
+
 export const messageService = {
   // 1. Get all messages (fallback / global fetch)
   async getMessages(userId: string): Promise<SupabaseMessage[]> {
+    validateUUID(userId);
     const { data, error } = await supabase
       .from('messages')
       .select('*')
@@ -57,6 +65,8 @@ export const messageService = {
     cursor?: string, 
     limit: number = 50
   ): Promise<{ messages: SupabaseMessage[]; nextCursor: string | null }> {
+    validateUUID(userId);
+    validateUUID(partnerId);
     try {
       let query = supabase
         .from('messages')
@@ -115,6 +125,9 @@ export const messageService = {
     } else {
       payloadObj = senderIdOrPayload;
     }
+
+    if (payloadObj.senderId) validateUUID(payloadObj.senderId);
+    if (payloadObj.receiverId) validateUUID(payloadObj.receiverId);
 
     const insertPayload: any = {
       sender_id: payloadObj.senderId,
@@ -218,7 +231,8 @@ export const messageService = {
 
   // 6. Delete message for me (Durable or Local-based fallback delete)
   async deleteMessageForMe(userId: string, messageId: string, partnerId: string): Promise<boolean> {
-    const deletedForMeKey = `chat_deleted_for_me_${userId}_${partnerId}`;
+    validateUUID(userId);
+    validateUUID(partnerId);
     try {
       // 1. Try PostgreSQL message_deletions table
       const { error } = await supabase
@@ -227,24 +241,18 @@ export const messageService = {
       
       if (error) throw error;
     } catch (err) {
-      console.warn('Durable deletion table not found. Using client-side localStorage fallback.', err);
-    } finally {
-      // 2. Always write to local storage as fallback/complement
-      const localDeleted = JSON.parse(localStorage.getItem(deletedForMeKey) || '[]');
-      if (!localDeleted.includes(messageId)) {
-        localStorage.setItem(deletedForMeKey, JSON.stringify([...localDeleted, messageId]));
-      }
+      console.error('Erro ao eliminar mensagem para mim (tabela message_deletions pode não existir):', err);
+      throw err;
     }
     return true;
   },
 
   // 7. Clear conversation
   async clearConversation(userId: string, partnerId: string): Promise<boolean> {
+    validateUUID(userId);
+    validateUUID(partnerId);
     const clearedAt = new Date().toISOString();
     
-    // Also save in localStorage as fallback
-    localStorage.setItem(`chat_clear_${userId}_${partnerId}`, clearedAt);
-
     try {
       const { error } = await supabase
         .from('conversation_clears')
@@ -256,14 +264,17 @@ export const messageService = {
       
       if (error) throw error;
     } catch (error) {
-      console.warn('Failed to upsert conversation clear to server, fallback local clear used:', error);
+      console.error('Erro ao limpar conversa no servidor:', error);
+      throw error;
     }
     return true;
   },
 
   // 8. Get conversation clear timestamp
   async getConversationClearTimestamp(userId: string, partnerId: string): Promise<string | null> {
-    const localVal = localStorage.getItem(`chat_clear_${userId}_${partnerId}`);
+    validateUUID(userId);
+    validateUUID(partnerId);
+    let localVal: string | null = null;
     try {
       const { data, error } = await supabase
         .from('conversation_clears')
@@ -303,6 +314,8 @@ export const messageService = {
 
   // 10. Mark all messages in a conversation as read
   async markConversationAsRead(userId: string, partnerId: string): Promise<boolean> {
+    validateUUID(userId);
+    validateUUID(partnerId);
     try {
       const { error } = await supabase
         .from('messages')
@@ -359,8 +372,23 @@ export const messageService = {
 
   // 13. Get conversation partners
   async getConversationPartners(userId: string): Promise<any[]> {
-    // High compatibility: load last message and unread count, then fetch user profiles
-    const messages = await this.getMessages(userId);
+    validateUUID(userId);
+
+    // Query otimizada: buscar apenas mensagens necessárias por parceiro
+    // Buscar IDs únicos de parceiros com mensagens não lidas + última mensagem
+    const { data: allMsgs, error: msgsError } = await supabase
+      .from('messages')
+      .select('id, sender_id, receiver_id, texto, lido, created_at')
+      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+      .order('created_at', { ascending: false })
+      .limit(500); // Limitar para performance
+
+    if (msgsError) {
+      console.error('Error fetching conversation partners:', msgsError);
+      throw msgsError;
+    }
+
+    const messages = (allMsgs || []) as SupabaseMessage[];
     
     const partnerMap = new Map<string, { lastMessage: SupabaseMessage; unreadCount: number }>();
     
@@ -421,6 +449,7 @@ export const messageService = {
 
   // 14. Get contacts allowed to message based on user role
   async getAllowedContacts(userId: string, role: string): Promise<any[]> {
+    validateUUID(userId);
     let query = supabase.from('users').select('id, email, nome_completo, role, foto_perfil');
     
     if (role === 'ALUNO') {
@@ -439,23 +468,21 @@ export const messageService = {
 
   // 15. Reactions Support (Graceful mockable layer)
   async addReaction(messageId: string, userId: string, emoji: string): Promise<boolean> {
+    validateUUID(userId);
     try {
       const { error } = await supabase
         .from('message_reactions')
         .insert({ message_id: messageId, user_id: userId, emoji });
       if (error) throw error;
       return true;
-    } catch {
-      // Local storage-based fallback if table missing
-      const key = `local_reactions_${messageId}`;
-      const reactions = JSON.parse(localStorage.getItem(key) || '[]');
-      reactions.push({ userId, emoji });
-      localStorage.setItem(key, JSON.stringify(reactions));
-      return true;
+    } catch (err) {
+      console.error('Erro ao adicionar reação (tabela message_reactions pode não existir):', err);
+      throw err;
     }
   },
 
   async removeReaction(messageId: string, userId: string, emoji: string): Promise<boolean> {
+    validateUUID(userId);
     try {
       const { error } = await supabase
         .from('message_reactions')
@@ -465,31 +492,24 @@ export const messageService = {
         .eq('emoji', emoji);
       if (error) throw error;
       return true;
-    } catch {
-      const key = `local_reactions_${messageId}`;
-      let reactions = JSON.parse(localStorage.getItem(key) || '[]');
-      reactions = reactions.filter((r: any) => !(r.userId === userId && r.emoji === emoji));
-      localStorage.setItem(key, JSON.stringify(reactions));
-      return true;
+    } catch (err) {
+      console.error('Erro ao remover reação:', err);
+      throw err;
     }
   },
 
   // 16. Pin Support (Graceful mockable layer)
   async pinMessage(conversationKey: string, messageId: string, userId: string): Promise<boolean> {
+    validateUUID(userId);
     try {
       const { error } = await supabase
         .from('pinned_messages')
         .insert({ conversation_key: conversationKey, message_id: messageId, pinned_by: userId });
       if (error) throw error;
       return true;
-    } catch {
-      const key = `local_pinned_${conversationKey}`;
-      const pinned = JSON.parse(localStorage.getItem(key) || '[]');
-      if (!pinned.includes(messageId)) {
-        pinned.push(messageId);
-        localStorage.setItem(key, JSON.stringify(pinned));
-      }
-      return true;
+    } catch (err) {
+      console.error('Erro ao fixar mensagem (tabela pinned_messages pode não existir):', err);
+      throw err;
     }
   },
 
@@ -502,12 +522,9 @@ export const messageService = {
         .eq('message_id', messageId);
       if (error) throw error;
       return true;
-    } catch {
-      const key = `local_pinned_${conversationKey}`;
-      let pinned = JSON.parse(localStorage.getItem(key) || '[]');
-      pinned = pinned.filter((id: string) => id !== messageId);
-      localStorage.setItem(key, JSON.stringify(pinned));
-      return true;
+    } catch (err) {
+      console.error('Erro ao desafixar mensagem:', err);
+      throw err;
     }
   }
 };

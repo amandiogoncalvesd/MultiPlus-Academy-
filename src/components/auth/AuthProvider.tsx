@@ -45,6 +45,63 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
     return 'ALUNO';
   };
 
+  // Calcular métricas reais de progresso do aluno
+  const calculateUserMetrics = async (userId: string): Promise<{
+    streak: number;
+    longestStreak: number;
+    totalHoursLearned: number;
+  }> => {
+    try {
+      // Buscar progresso das aulas completadas
+      const { data: progressData } = await supabase
+        .from('lesson_progress')
+        .select('created_at, video_progress_seconds')
+        .eq('student_id', userId)
+        .eq('completed', true);
+
+      if (!progressData || progressData.length === 0) {
+        return { streak: 0, longestStreak: 0, totalHoursLearned: 0 };
+      }
+
+      // Calcular total de horas assistidas (a partir de video_progress_seconds)
+      const totalSeconds = progressData.reduce((acc: number, p: any) => acc + (p.video_progress_seconds || 0), 0);
+      const totalHoursLearned = Math.round(totalSeconds / 3600);
+
+      // Calcular streak (dias consecutivos de atividade)
+      const uniqueDays = [...new Set(
+        progressData.map((p: any) => new Date(p.created_at).toISOString().split('T')[0])
+      )].sort().reverse();
+
+      let streak = 0;
+      let longestStreak = 0;
+      let currentStreak = 0;
+      const today = new Date().toISOString().split('T')[0];
+      
+      const sortedDays = [...uniqueDays].sort();
+      for (let i = 0; i < sortedDays.length; i++) {
+        if (i === 0) {
+          currentStreak = 1;
+        } else {
+          const prev = new Date(sortedDays[i - 1]);
+          const curr = new Date(sortedDays[i]);
+          const diffDays = Math.round((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24));
+          currentStreak = diffDays === 1 ? currentStreak + 1 : 1;
+        }
+        longestStreak = Math.max(longestStreak, currentStreak);
+      }
+
+      // Verificar se o streak atual está ativo (último dia é hoje ou ontem)
+      const lastDay = sortedDays[sortedDays.length - 1];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      streak = (lastDay === today || lastDay === yesterday) ? currentStreak : 0;
+
+      return { streak, longestStreak, totalHoursLearned };
+    } catch (err) {
+      console.warn('Erro ao calcular métricas do utilizador:', err);
+      return { streak: 0, longestStreak: 0, totalHoursLearned: 0 };
+    }
+  };
+
   const syncAuthSession = async () => {
     try {
       const { data: { session: sbSession } } = await supabase.auth.getSession();
@@ -69,11 +126,16 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
             avatarUrl: userData.foto_perfil || '',
             phone: userData.telefone || '',
             status: 'ACTIVE',
-            streak: 3,
-            longestStreak: 5,
-            totalHoursLearned: 4
+            streak: 0,
+            longestStreak: 0,
+            totalHoursLearned: 0
           };
           setCurrentUser(localUser);
+          
+          // Calcular métricas reais de forma assíncrona
+          calculateUserMetrics(userData.id).then(metrics => {
+            setCurrentUser(prev => prev ? { ...prev, ...metrics } : prev);
+          });
 
           // Load extra profile
           const profileData = await userService.getUserProfile(userData.id);
@@ -97,6 +159,10 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
             totalHoursLearned: 0
           };
           setCurrentUser(localUser);
+
+          calculateUserMetrics(sbSession.user.id).then(metrics => {
+            setCurrentUser(prev => prev ? { ...prev, ...metrics } : prev);
+          });
         }
       } else {
         // No active Supabase session
@@ -105,8 +171,12 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
       }
     } catch (e) {
       console.warn('Failed to sync auth session:', e);
-      setCurrentUser(null);
-      setUserProfile(null);
+      // Não fazer logout silencioso em erros de rede
+      // Apenas limpar se for erro de autenticação real (sessão expirada)
+      if (e instanceof Error && (e.message?.includes('JWT') || e.message?.includes('session'))) {
+        setCurrentUser(null);
+        setUserProfile(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -149,11 +219,15 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
         avatarUrl: result.user.foto_perfil || '',
         phone: result.user.telefone || '',
         status: 'ACTIVE',
-        streak: 5,
-        longestStreak: 15,
-        totalHoursLearned: 24
+        streak: 0,
+        longestStreak: 0,
+        totalHoursLearned: 0
       };
       setCurrentUser(mappedUser);
+
+      calculateUserMetrics(result.user.id).then(metrics => {
+        setCurrentUser(prev => prev ? { ...prev, ...metrics } : prev);
+      });
       const prof = await userService.getUserProfile(result.user.id);
       setUserProfile(prof);
       return mappedUser;
@@ -185,6 +259,10 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
       } catch (e) {
         console.warn('Supabase logout error, proceeding with local logout:', e);
       }
+      // Limpar canais de typing ao fazer logout
+      const { presenceService } = await import('../../services/supabase/presenceService');
+      presenceService.cleanupTypingChannels();
+      
       setCurrentUser(null);
       setUserProfile(null);
       setSession(null);
@@ -203,12 +281,11 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
 
   const refreshProfile = async () => {
     if (currentUser) {
-      // Refresh profile data
-      const prof = await userService.getUserProfile(currentUser.id);
-      setUserProfile(prof);
-
-      // Also refresh currentUser from users table (for avatar, name, etc.)
       try {
+        const prof = await userService.getUserProfile(currentUser.id);
+        setUserProfile(prof);
+
+        // Também recarregar dados do utilizador a partir da tabela users
         const { data: userData } = await supabase
           .from('users')
           .select('*')
@@ -216,16 +293,18 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
           .single();
 
         if (userData) {
+          const metrics = await calculateUserMetrics(userData.id);
           setCurrentUser(prev => prev ? {
             ...prev,
             firstName: userData.nome_completo?.split(' ')[0] || prev.firstName,
             lastName: userData.nome_completo?.split(' ').slice(1).join(' ') || prev.lastName,
             avatarUrl: userData.foto_perfil || prev.avatarUrl,
             phone: userData.telefone || prev.phone,
-          } : null);
+            ...metrics,
+          } : prev);
         }
       } catch (err) {
-        console.warn('Failed to refresh currentUser from users table:', err);
+        console.warn('Erro ao atualizar perfil:', err);
       }
     }
   };

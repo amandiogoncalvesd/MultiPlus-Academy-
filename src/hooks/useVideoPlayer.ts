@@ -8,6 +8,12 @@ export function useVideoPlayer(userId: string | undefined, courseId: string | un
   const [currentSeconds, setCurrentSeconds] = useState(0);
   const [randomWatermark, setRandomWatermark] = useState({ top: '30%', left: '40%' });
 
+  // Use a ref to store currentSeconds to prevent recreation of the 15s interval
+  const currentSecondsRef = useRef(currentSeconds);
+  useEffect(() => {
+    currentSecondsRef.current = currentSeconds;
+  }, [currentSeconds]);
+
   // Carregar progresso salvo quando muda de aula
   useEffect(() => {
     const loadProgress = async () => {
@@ -31,14 +37,16 @@ export function useVideoPlayer(userId: string | undefined, courseId: string | un
     if (isPlaying && userId && courseId && lessonId) {
       interval = setInterval(async () => {
         try {
-          await academicService.saveVideoProgress(userId, courseId, lessonId, currentSeconds);
+          await academicService.saveVideoProgress(userId, courseId, lessonId, currentSecondsRef.current);
         } catch (err) {
           console.error('Erro ao salvar progresso do vídeo:', err);
         }
       }, 15000);
     }
-    return () => { if (interval) clearInterval(interval); };
-  }, [isPlaying, currentSeconds, userId, courseId, lessonId]);
+    return () => { 
+      if (interval) clearInterval(interval); 
+    };
+  }, [isPlaying, userId, courseId, lessonId]);
 
   // Mover marca d'água a cada 8 segundos
   useEffect(() => {

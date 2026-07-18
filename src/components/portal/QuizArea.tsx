@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { academicService } from '../../services/supabase/academicService';
-import { CheckCircle2, AlertTriangle, RefreshCw, Trophy, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, RefreshCw, Trophy, ArrowRight, Loader2, Award, Play } from 'lucide-react';
 
 interface QuizQuestion {
   question: string;
@@ -16,13 +16,22 @@ interface QuizAreaProps {
 
 export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaProps) {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [quizStarted, setQuizStarted] = useState(false);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
+  const [hasSubmittedCurrent, setHasSubmittedCurrent] = useState(false);
+  const [isCurrentCorrect, setIsCurrentCorrect] = useState(false);
+  
+  // Quiz statistics
+  const [correctCount, setCorrectCount] = useState(0);
+  const [answersLog, setAnswersLog] = useState<any[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
+  // DB States
   const [alreadyPassed, setAlreadyPassed] = useState(false);
+  const [lastScore, setLastScore] = useState<number | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [hasError, setHasError] = useState(false);
 
@@ -30,20 +39,27 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
     if (!lessonId || !userId) return;
     setLoading(true);
     setHasError(false);
-    setHasSubmitted(false);
-    setSelectedOption(null);
-    setAlreadyPassed(false);
+    setQuizStarted(false);
     setCurrentQuestionIdx(0);
+    setSelectedOption(null);
+    setHasSubmittedCurrent(false);
+    setCorrectCount(0);
+    setAnswersLog([]);
+    setAlreadyPassed(false);
+    setLastScore(null);
     
     try {
-      // 1. Check existing submissions to see if already completed
+      // 1. Check existing submissions
       const submissions = await academicService.getQuizSubmissions(userId);
       const pastSubmission = submissions.find(s => s.lesson_id === lessonId);
-      if (pastSubmission && pastSubmission.score >= 100) {
-        setAlreadyPassed(true);
+      if (pastSubmission) {
+        setLastScore(pastSubmission.score);
+        if (pastSubmission.score >= 100) {
+          setAlreadyPassed(true);
+        }
       }
 
-      // 2. Fetch quiz questions for this lesson from Supabase
+      // 2. Fetch quiz questions
       const dbQuiz = await academicService.getQuizByLesson(lessonId);
       
       if (dbQuiz && dbQuiz.length > 0) {
@@ -64,51 +80,80 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
     loadQuizAndSubmission();
   }, [lessonId, userId]);
 
-  const handleSubmit = async () => {
-    if (selectedOption === null || !userId || !lessonId || questions.length === 0) return;
-
-    setSaving(true);
-    const currentQ = questions[currentQuestionIdx];
-    const correct = selectedOption === currentQ.correctAnswer;
-    setIsCorrect(correct);
-    setHasSubmitted(true);
-
-    try {
-      if (correct) {
-        // Submit 100 score to database
-        await academicService.submitQuizResponse(userId, lessonId, 100, {
-          question: currentQ.question,
-          selectedOption,
-          correctOption: currentQ.correctAnswer
-        });
-
-        // Trigger CSS Confetti
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 5000);
-
-        setAlreadyPassed(true);
-        // Notify parent to unlock course checklist / progress percent
-        onQuizPassed();
-      } else {
-        // Submit 0 score
-        await academicService.submitQuizResponse(userId, lessonId, 0, {
-          question: currentQ.question,
-          selectedOption,
-          correctOption: currentQ.correctAnswer
-        });
-      }
-    } catch (err) {
-      console.error('Error saving quiz submission:', err);
-    } finally {
-      setSaving(false);
-    }
+  const handleStartQuiz = () => {
+    setQuizStarted(true);
+    setCurrentQuestionIdx(0);
+    setSelectedOption(null);
+    setHasSubmittedCurrent(false);
+    setCorrectCount(0);
+    setAnswersLog([]);
   };
 
-  const handleNext = () => {
+  const handleSubmitQuestion = () => {
+    if (selectedOption === null || questions.length === 0) return;
+
+    const currentQ = questions[currentQuestionIdx];
+    const correct = selectedOption === currentQ.correctAnswer;
+    
+    setIsCurrentCorrect(correct);
+    setHasSubmittedCurrent(true);
+
+    if (correct) {
+      setCorrectCount(prev => prev + 1);
+    }
+
+    // Log this response
+    setAnswersLog(prev => [
+      ...prev,
+      {
+        question: currentQ.question,
+        selectedOption,
+        correctOption: currentQ.correctAnswer,
+        correct
+      }
+    ]);
+  };
+
+  const handleNextOrFinish = async () => {
     if (currentQuestionIdx < questions.length - 1) {
+      // Avançar para a próxima questão
       setCurrentQuestionIdx(prev => prev + 1);
       setSelectedOption(null);
-      setHasSubmitted(false);
+      setHasSubmittedCurrent(false);
+    } else {
+      // Fim do quiz: submeter pontuação cumulativa
+      setSaving(true);
+      const finalCorrect = isCurrentCorrect ? correctCount + 1 : correctCount;
+      const scorePercent = Math.round((finalCorrect / questions.length) * 100);
+
+      try {
+        await academicService.submitQuizResponse(userId, lessonId, scorePercent, {
+          totalQuestions: questions.length,
+          correctAnswers: finalCorrect,
+          scorePercent,
+          responses: [...answersLog, {
+            question: questions[currentQuestionIdx].question,
+            selectedOption,
+            correctOption: questions[currentQuestionIdx].correctAnswer,
+            correct: isCurrentCorrect
+          }]
+        });
+
+        setLastScore(scorePercent);
+
+        if (scorePercent >= 100) {
+          setAlreadyPassed(true);
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 5000);
+          onQuizPassed();
+        }
+
+        setQuizStarted(false);
+      } catch (err) {
+        console.error('Error saving final quiz score:', err);
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
@@ -151,45 +196,100 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
     );
   }
 
+  // Ecrã inicial antes de começar o quiz
+  if (!quizStarted) {
+    return (
+      <div id="quiz-welcome" className="p-5 rounded-2xl border border-gray-150 dark:border-ink-800 bg-cream-100 dark:bg-ink-900 space-y-4 text-left shadow-xs relative overflow-hidden">
+        {showConfetti && (
+          <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center overflow-hidden">
+            <div className="animate-ping bg-indigo-500/10 w-40 h-40 rounded-full" />
+          </div>
+        )}
+
+        <div className="flex items-center justify-between border-b border-gray-100 dark:border-ink-800 pb-3">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-gold-600" />
+            <span className="text-[10px] font-mono text-gold-600 font-black uppercase tracking-wider">
+              Avaliação Contínua • Quiz de Compreensão
+            </span>
+          </div>
+          <span className="text-[10px] font-mono text-neutral-400">
+            {questions.length} {questions.length === 1 ? 'Questão' : 'Questões'}
+          </span>
+        </div>
+
+        {alreadyPassed ? (
+          <div className="space-y-3">
+            <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 p-3 rounded-xl flex items-center gap-3 text-emerald-800 dark:text-emerald-400 text-xs">
+              <CheckCircle2 className="w-4.5 h-4.5 shrink-0" />
+              <div>
+                <p className="font-semibold m-0">✓ Parabéns! Concluiu este quiz com distinção (100%).</p>
+                <p className="text-[10px] text-emerald-600/80 dark:text-emerald-500/80 m-0">
+                  O seu progresso foi sincronizado e esta lição está oficialmente concluída.
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-neutral-500 leading-relaxed">
+              Pode rever as questões iniciando uma nova sessão de estudo a qualquer momento, sem afetar o seu progresso aprovado.
+            </p>
+            <button
+              onClick={handleStartQuiz}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-cream-100 font-mono text-3xs font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Praticar Novamente
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <h4 className="text-sm font-serif font-bold text-slate-800 dark:text-cream-100">
+                Preparado para testar os seus conhecimentos?
+              </h4>
+              <p className="text-xs text-neutral-500 leading-relaxed">
+                Para marcar esta aula como concluída, precisa de obter 100% de aproveitamento neste quiz.
+              </p>
+            </div>
+
+            {lastScore !== null && (
+              <div className="bg-amber-50 dark:bg-amber-950/10 border border-amber-250 dark:border-amber-900/30 p-3 rounded-xl flex items-center gap-3 text-amber-900 dark:text-amber-400 text-xs">
+                <Award className="w-4.5 h-4.5 shrink-0 text-gold-600" />
+                <div>
+                  <p className="font-semibold m-0">Último aproveitamento: {lastScore}%</p>
+                  <p className="text-[10px] text-amber-700/80 dark:text-amber-500/80 m-0">
+                    Precisa de acertar todas as {questions.length} questões na mesma tentativa para obter os 100% requeridos.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={handleStartQuiz}
+              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-cream-100 font-mono text-3xs font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <Play className="w-3.5 h-3.5 fill-current" /> Iniciar Questionário
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   const currentQuestion = questions[currentQuestionIdx];
 
   return (
     <div id="quiz-container" className="p-5 rounded-2xl border border-gray-150 dark:border-ink-800 bg-cream-100 dark:bg-ink-900 relative overflow-hidden space-y-4 text-left shadow-xs">
       
-      {/* Visual Confetti Explosion (pure CSS) */}
-      {showConfetti && (
-        <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center overflow-hidden">
-          <div className="animate-ping bg-indigo-500/10 w-40 h-40 rounded-full" />
-          <div className="absolute top-10 left-10 bg-rose-400 w-2 h-2 rounded-full animate-bounce" />
-          <div className="absolute top-20 right-20 bg-amber-400 w-3 h-3 rounded-full animate-bounce" />
-          <div className="absolute bottom-10 left-1/3 bg-emerald-400 w-2 h-2 rounded-full animate-pulse" />
-          <div className="absolute top-5 right-1/3 bg-sky-400 w-3 h-3 rounded-full animate-pulse" />
-        </div>
-      )}
-
       <div className="flex items-center justify-between border-b border-gray-100 dark:border-ink-800 pb-3">
         <div className="flex items-center gap-2">
           <Trophy className="w-4 h-4 text-gold-600" />
           <span className="text-[10px] font-mono text-gold-600 font-black uppercase tracking-wider">
-            Avaliação Contínua • Quiz de Compreensão
+            Quiz de Compreensão • Questão {currentQuestionIdx + 1} de {questions.length}
           </span>
         </div>
         <span className="text-[10px] font-mono text-neutral-400">
-          Questão {currentQuestionIdx + 1} de {questions.length}
+          Acertos: {correctCount}/{questions.length}
         </span>
       </div>
-
-      {alreadyPassed && (
-        <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 p-3 rounded-xl flex items-center gap-3 text-emerald-800 dark:text-emerald-400 text-xs">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <div>
-            <p className="font-semibold m-0">✓ Parabéns! Já concluiu este quiz com distinção.</p>
-            <p className="text-[10px] text-emerald-600/80 dark:text-emerald-500/80 m-0">
-              O seu progresso foi sincronizado com o Supabase e esta lição está oficialmente dada como concluída.
-            </p>
-          </div>
-        </div>
-      )}
 
       <div className="space-y-3">
         <h4 className="text-sm font-serif font-bold text-slate-800 dark:text-cream-100 leading-snug">
@@ -204,7 +304,7 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
             if (isSelected) {
               optionStyle = 'border-indigo-600 bg-indigo-50/20 dark:bg-indigo-950/10 text-indigo-700 dark:text-indigo-400';
             }
-            if (hasSubmitted) {
+            if (hasSubmittedCurrent) {
               if (idx === currentQuestion.correctAnswer) {
                 optionStyle = 'border-emerald-600 bg-emerald-50/20 dark:bg-emerald-950/10 text-emerald-700 dark:text-emerald-400';
               } else if (isSelected) {
@@ -215,7 +315,7 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
             return (
               <button
                 key={idx}
-                disabled={hasSubmitted || alreadyPassed}
+                disabled={hasSubmittedCurrent}
                 onClick={() => setSelectedOption(idx)}
                 className={`w-full text-left p-3 rounded-xl border text-xs leading-relaxed transition-all cursor-pointer ${optionStyle}`}
               >
@@ -227,51 +327,40 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
       </div>
 
       <div className="flex justify-between items-center pt-2">
-        {hasSubmitted ? (
-          <div className="flex items-center gap-2">
-            {isCorrect ? (
-              <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1 animate-pulse">
-                <CheckCircle2 className="w-4 h-4" /> Resposta Correta!
-              </span>
-            ) : (
-              <span className="text-xs font-semibold text-rose-600 flex items-center gap-1">
-                <AlertTriangle className="w-4 h-4" /> Resposta Incorreta. Tente novamente.
-              </span>
-            )}
-          </div>
-        ) : (
-          <div />
-        )}
+        <div>
+          {hasSubmittedCurrent && (
+            <span className={`text-xs font-semibold flex items-center gap-1 ${isCurrentCorrect ? 'text-emerald-600 animate-pulse' : 'text-rose-600'}`}>
+              {isCurrentCorrect ? (
+                <><CheckCircle2 className="w-4 h-4" /> Correto!</>
+              ) : (
+                <><AlertTriangle className="w-4 h-4" /> Incorreto.</>
+              )}
+            </span>
+          )}
+        </div>
 
         <div className="flex gap-2">
-          {hasSubmitted && !isCorrect && (
+          {!hasSubmittedCurrent ? (
             <button
-              onClick={() => {
-                setHasSubmitted(false);
-                setSelectedOption(null);
-              }}
-              className="px-3.5 py-1.5 border border-gray-200 dark:border-ink-800 hover:bg-cream-200 dark:hover:bg-slate-800 text-neutral-400 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer flex items-center gap-1"
+              onClick={handleSubmitQuestion}
+              disabled={selectedOption === null}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-cream-100 disabled:opacity-50 text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center gap-1"
             >
-              <RefreshCw className="w-3 h-3" /> Tentar Novamente
+              Confirmar Resposta
             </button>
-          )}
-
-          {!hasSubmitted ? (
+          ) : (
             <button
-              onClick={handleSubmit}
-              disabled={selectedOption === null || saving || alreadyPassed}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-cream-100 hover:text-slate-100 disabled:opacity-50 text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center gap-1"
-            >
-              {saving ? 'A guardar...' : 'Submeter Resposta'}
-            </button>
-          ) : currentQuestionIdx < questions.length - 1 ? (
-            <button
-              onClick={handleNext}
+              onClick={handleNextOrFinish}
+              disabled={saving}
               className="px-4 py-2 bg-gold-600 hover:bg-[#b08530] text-cream-100 hover:text-slate-900 text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center gap-1"
             >
-              Seguinte <ArrowRight className="w-3 h-3" />
+              {saving ? 'A calcular...' : currentQuestionIdx < questions.length - 1 ? (
+                <>Seguinte <ArrowRight className="w-3 h-3" /></>
+              ) : (
+                'Finalizar Quiz'
+              )}
             </button>
-          ) : null}
+          )}
         </div>
       </div>
     </div>

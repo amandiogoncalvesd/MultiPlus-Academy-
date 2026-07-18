@@ -86,14 +86,30 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   }, [currentPage]);
 
-  const handleSignUpSubmit = (e: FormEvent) => {
+  const handleSignUpSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .insert({
+          nome_completo: signUpName,
+          email: signUpEmail,
+          telefone: signUpPhone,
+          course_id: signUpCourse,
+          modalidade: signUpModality,
+          status: 'PENDING'
+        });
+
+      if (error) throw error;
       setSignUpSuccess(true);
-    }, 1000);
+    } catch (err: any) {
+      console.error('Erro ao submeter candidatura:', err);
+      alert(`Erro ao enviar candidatura: ${err.message || 'Falha de rede.'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const closeSignUpModal = () => {

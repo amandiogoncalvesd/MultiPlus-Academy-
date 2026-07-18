@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase/client';
+import { notificationService } from './notificationService';
 
 export interface Enrollment {
   id: string;
@@ -30,23 +31,8 @@ export const enrollmentService = {
       throw enrollError;
     }
 
-    // 2. Prepare initial progress in student_progress table
-    try {
-      const { error: progressError } = await supabase
-        .from('student_progress')
-        .insert({
-          student_id: studentId,
-          course_id: courseId,
-          completed_lessons: 0,
-          progress_percentage: 0
-        });
-      
-      if (progressError) {
-        console.warn('Initial student_progress insert returned an error (expected if schema differs):', progressError);
-      }
-    } catch (e) {
-      console.warn('Failed to insert initial progress:', e);
-    }
+    // Nota: O progresso agora é rastreado via lesson_progress, não student_progress
+    // Não é necessário criar registo inicial aqui
 
     // 3. Prepare future notification
     try {
@@ -59,13 +45,11 @@ export const enrollmentService = {
       
       const courseTitle = course?.title || 'um novo curso';
 
-      await supabase
-        .from('notifications')
-        .insert({
-          user_id: studentId,
-          text: `Foste matriculado no curso: ${courseTitle}. Já podes aceder ao portal do aluno.`,
-          read: false
-        });
+      await notificationService.createNotification({
+        userId: studentId,
+        text: `Foste matriculado no curso: ${courseTitle}. Já podes aceder ao portal do aluno.`,
+        type: 'enrollment',
+      });
     } catch (e) {
       console.warn('Could not create enrollment notification:', e);
     }
@@ -88,15 +72,24 @@ export const enrollmentService = {
       throw error;
     }
 
-    // Also clean up student progress if possible (optional, ignore errors)
+    // Limpar progresso das aulas (lesson_progress)
     try {
-      await supabase
-        .from('student_progress')
-        .delete()
-        .eq('student_id', studentId)
+      // Buscar IDs das aulas do curso
+      const { data: courseLessons } = await supabase
+        .from('lessons')
+        .select('id')
         .eq('course_id', courseId);
+      
+      if (courseLessons && courseLessons.length > 0) {
+        const lessonIds = courseLessons.map(l => l.id);
+        await supabase
+          .from('lesson_progress')
+          .delete()
+          .eq('student_id', studentId)
+          .in('lesson_id', lessonIds);
+      }
     } catch (e) {
-      console.warn('Could not clean up student progress on removal:', e);
+      console.warn('Could not clean up lesson progress on removal:', e);
     }
 
     return true;

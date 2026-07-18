@@ -266,13 +266,15 @@ export default function ChatShell({ role }: ChatShellProps) {
       const localDeleted = JSON.parse(localStorage.getItem(deletedForMeKey) || '[]');
       setDeletedForMeIds(localDeleted);
 
-      const allMsgs = await messageService.getMessages(user.id);
-      let filtered = allMsgs
-        .filter(
-          (m) =>
-            (m.sender_id === user.id && m.receiver_id === activePartner.id) ||
-            (m.sender_id === activePartner.id && m.receiver_id === user.id)
-        );
+      // Usar getMessagesPaginated em vez de carregar todas as mensagens
+      const { messages: conversationMsgs } = await messageService.getMessagesPaginated(
+        user.id,
+        activePartner.id,
+        undefined,
+        200 // Carregar até 200 mensagens iniciais
+      );
+
+      let filtered = [...conversationMsgs];
 
       if (clearTimestamp) {
         filtered = filtered.filter(
@@ -285,7 +287,7 @@ export default function ChatShell({ role }: ChatShellProps) {
       }
 
       // Map DBMessage structures to rich ChatMessage types
-      const mappedList = filtered.map(m => mapDBMessageToChatMessage(m, allMsgs));
+      const mappedList = filtered.map(m => mapDBMessageToChatMessage(m, conversationMsgs));
       const sorted = mappedList.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
       
       setMessages(sorted);

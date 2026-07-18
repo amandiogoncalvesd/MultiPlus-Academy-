@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { academicService } from '../services/supabase/academicService';
 import { supabase } from '../lib/supabase/client';
 import { messageService } from '../services/supabase/messageService';
+import { notificationService } from '../services/supabase/notificationService';
 
 export function useStudentData(userId: string | undefined) {
   const [enrollments, setEnrollments] = useState<any[]>([]);
@@ -39,13 +40,8 @@ export function useStudentData(userId: string | undefined) {
       const schedules = await academicService.getScheduledLessonsForStudent(userId);
       setScheduledLessons(schedules || []);
 
-      const { data: notifs } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(20);
-      setNotifications(notifs || []);
+      const notifs = await notificationService.getNotifications(userId);
+      setNotifications(notifs);
     } catch (err) {
       console.warn('Erro ao carregar dados do aluno:', err);
     } finally {
@@ -85,7 +81,15 @@ export function useStudentData(userId: string | undefined) {
     if (!userId) return;
     const channel = supabase
       .channel('student-unread-count')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => fetchUnreadCount())
+      .on('postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${userId}`,
+        },
+        () => fetchUnreadCount()
+      )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [userId]);
@@ -93,11 +97,14 @@ export function useStudentData(userId: string | undefined) {
   // Real-time subscription para notificações
   useEffect(() => {
     if (!userId) return;
-    const channel = supabase
-      .channel('student-notifications')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, () => fetchData())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const unsubscribe = notificationService.subscribeToNotifications(
+      userId,
+      (newNotif) => {
+        // Apenas adicionar a nova notificação ao estado, sem refetch total
+        setNotifications(prev => [newNotif, ...prev].slice(0, 30));
+      }
+    );
+    return () => { unsubscribe(); };
   }, [userId]);
 
   return {

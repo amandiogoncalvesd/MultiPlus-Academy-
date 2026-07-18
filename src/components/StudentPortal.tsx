@@ -101,6 +101,7 @@ export default function StudentPortal({
 
   // Active Video course selections
   const [activeLessonIdx, setActiveLessonIdx] = useState(0);
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
 
   // Lecture list definitions (Flagship Legal course)
   const activeSyllabus = realLessons.length > 0 ? realLessons.map(l => ({
@@ -567,8 +568,8 @@ export default function StudentPortal({
   // Encontrar a próxima aula agendada futura síncrona real
   const nextScheduledLesson = scheduledLessons && scheduledLessons.length > 0
     ? scheduledLessons
-        .filter(l => l.scheduled_at && new Date(l.scheduled_at) > new Date())
-        .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())[0]
+        .filter(l => l.lesson?.scheduled_at && new Date(l.lesson.scheduled_at) > new Date())
+        .sort((a, b) => new Date(a.lesson!.scheduled_at!).getTime() - new Date(b.lesson!.scheduled_at!).getTime())[0]
     : null;
 
   return (
@@ -861,6 +862,40 @@ export default function StudentPortal({
 
                       </div>
 
+                      {currentLecture && (
+                        <div className={`p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4 ${cardThemeClass}`}>
+                          <div className="text-left">
+                            <h4 className="text-xs font-serif font-black m-0">Aproveitamento Académico</h4>
+                            <p className="text-[10px] text-neutral-450 dark:text-neutral-400 m-0 leading-normal">Marque a aula como concluída para computar no seu histórico escolar do Huambo.</p>
+                          </div>
+                          
+                          {completedLessons.includes(currentLecture.id) ? (
+                            <button
+                              onClick={async () => {
+                                if (currentUser?.id && selectedCourseId) {
+                                  try {
+                                    await academicService.markLessonComplete(currentUser.id, selectedCourseId, currentLecture.id, false);
+                                    await fetchStudentData();
+                                  } catch (err) {
+                                    console.error('Erro ao reabrir aula:', err);
+                                  }
+                                }
+                              }}
+                              className="px-4 py-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-3xs font-mono font-bold uppercase rounded-xl tracking-wider hover:bg-emerald-500/20 transition-all cursor-pointer"
+                            >
+                              ✓ Aula Concluída (Reabrir)
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => setIsCompleteModalOpen(true)}
+                              className="px-4 py-2 bg-gold-600 hover:bg-[#b58b35] text-cream-100 text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-all cursor-pointer border-0 shadow-sm font-bold"
+                            >
+                              Marcar como Concluída
+                            </button>
+                          )}
+                        </div>
+                      )}
+
                       {/* Lesson Transcripts written segment for accessible studies */}
                       <div className={`p-5 rounded-2xl ${cardThemeClass}`}>
                         <span className="text-[9px] font-mono text-gold-600 font-black uppercase tracking-wider block border-b border-gray-100 dark:border-ink-800 pb-2">
@@ -1047,55 +1082,75 @@ export default function StudentPortal({
                     {/* Schedule item grids mapped out */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       
-                      {scheduledLessons.filter(s => s.lesson?.scheduled_at).length > 0 ? (
-                        scheduledLessons.filter(s => s.lesson?.scheduled_at).map((session, index) => {
-                          const title = session.lesson?.titulo || session.lesson?.title || 'Aula Síncrona';
-                          const dateVal = session.lesson.scheduled_at.split('T')[0];
-                          const timeVal = session.lesson.scheduled_at.split('T')[1]?.substring(0, 5) || '--:--';
-                          const courseTitle = session.lesson?.course?.title || session.lesson?.course?.titulo || 'English for the Legal Field';
-                          const meetUrl = session.lesson?.meeting_url || null;
+                      {(() => {
+                        const now = new Date();
+                        const rawLessons = scheduledLessons.filter(s => s.lesson?.scheduled_at);
+                        const filtered = rawLessons.filter(s => {
+                          const date = new Date(s.lesson.scheduled_at);
+                          if (calendarView === 'WEEK') {
+                            const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                            return date >= now && date <= oneWeekFromNow;
+                          } else {
+                            // Current month & year
+                            return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                          }
+                        });
+                        
+                        // If filtered is empty, fall back to showing all scheduled lessons
+                        const displayLessons = filtered.length > 0 ? filtered : rawLessons;
 
+                        if (displayLessons.length > 0) {
+                          return displayLessons.map((session, index) => {
+                            const title = session.lesson?.titulo || session.lesson?.title || 'Aula Síncrona';
+                            const dateVal = session.lesson.scheduled_at.split('T')[0];
+                            const timeVal = session.lesson.scheduled_at.split('T')[1]?.substring(0, 5) || '--:--';
+                            const courseTitle = session.lesson?.course?.title || session.lesson?.course?.titulo || 'English for the Legal Field';
+                            const meetUrl = session.lesson?.meeting_url || null;
+
+                            return (
+                              <div key={session.id || index} className="p-4 rounded-xl border border-gray-150 bg-cream-100 dark:bg-ink-900 shadow-3xs space-y-3 relative overflow-hidden">
+                                <div className="absolute top-0 left-0 right-0 h-1 bg-gold-600" />
+                                <div className="flex justify-between items-center text-2xs font-mono font-bold">
+                                  <span className="text-gold-600 uppercase truncate max-w-[150px]">{courseTitle}</span>
+                                  <span className="bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400 px-1.5 py-0.5 rounded">{timeVal}</span>
+                                </div>
+                                <div>
+                                  <h4 className="text-xs font-serif font-black text-ink-900 dark:text-gold-600 leading-snug">{title}</h4>
+                                  <p className="text-[10px] text-neutral-400 mt-1">
+                                    Aula agendada pelo seu professor titular para o dia {dateVal}.
+                                  </p>
+                                </div>
+                                {meetUrl ? (
+                                  <a 
+                                    href={meetUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="py-2.5 bg-ink-900 text-cream-100 text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-gold-600 hover:text-slate-950 transition-colors"
+                                  >
+                                    Entrar na Aula
+                                  </a>
+                                ) : (
+                                  <span className="py-2.5 bg-gray-100 dark:bg-slate-800 text-neutral-400 text-center rounded-lg text-3xs font-mono font-bold uppercase block">
+                                    Link da aula indisponível
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          });
+                        } else {
                           return (
-                            <div key={session.id || index} className="p-4 rounded-xl border border-gray-150 bg-cream-100 dark:bg-ink-900 shadow-3xs space-y-3 relative overflow-hidden">
-                              <div className="absolute top-0 left-0 right-0 h-1 bg-gold-600" />
-                              <div className="flex justify-between items-center text-2xs font-mono font-bold">
-                                <span className="text-gold-600 uppercase truncate max-w-[150px]">{courseTitle}</span>
-                                <span className="bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400 px-1.5 py-0.5 rounded">{timeVal}</span>
-                              </div>
-                              <div>
-                                <h4 className="text-xs font-serif font-black text-ink-900 dark:text-gold-600 leading-snug">{title}</h4>
-                                <p className="text-[10px] text-neutral-400 mt-1">
-                                  Aula agendada pelo seu professor titular para o dia {dateVal}.
-                                </p>
-                              </div>
-                              {meetUrl ? (
-                                <a 
-                                  href={meetUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="py-2.5 bg-ink-900 text-cream-100 text-center rounded-lg text-3xs font-mono font-bold uppercase block hover:bg-gold-600 hover:text-slate-950 transition-colors"
-                                >
-                                  Entrar na Aula
-                                </a>
-                              ) : (
-                                <span className="py-2.5 bg-gray-100 dark:bg-slate-800 text-neutral-400 text-center rounded-lg text-3xs font-mono font-bold uppercase block">
-                                  Link da aula indisponível
-                                </span>
-                              )}
+                            <div className="col-span-full py-12 text-center space-y-3">
+                              <CalendarIcon className="w-12 h-12 text-gold-600/30 mx-auto animate-pulse" />
+                              <h4 className="font-serif font-black text-ink-900 dark:text-cream-100 text-sm">
+                                Nenhum encontro agendado
+                              </h4>
+                              <p className="text-xs text-neutral-400 max-w-xs mx-auto">
+                                Não existem aulas com agendamento no momento para o seu curso.
+                              </p>
                             </div>
                           );
-                        })
-                      ) : (
-                        <div className="col-span-full py-12 text-center space-y-3">
-                          <CalendarIcon className="w-12 h-12 text-gold-600/30 mx-auto animate-pulse" />
-                          <h4 className="font-serif font-black text-ink-900 dark:text-cream-100 text-sm">
-                            Nenhum encontro agendado
-                          </h4>
-                          <p className="text-xs text-neutral-400 max-w-xs mx-auto">
-                            Não existem aulas com agendamento no momento para o seu curso.
-                          </p>
-                        </div>
-                      )}
+                        }
+                      })()}
 
                     </div>
 
@@ -1360,6 +1415,74 @@ export default function StudentPortal({
         </main>
 
       </div>
+
+      {/* 1.16 - CONFIRMATION MODAL FOR LESSON COMPLETION */}
+      <AnimatePresence>
+        {isCompleteModalOpen && currentLecture && (
+          <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsCompleteModalOpen(false)}
+              className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+            />
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              transition={{ cubicBezier: [0.16, 1, 0.3, 1], duration: 0.4 }}
+              className="relative w-full max-w-md bg-white dark:bg-ink-950 rounded-3xl overflow-hidden shadow-2xl border border-gold-600/30 p-6 space-y-6 text-left"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-gold-600/10 text-gold-600 rounded-xl border border-gold-600/20">
+                  <CheckCircle size={20} className="animate-pulse" />
+                </div>
+                <div>
+                  <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block font-semibold">Progresso Académico</span>
+                  <h3 className="text-sm font-serif font-black text-slate-900 dark:text-cream-100 m-0">Confirmar Conclusão de Aula</h3>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs text-slate-650 dark:text-gray-300 leading-relaxed m-0 font-medium">
+                  Tem a certeza que deseja marcar a aula <strong>{currentLecture.title}</strong> como concluída?
+                </p>
+                <p className="text-[10px] text-neutral-405 leading-relaxed m-0">
+                  Ao confirmar, esta aula será catalogada como concluída no seu histórico escolar do Supabase, contando positivamente para a emissão do seu certificado final.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setIsCompleteModalOpen(false)}
+                  className="flex-1 py-3 border border-gray-200 dark:border-slate-800 text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900 font-mono text-3xs font-extrabold uppercase rounded-xl transition-all cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={async () => {
+                    if (currentUser?.id && selectedCourseId && currentLecture.id) {
+                      try {
+                        await academicService.markLessonComplete(currentUser.id, selectedCourseId, currentLecture.id, true);
+                        await fetchStudentData();
+                      } catch (err) {
+                        console.error('Erro ao marcar aula concluída:', err);
+                      } finally {
+                        setIsCompleteModalOpen(false);
+                      }
+                    }
+                  }}
+                  className="flex-1 py-3 bg-gold-600 hover:bg-[#b58b35] text-cream-100 font-mono text-3xs font-extrabold uppercase rounded-xl transition-all cursor-pointer border-0 shadow-sm"
+                >
+                  Confirmar Conclusão
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

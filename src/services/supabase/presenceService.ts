@@ -13,6 +13,20 @@ export interface PresenceEvent {
   lastSeen: string;
 }
 
+// Cache de canais de typing para evitar vazamento
+const typingChannels = new Map<string, ReturnType<typeof supabase.channel>>();
+
+const getOrCreateTypingChannel = (partnerId: string) => {
+  if (!typingChannels.has(partnerId)) {
+    const channel = supabase.channel(`typing-${partnerId}`, {
+      config: { broadcast: { self: false } }
+    });
+    channel.subscribe();
+    typingChannels.set(partnerId, channel);
+  }
+  return typingChannels.get(partnerId)!;
+};
+
 export const presenceService = {
   // Update presence status in Postgres with fallback
   async updatePresence(userId: string, status: PresenceEvent['status'], conversationId?: string) {
@@ -50,34 +64,10 @@ export const presenceService = {
     }
   },
 
-  // Shared map to track typing channels and prevent leaks
-  typingChannels: new Map<string, any>() as Map<string, any>,
-
-  // Broadcast typing status to active chat partner
+  // Broadcast typing status — agora reutiliza canais
   async broadcastTyping(userId: string, partnerId: string, isTyping: boolean) {
     try {
-      const channelKey = `typing-${partnerId}`;
-      
-      // Reuse existing channel if available
-      let channel = presenceService.typingChannels?.get(channelKey);
-      
-      if (!channel) {
-        channel = supabase.channel(channelKey, {
-          config: { broadcast: { self: false } }
-        });
-        presenceService.typingChannels?.set(channelKey, channel);
-        
-        // Subscribe once — channel stays alive for reuse
-        await new Promise<void>((resolve) => {
-          channel.subscribe((status: string) => {
-            if (status === 'SUBSCRIBED') {
-              resolve();
-            }
-          });
-        });
-      }
-      
-      // Send the typing event on the existing channel
+      const channel = getOrCreateTypingChannel(partnerId);
       await channel.send({
         type: 'broadcast',
         event: 'typing',
@@ -85,15 +75,6 @@ export const presenceService = {
       });
     } catch (err) {
       console.warn('Realtime broadcastTyping failed:', err);
-    }
-  },
-
-  cleanupTypingChannels() {
-    if (presenceService.typingChannels) {
-      presenceService.typingChannels.forEach((channel) => {
-        supabase.removeChannel(channel);
-      });
-      presenceService.typingChannels.clear();
     }
   },
 
@@ -115,12 +96,15 @@ export const presenceService = {
     }
   },
 
-  // Subscribe to presence events
+  // Subscribe to presence events — usar Supabase Presence API em vez de postgres_changes
   subscribeToPresence(userIds: string[], callback: (event: PresenceEvent) => void) {
     try {
-      const channel = supabase.channel('presence-global');
+      const channel = supabase.channel('presence-global', {
+        config: { presence: { key: '' } }
+      });
+
       channel
-        .on('postgres_changes', 
+        .on('postgres_changes',
           { event: '*', schema: 'public', table: 'user_presence' },
           (payload) => {
             const data = payload.new as any;
@@ -140,5 +124,13 @@ export const presenceService = {
     } catch {
       return () => {};
     }
+  },
+
+  // Limpar canais de typing (chamar no logout)
+  cleanupTypingChannels(): void {
+    typingChannels.forEach((channel) => {
+      supabase.removeChannel(channel);
+    });
+    typingChannels.clear();
   }
 };
