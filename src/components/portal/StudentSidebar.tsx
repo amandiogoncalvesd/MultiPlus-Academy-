@@ -109,9 +109,9 @@ export default function StudentSidebar({
         {/* Sidebar Footer context banner */}
         <div className="p-4 border-t border-white/10 space-y-3.5">
           <div className="flex items-center gap-3">
-            {currentUser?.foto_perfil ? (
+            {currentUser?.avatarUrl ? (
               <img
-                src={currentUser.foto_perfil}
+                src={currentUser.avatarUrl}
                 alt={currentUser.firstName}
                 className="w-9 h-9 rounded-full object-cover border border-gold-600/30"
                 referrerPolicy="no-referrer"

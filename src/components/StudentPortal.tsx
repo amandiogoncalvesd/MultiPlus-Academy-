@@ -1183,14 +1183,14 @@ export default function StudentPortal({
                       {currentUser?.id && (
                         <AvatarUpload
                           userId={currentUser.id}
-                          currentAvatarUrl={currentUser.foto_perfil}
+                          currentAvatarUrl={currentUser.avatarUrl}
                           userName={`${currentUser.firstName} ${currentUser.lastName}`}
                           size="xl"
                           onAvatarUpdated={(newUrl) => {
                             if (currentUser) {
                               setCurrentUser({
                                 ...currentUser,
-                                foto_perfil: newUrl
+                                avatarUrl: newUrl
                               });
                             }
                           }}

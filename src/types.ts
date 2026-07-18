@@ -21,8 +21,7 @@ export interface User {
   firstName: string;
   lastName: string;
   role: UserRole;
-  avatarUrl?: string;
-  foto_perfil?: string;
+  avatarUrl?: string;  // Unified avatar field — always use this in components. Maps from DB column foto_perfil.
   phone?: string;
   whatsapp?: string;
   status: 'ACTIVE' | 'SUSPENDED';

@@ -188,9 +188,9 @@ export default function StudentTopbar({
             onClick={() => { setIsUserMenuOpen(!isUserMenuOpen); setIsNotificationsOpen(false); }}
             className="flex items-center gap-1 text-ink-900 dark:text-cream-100 font-semibold cursor-pointer border-0 bg-transparent p-0"
           >
-            {currentUser?.foto_perfil ? (
+            {currentUser?.avatarUrl ? (
               <img
-                src={currentUser.foto_perfil}
+                src={currentUser.avatarUrl}
                 alt={currentUser.firstName}
                 className="h-6 w-6 rounded-full object-cover border border-gold-600/30"
                 referrerPolicy="no-referrer"

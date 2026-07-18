@@ -45,7 +45,13 @@ export class AuthGuard implements CanActivate {
       // Get secret from env.
       // In Supabase, the JWT secret is usually SUPABASE_JWT_SECRET or JWT_SECRET or API_SECRET.
       // We will fall back to a standard string for development/testing if not configured.
-      const jwtSecret = process.env.SUPABASE_JWT_SECRET || process.env.JWT_SECRET || 'supabase-jwt-secret-placeholder-minimum-32-characters-long';
+      const jwtSecret = process.env.SUPABASE_JWT_SECRET || process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        throw new Error(
+          'CRITICAL: SUPABASE_JWT_SECRET or JWT_SECRET environment variable is not set. ' +
+          'Authentication is disabled for security. Set the variable and restart the server.'
+        );
+      }
 
       const payload = jwt.verify(token, jwtSecret) as any;
 

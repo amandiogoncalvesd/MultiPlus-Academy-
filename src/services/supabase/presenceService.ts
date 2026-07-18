@@ -50,23 +50,50 @@ export const presenceService = {
     }
   },
 
+  // Shared map to track typing channels and prevent leaks
+  typingChannels: new Map<string, any>() as Map<string, any>,
+
   // Broadcast typing status to active chat partner
   async broadcastTyping(userId: string, partnerId: string, isTyping: boolean) {
     try {
-      const channel = supabase.channel(`typing-${partnerId}`, {
-        config: { broadcast: { self: false } }
-      });
-      await channel.subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          await channel.send({
-            type: 'broadcast',
-            event: 'typing',
-            payload: { userId, isTyping, timestamp: Date.now(), conversationId: partnerId }
+      const channelKey = `typing-${partnerId}`;
+      
+      // Reuse existing channel if available
+      let channel = presenceService.typingChannels?.get(channelKey);
+      
+      if (!channel) {
+        channel = supabase.channel(channelKey, {
+          config: { broadcast: { self: false } }
+        });
+        presenceService.typingChannels?.set(channelKey, channel);
+        
+        // Subscribe once — channel stays alive for reuse
+        await new Promise<void>((resolve) => {
+          channel.subscribe((status: string) => {
+            if (status === 'SUBSCRIBED') {
+              resolve();
+            }
           });
-        }
+        });
+      }
+      
+      // Send the typing event on the existing channel
+      await channel.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { userId, isTyping, timestamp: Date.now(), conversationId: partnerId }
       });
     } catch (err) {
       console.warn('Realtime broadcastTyping failed:', err);
+    }
+  },
+
+  cleanupTypingChannels() {
+    if (presenceService.typingChannels) {
+      presenceService.typingChannels.forEach((channel) => {
+        supabase.removeChannel(channel);
+      });
+      presenceService.typingChannels.clear();
     }
   },
 

@@ -185,7 +185,6 @@ export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser
                       >
                         <option value="ALUNO">Aluno de Elite</option>
                         <option value="PROFESSOR">Corpo de Formadores</option>
-                        <option value="ADMIN">Administrador Geral</option>
                       </select>
                     </div>
                   </div>

@@ -14,8 +14,8 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<User>;
   login: (email: string, password: string) => Promise<User>;
-  signUp: (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR' | 'ADMIN') => Promise<any>;
-  register: (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR' | 'ADMIN') => Promise<any>;
+  signUp: (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR') => Promise<any>;
+  register: (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR') => Promise<any>;
   signOut: () => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<any>;
@@ -79,20 +79,22 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
           const profileData = await userService.getUserProfile(userData.id);
           setUserProfile(profileData);
         } else {
-          // If public.users is slow, build from auth meta
+          // SECURITY: Never trust user_metadata.role — always default to ALUNO
+          // The public.users row may not exist yet if the trigger hasn't fired.
+          // On next sync, the correct role will be read from public.users.
           const uMeta = sbSession.user.user_metadata;
-          const mappedRole = mapSupabaseRole(uMeta?.role || 'ALUNO');
           const localUser: User = {
             id: sbSession.user.id,
             email: sbSession.user.email || '',
             firstName: uMeta?.nome_completo?.split(' ')[0] || uMeta?.firstName || '',
             lastName: uMeta?.nome_completo?.split(' ').slice(1).join(' ') || uMeta?.lastName || '',
-            role: mappedRole,
-            avatarUrl: null,
+            role: 'ALUNO' as const,
+            avatarUrl: uMeta?.foto_perfil || null,
+            phone: uMeta?.telefone || '',
             status: 'ACTIVE',
-            streak: 3,
-            longestStreak: 5,
-            totalHoursLearned: 4
+            streak: 0,
+            longestStreak: 0,
+            totalHoursLearned: 0
           };
           setCurrentUser(localUser);
         }
@@ -162,10 +164,12 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
 
   const login = signIn;
 
-  const signUp = async (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR' | 'ADMIN'): Promise<any> => {
+  const signUp = async (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR' = 'ALUNO'): Promise<any> => {
     setLoading(true);
     try {
-      return await authService.register(email, password, name, role);
+      // SECURITY: Never allow ADMIN role from client-side signup
+      const safeRole: 'ALUNO' | 'PROFESSOR' = role === 'PROFESSOR' ? 'PROFESSOR' : 'ALUNO';
+      return await authService.register(email, password, name, safeRole);
     } finally {
       setLoading(false);
     }
@@ -199,8 +203,30 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
 
   const refreshProfile = async () => {
     if (currentUser) {
+      // Refresh profile data
       const prof = await userService.getUserProfile(currentUser.id);
       setUserProfile(prof);
+
+      // Also refresh currentUser from users table (for avatar, name, etc.)
+      try {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', currentUser.id)
+          .single();
+
+        if (userData) {
+          setCurrentUser(prev => prev ? {
+            ...prev,
+            firstName: userData.nome_completo?.split(' ')[0] || prev.firstName,
+            lastName: userData.nome_completo?.split(' ').slice(1).join(' ') || prev.lastName,
+            avatarUrl: userData.foto_perfil || prev.avatarUrl,
+            phone: userData.telefone || prev.phone,
+          } : null);
+        }
+      } catch (err) {
+        console.warn('Failed to refresh currentUser from users table:', err);
+      }
     }
   };
 

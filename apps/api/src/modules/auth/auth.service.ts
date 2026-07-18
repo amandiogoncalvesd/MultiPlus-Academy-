@@ -127,13 +127,14 @@ export class AuthService {
     }
 
     try {
-      // Gerar link real para redefinição de senha oficial fornecida pelo Firebase
-      const resetLink = await admin.auth().generatePasswordResetLink(email);
+      // SECURITY: Generate the reset link but NEVER return it in the response.
+      // Firebase automatically sends the reset email to the user.
+      // The link must only be accessible via the user's email inbox.
+      await admin.auth().generatePasswordResetLink(email);
       
       return {
         success: true,
-        message: "Link de redefinição de palavra-passe gerado com sucesso.",
-        resetLink, // Retorna o link que será disparado via SMTP ou entregue ao cliente
+        message: "Se o e-mail estiver registado, um link de redefinição foi enviado para a sua caixa de correio.",
       };
     } catch (error: any) {
       throw new InternalServerErrorException(`Erro ao processar recuperação no Firebase: ${error.message}`);

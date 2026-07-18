@@ -46,13 +46,16 @@ export const authService = {
         };
       }
 
-      // If public.users is not populated yet, build from user metadata
+      // SECURITY: Never trust user_metadata.role — always default to ALUNO
+      // If public.users is not populated yet, the trigger hasn't fired.
+      // Default to ALUNO; role will be corrected on next sync when the row exists.
+      console.warn('public.users row not found for user', data.user.id, '- defaulting to ALUNO');
       return {
         user: {
           id: data.user.id,
           email: data.user.email || '',
           nome_completo: data.user.user_metadata?.nome_completo || '',
-          role: (data.user.user_metadata?.role || 'ALUNO') as 'ADMIN' | 'PROFESSOR' | 'ALUNO',
+          role: 'ALUNO' as const,
         },
         session: data.session
       };
@@ -64,14 +67,16 @@ export const authService = {
   /**
    * Registers a new user with Supabase Auth
    */
-  async register(email: string, password: string, nomeCompleto: string, role: 'ADMIN' | 'PROFESSOR' | 'ALUNO' = 'ALUNO'): Promise<any> {
+  async register(email: string, password: string, nomeCompleto: string, role: 'ALUNO' | 'PROFESSOR' = 'ALUNO'): Promise<any> {
+    // SECURITY: Force ALUNO for self-registration. Role elevation must go through admin panel only.
+    const safeRole: 'ALUNO' | 'PROFESSOR' = role === 'PROFESSOR' ? 'PROFESSOR' : 'ALUNO';
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           nome_completo: nomeCompleto,
-          role: role
+          role: safeRole
         }
       }
     });
@@ -121,11 +126,13 @@ export const authService = {
         };
       }
 
+      // SECURITY: Never trust user_metadata.role — always default to ALUNO
+      console.warn('public.users row not found for user', user.id, '- defaulting to ALUNO');
       return {
         id: user.id,
         email: user.email || '',
         nome_completo: user.user_metadata?.nome_completo || '',
-        role: (user.user_metadata?.role || 'ALUNO') as 'ADMIN' | 'PROFESSOR' | 'ALUNO',
+        role: 'ALUNO' as const,
       };
     } catch (err) {
       console.error('getCurrentUser error:', err);

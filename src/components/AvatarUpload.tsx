@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { Camera, Loader2 } from 'lucide-react';
 import { avatarService } from '../services/supabase/avatarService';
+import { useToast } from './ui/Toast';
 
 interface AvatarUploadProps {
   userId: string;
@@ -16,6 +17,7 @@ export default function AvatarUpload({
   const [uploading, setUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(currentAvatarUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
 
   useEffect(() => {
     setAvatarUrl(currentAvatarUrl);
@@ -31,16 +33,17 @@ export default function AvatarUpload({
   const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (uploading) return; // Prevent concurrent uploads
     
     // Validar tamanho (máx 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('A imagem deve ter no máximo 5MB.');
+      toast.error('A imagem deve ter no máximo 5MB.');
       return;
     }
     
     // Validar tipo
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      alert('Formato inválido. Use JPG, PNG ou WebP.');
+      toast.error('Formato inválido. Use JPG, PNG ou WebP.');
       return;
     }
     
@@ -51,9 +54,13 @@ export default function AvatarUpload({
       onAvatarUpdated?.(url);
     } catch (err) {
       console.error('Erro ao carregar foto de perfil:', err);
-      alert('Erro ao carregar foto de perfil.');
+      toast.error('Erro ao carregar foto de perfil.');
     } finally {
       setUploading(false);
+      // Reset file input so the same file can be selected again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
