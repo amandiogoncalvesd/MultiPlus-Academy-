@@ -277,7 +277,7 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
   const currentQuestion = questions[currentQuestionIdx];
 
   return (
-    <div id="quiz-container" className="p-5 rounded-2xl border border-gray-150 dark:border-ink-800 bg-cream-100 dark:bg-ink-900 relative overflow-hidden space-y-4 text-left shadow-xs">
+    <div id="quiz-container" className="p-4 sm:p-5 rounded-2xl border border-gray-150 dark:border-ink-800 bg-cream-100 dark:bg-ink-900 relative overflow-hidden space-y-4 text-left shadow-xs">
       
       <div className="flex items-center justify-between border-b border-gray-100 dark:border-ink-800 pb-3">
         <div className="flex items-center gap-2">
@@ -292,7 +292,7 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
       </div>
 
       <div className="space-y-3">
-        <h4 className="text-sm font-serif font-bold text-slate-800 dark:text-cream-100 leading-snug">
+        <h4 className="text-base sm:text-sm font-serif font-bold text-slate-800 dark:text-cream-100 leading-snug">
           {currentQuestion.question}
         </h4>
 
@@ -317,7 +317,7 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
                 key={idx}
                 disabled={hasSubmittedCurrent}
                 onClick={() => setSelectedOption(idx)}
-                className={`w-full text-left p-3 rounded-xl border text-xs leading-relaxed transition-all cursor-pointer ${optionStyle}`}
+                className={`w-full text-left p-3.5 sm:p-3 rounded-xl border text-sm sm:text-xs leading-relaxed transition-all cursor-pointer min-h-[44px] ${optionStyle}`}
               >
                 {opt}
               </button>
@@ -344,7 +344,7 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
             <button
               onClick={handleSubmitQuestion}
               disabled={selectedOption === null}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-cream-100 disabled:opacity-50 text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center gap-1"
+              className="px-5 py-2.5 sm:px-4 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-cream-100 disabled:opacity-50 text-xs sm:text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center gap-1.5"
             >
               Confirmar Resposta
             </button>
@@ -352,7 +352,7 @@ export default function QuizArea({ lessonId, userId, onQuizPassed }: QuizAreaPro
             <button
               onClick={handleNextOrFinish}
               disabled={saving}
-              className="px-4 py-2 bg-gold-600 hover:bg-[#b08530] text-cream-100 hover:text-slate-900 text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center gap-1"
+              className="px-5 py-2.5 sm:px-4 sm:py-2 bg-gold-600 hover:bg-[#b08530] text-cream-100 hover:text-slate-950 text-xs sm:text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer flex items-center gap-1.5"
             >
               {saving ? 'A calcular...' : currentQuestionIdx < questions.length - 1 ? (
                 <>Seguinte <ArrowRight className="w-3 h-3" /></>

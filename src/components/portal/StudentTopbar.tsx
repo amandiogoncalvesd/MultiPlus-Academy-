@@ -102,7 +102,7 @@ export default function StudentTopbar({
       <div className="flex items-center gap-4 text-xs">
         
         {/* Streak Indicator widget */}
-        <div className="flex items-center gap-1 bg-orange-50 dark:bg-orange-950/20 px-2.5 py-1 rounded-full border border-orange-100 dark:border-orange-900/30 text-orange-600 font-bold font-mono text-[10px]">
+        <div className="hidden sm:flex items-center gap-1 bg-orange-50 dark:bg-orange-950/20 px-2.5 py-1 rounded-full border border-orange-100 dark:border-orange-900/30 text-orange-600 font-bold font-mono text-[10px]">
           <Flame size={12} fill="currentColor" />
           <span>{streakCount} d</span>
         </div>
@@ -124,8 +124,8 @@ export default function StudentTopbar({
         >
           <MessageSquare size={14} className="text-gold-600" />
           {unreadMessagesCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white flex items-center justify-center text-[8px] font-bold">
-              {unreadMessagesCount}
+            <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white flex items-center justify-center text-[8px] font-bold sm:flex hidden">
+              {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
             </span>
           )}
         </button>
@@ -137,7 +137,14 @@ export default function StudentTopbar({
             className="p-2 bg-cream-200 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
           >
             <Bell size={14} />
-            <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-gold-600 animate-ping" />
+            {notifications.filter(n => !n.read).length > 0 && (
+              <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-gold-600 animate-ping" />
+            )}
+            {notifications.filter(n => !n.read).length > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white flex items-center justify-center text-[8px] font-bold">
+                {notifications.filter(n => !n.read).length}
+              </span>
+            )}
           </button>
 
           <AnimatePresence>
@@ -146,7 +153,7 @@ export default function StudentTopbar({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className={`absolute right-0 mt-2 w-72 rounded-2xl p-4 shadow-xl text-left ${cardThemeClass} z-50`}
+                className={`absolute right-0 sm:right-0 mt-2 w-[calc(100vw-2rem)] sm:w-72 rounded-2xl p-4 shadow-xl text-left ${cardThemeClass} z-50`}
               >
                 <div className="flex justify-between items-center pb-2 border-b border-gray-100">
                   <span className="font-mono text-2xs font-bold text-neutral-400">NOTIFICAÇÕES</span>

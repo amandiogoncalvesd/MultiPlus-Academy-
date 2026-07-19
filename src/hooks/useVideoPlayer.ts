@@ -6,13 +6,8 @@ export function useVideoPlayer(userId: string | undefined, courseId: string | un
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [currentSeconds, setCurrentSeconds] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [randomWatermark, setRandomWatermark] = useState({ top: '30%', left: '40%' });
-
-  // Use a ref to store currentSeconds to prevent recreation of the 15s interval
-  const currentSecondsRef = useRef(currentSeconds);
-  useEffect(() => {
-    currentSecondsRef.current = currentSeconds;
-  }, [currentSeconds]);
 
   // Carregar progresso salvo quando muda de aula
   useEffect(() => {
@@ -21,8 +16,19 @@ export function useVideoPlayer(userId: string | undefined, courseId: string | un
       try {
         const saved = await academicService.getVideoProgress(userId, lessonId);
         setCurrentSeconds(saved || 0);
-        if (videoRef.current) {
-          videoRef.current.currentTime = saved || 0;
+        
+        // Esperar metadata carregar antes de definir currentTime
+        const video = videoRef.current;
+        if (video && saved) {
+          const setInitialTime = () => {
+            video.currentTime = saved;
+            video.removeEventListener('loadedmetadata', setInitialTime);
+          };
+          if (video.readyState >= 1) {
+            video.currentTime = saved;
+          } else {
+            video.addEventListener('loadedmetadata', setInitialTime);
+          }
         }
       } catch (err) {
         console.error('Erro ao carregar progresso do vídeo:', err);
@@ -31,20 +37,21 @@ export function useVideoPlayer(userId: string | undefined, courseId: string | un
     loadProgress();
   }, [userId, lessonId]);
 
-  // Salvar progresso a cada 15 segundos
+  // Salvar progresso a cada 15 segundos (sem depender de currentSeconds para evitar recriar intervalo)
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval>;
     if (isPlaying && userId && courseId && lessonId) {
       interval = setInterval(async () => {
         try {
-          await academicService.saveVideoProgress(userId, courseId, lessonId, currentSecondsRef.current);
+          const currentTime = videoRef.current?.currentTime || 0;
+          await academicService.saveVideoProgress(userId, courseId, lessonId, Math.floor(currentTime));
         } catch (err) {
           console.error('Erro ao salvar progresso do vídeo:', err);
         }
       }, 15000);
     }
-    return () => { 
-      if (interval) clearInterval(interval); 
+    return () => {
+      if (interval) clearInterval(interval);
     };
   }, [isPlaying, userId, courseId, lessonId]);
 
@@ -66,7 +73,16 @@ export function useVideoPlayer(userId: string | undefined, courseId: string | un
   };
 
   return {
-    videoRef, isPlaying, setIsPlaying, playbackSpeed, changeSpeed,
-    currentSeconds, setCurrentSeconds, randomWatermark
+    videoRef,
+    isPlaying,
+    setIsPlaying,
+    playbackSpeed,
+    setPlaybackSpeed: changeSpeed,
+    changeSpeed,
+    currentSeconds,
+    setCurrentSeconds,
+    duration,
+    setDuration,
+    randomWatermark,
   };
 }

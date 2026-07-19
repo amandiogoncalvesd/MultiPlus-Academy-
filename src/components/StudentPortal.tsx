@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase/client';
 import { userService } from '../services/supabase/userService';
 import { academicService } from '../services/supabase/academicService';
 import QuizArea from './portal/QuizArea';
+import VideoPlayer from './portal/VideoPlayer';
 import AvatarUpload from './AvatarUpload';
 import { useTheme } from '../contexts/ThemeContext';
 import { messageService } from '../services/supabase/messageService';
@@ -120,7 +121,7 @@ export default function StudentPortal({
     videoRef, isPlaying: isPlayingVideo, setIsPlaying: setIsPlayingVideo,
     playbackSpeed: videoPlaybackSpeed, changeSpeed: setVideoPlaybackSpeed,
     currentSeconds: videoPlaySec, setCurrentSeconds: setVideoPlaySec,
-    randomWatermark
+    randomWatermark, duration: videoDuration
   } = useVideoPlayer(currentUser?.id, selectedCourseId, currentLecture?.id);
 
   // 3. Lesson Notes Notebook Integration
@@ -707,14 +708,36 @@ export default function StudentPortal({
                         </select>
                       </div>
 
+                      {/* Seletor de aulas compacto para mobile */}
+                      <div className="lg:hidden mb-4">
+                        <select
+                          value={activeLessonIdx}
+                          onChange={(e) => {
+                            setActiveLessonIdx(parseInt(e.target.value));
+                            setVideoPlaySec(0);
+                          }}
+                          className="w-full px-3 py-2.5 rounded-xl bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-850 text-sm font-serif font-bold text-ink-900 dark:text-cream-100 focus:outline-none focus:border-gold-600"
+                        >
+                          {activeSyllabus.map((syll, idx) => {
+                            const isLocked = syll.scheduled_at ? new Date(syll.scheduled_at) > new Date() : false;
+                            const isCompleted = completedLessons.includes(syll.id);
+                            return (
+                              <option key={idx} value={idx} disabled={isLocked}>
+                                {isLocked ? '🔒 ' : isCompleted ? '✓ ' : ''}{syll.title} ({syll.duration})
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+
                       {/* Left Player vs Right curricular tree list partitions */}
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
                     
                     {/* Left Frame column: Video placeholder plus legal notebooks */}
-                    <div className="lg:col-span-8 space-y-4">
+                    <div className="lg:col-span-8 space-y-4 sm:space-y-6">
                       
                       {/* Interactive player card */}
-                      <div className="aspect-video bg-slate-900 border border-gold-600/35 rounded-2xl overflow-hidden relative flex flex-col justify-between items-stretch p-4 select-none shadow">
+                      <div className="aspect-video bg-slate-900 border border-gold-600/35 rounded-2xl overflow-hidden relative flex flex-col justify-between items-stretch select-none shadow">
                         
                         {!currentLecture ? (
                           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,rgba(93,93,93,0.15)_0%,#0F1520_100%)]">
@@ -728,21 +751,6 @@ export default function StudentPortal({
                           </div>
                         ) : (
                           <>
-                            {/* Video streaming top logs */}
-                            <div className="flex justify-between items-center text-[10px] font-mono text-cream-100/50 z-10">
-                              <span className="bg-black/40 px-2 py-0.5 rounded border border-white/5">Reprodução LMS Multimédia</span>
-                              <span className="bg-emerald-600 font-extrabold text-cream-100 px-2 py-0.5 rounded">AUTO 1080P</span>
-                            </div>
-
-                            {/* Interactive anti-recorders watermarker layer */}
-                            <div 
-                              className="absolute text-cream-100/10 text-[11px] sm:text-xs font-mono tracking-widest font-extrabold pointer-events-none z-20 bg-black/10 px-2.5 py-1 rounded border border-white/5 whitespace-nowrap transition-all duration-1000 ease-in-out"
-                              style={{ top: randomWatermark.top, left: randomWatermark.left, transform: 'rotate(-5deg)' }}
-                            >
-                              🛡 {currentUser?.email || currentUser?.firstName || 'Aluno'} • MULTIPLUS
-                            </div>
-
-                            {/* Player Backdrops visual layout */}
                             {(!currentLecture.scheduled_at || new Date(currentLecture.scheduled_at) > new Date()) ? (
                               <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,rgba(93,10,10,0.35)_0%,#1a0404_100%)]">
                                 <Lock size={44} className="text-red-500 mb-2 animate-bounce" />
@@ -758,104 +766,42 @@ export default function StudentPortal({
                                 </span>
                               </div>
                             ) : (
-                              <>
-                                <div className="absolute inset-0 w-full h-full">
-                                  {currentLecture.video_url ? (
-                                    <video
-                                      ref={videoRef}
-                                      src={currentLecture.video_url}
-                                      className="w-full h-full object-contain"
-                                      onTimeUpdate={() => {
-                                        if (videoRef.current) {
-                                          setVideoPlaySec(Math.floor(videoRef.current.currentTime));
-                                        }
-                                      }}
-                                      onPlay={() => setIsPlayingVideo(true)}
-                                      onPause={() => setIsPlayingVideo(false)}
-                                      onEnded={async () => {
-                                        setIsPlayingVideo(false);
-                                        if (currentUser?.id && selectedCourseId && currentLecture?.id) {
-                                          try {
-                                            await academicService.markLessonComplete(currentUser.id, selectedCourseId, currentLecture.id, true);
-                                            await fetchStudentData();
-                                          } catch (err) {
-                                            console.error('Erro ao marcar aula concluída no fim do vídeo:', err);
-                                          }
-                                        }
-                                      }}
-                                    />
-                                  ) : (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,rgba(10,46,93,0.3)_0%,#040c1a_100%)]">
-                                      <Video size={44} className="text-gold-600/40 mb-2 animate-pulse" />
-                                      <h4 className="text-cream-100 text-xs sm:text-sm font-serif font-black text-center max-w-sm mt-1 mb-0 leading-snug">
-                                        {currentLecture.title}
-                                      </h4>
-                                      <span className="text-[10px] font-mono text-neutral-400 mt-2 block">
-                                        Vídeo indisponível para esta aula.
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Play control bars row footer */}
-                                <div className="z-10 bg-black/75 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 flex items-center justify-between gap-4 mt-auto">
-                                  <div className="flex items-center gap-3">
-                                    <button
-                                      onClick={() => {
-                                        if (videoRef.current) {
-                                          if (isPlayingVideo) {
-                                            videoRef.current.pause();
-                                          } else {
-                                            videoRef.current.play().catch(e => console.error(e));
-                                          }
-                                        } else {
-                                          setIsPlayingVideo(!isPlayingVideo);
-                                        }
-                                      }}
-                                      className="px-3.5 py-1 bg-gold-600 text-slate-950 font-mono text-[10px] font-bold rounded-lg uppercase cursor-pointer"
-                                    >
-                                      {isPlayingVideo ? 'Pausar' : 'Reproduzir'}
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        if (videoRef.current) {
-                                          videoRef.current.currentTime = Math.min(videoRef.current.duration || 0, videoRef.current.currentTime + 15);
-                                        } else {
-                                          setVideoPlaySec(prev => prev + 15);
-                                        }
-                                      }}
-                                      className="text-cream-100/75 hover:text-gold-600 text-3xs font-mono"
-                                    >
-                                      +15 segundos
-                                    </button>
-                                  </div>
-
-                                  <span className="text-[10px] font-mono text-neutral-400 z-10 bg-black/40 px-2 py-0.5 rounded">
-                                    {Math.floor(videoPlaySec / 60)}:{(videoPlaySec % 60).toString().padStart(2, '0')} / {currentLecture.duration}
+                              currentLecture.video_url ? (
+                                <VideoPlayer
+                                  videoRef={videoRef}
+                                  src={currentLecture.video_url || ''}
+                                  title={currentLecture.title || ''}
+                                  isPlaying={isPlayingVideo}
+                                  setIsPlaying={setIsPlayingVideo}
+                                  currentSeconds={videoPlaySec}
+                                  setCurrentSeconds={setVideoPlaySec}
+                                  playbackSpeed={videoPlaybackSpeed}
+                                  onSpeedChange={(spd) => {
+                                    setVideoPlaybackSpeed(spd);
+                                    if (videoRef.current) {
+                                      videoRef.current.playbackRate = spd;
+                                    }
+                                  }}
+                                  watermarkPosition={randomWatermark}
+                                  watermarkText={`${currentUser?.email || currentUser?.firstName || 'Aluno'} • MULTIPLUS`}
+                                  onEnded={() => {
+                                    setIsPlayingVideo(false);
+                                  }}
+                                  onTimeUpdate={(ct) => {
+                                    setVideoPlaySec(Math.floor(ct));
+                                  }}
+                                />
+                              ) : (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,rgba(10,46,93,0.3)_0%,#040c1a_100%)]">
+                                  <Video size={44} className="text-gold-600/40 mb-2 animate-pulse" />
+                                  <h4 className="text-cream-100 text-xs sm:text-sm font-serif font-black text-center max-w-sm mt-1 mb-0 leading-snug">
+                                    {currentLecture.title}
+                                  </h4>
+                                  <span className="text-[10px] font-mono text-neutral-400 mt-2 block">
+                                    Vídeo indisponível para esta aula.
                                   </span>
-
-                                  {/* Speed dial switches */}
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-[8px] font-mono text-neutral-400">VELOCIDADE:</span>
-                                    {[1, 1.25, 1.5, 2].map(spd => (
-                                      <button
-                                        key={spd}
-                                        onClick={() => {
-                                          setVideoPlaybackSpeed(spd);
-                                          if (videoRef.current) {
-                                            videoRef.current.playbackRate = spd;
-                                          }
-                                        }}
-                                        className={`px-1.5 py-0.5 rounded text-4xs font-mono ${
-                                          videoPlaybackSpeed === spd ? 'bg-gold-600 text-slate-950 font-bold' : 'text-neutral-400 hover:text-cream-100 hover:bg-cream-100/10'
-                                        }`}
-                                      >
-                                        {spd}x
-                                      </button>
-                                    ))}
-                                  </div>
                                 </div>
-                              </>
+                              )
                             )}
                           </>
                         )}
@@ -896,14 +842,21 @@ export default function StudentPortal({
                         </div>
                       )}
 
-                      {/* Lesson Transcripts written segment for accessible studies */}
-                      <div className={`p-5 rounded-2xl ${cardThemeClass}`}>
-                        <span className="text-[9px] font-mono text-gold-600 font-black uppercase tracking-wider block border-b border-gray-100 dark:border-ink-800 pb-2">
-                          Acessibilidade • Transcrição Segmentada Escrita
-                        </span>
-                        <p className="text-xs sm:text-sm text-gray-650 dark:text-gray-300 leading-relaxed font-sans italic pt-2 mb-0">
-                          {currentLecture?.descricao || currentLecture?.description || 'Transcrição não disponível para esta aula.'}
-                        </p>
+                      {/* Lesson Transcripts — Descrição da aula com design responsivo */}
+                      <div className={`p-4 sm:p-5 rounded-2xl ${cardThemeClass}`}>
+                        <div className="flex items-center gap-2 border-b border-gray-100 dark:border-ink-800 pb-2 mb-3">
+                          <BookOpen size={14} className="text-gold-600 shrink-0" />
+                          <span className="text-[10px] sm:text-xs font-mono text-gold-600 font-black uppercase tracking-wider">
+                            Descrição da Aula
+                          </span>
+                        </div>
+                        <div className="text-sm sm:text-base text-slate-600 dark:text-gray-300 leading-relaxed font-sans">
+                          {currentLecture?.descricao || currentLecture?.description || (
+                            <span className="text-neutral-400 italic text-xs sm:text-sm">
+                              Transcrição não disponível para esta aula.
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Interactive Quiz Segment */}
@@ -924,38 +877,50 @@ export default function StudentPortal({
                         />
                       )}
 
-                      {/* Interactive legal notes tied to play seconds */}
-                      <div className={`p-5 rounded-2xl space-y-4 ${cardThemeClass}`}>
-                        <h4 className="text-xs font-serif font-black m-0">Caderno de Apontamentos do Aluno</h4>
+                      {/* Caderno de Apontamentos do Aluno — Design responsivo */}
+                      <div className={`p-4 sm:p-5 rounded-2xl space-y-4 ${cardThemeClass}`}>
+                        <div className="flex items-center gap-2">
+                          <BookMarked size={14} className="text-gold-600 shrink-0" />
+                          <h4 className="text-sm sm:text-xs font-serif font-black m-0">Caderno de Apontamentos</h4>
+                        </div>
                         
-                        <div className="flex gap-2">
+                        {/* Input + Botão em stack vertical no mobile */}
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <input
                             type="text"
-                            placeholder={`Escreva anotação académica vinculada ao tempo atual (${Math.floor(videoPlaySec / 60)}:${(videoPlaySec % 60).toString().padStart(2, '0')})...`}
+                            placeholder={`Anotação em ${Math.floor(videoPlaySec / 60)}:${(videoPlaySec % 60).toString().padStart(2, '0')}...`}
                             value={newNoteInput}
                             onChange={(e) => setNewNoteInput(e.target.value)}
-                            className="flex-1 px-3 py-2 text-xs rounded-xl bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-850 text-[#1C1C1C] dark:text-cream-100 focus:outline-none"
+                            className="flex-1 px-3 py-2.5 sm:py-2 text-sm sm:text-xs rounded-xl bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-850 text-[#1C1C1C] dark:text-cream-100 focus:outline-none min-h-[44px]"
                           />
                           <button
                             onClick={handleSaveNote}
                             disabled={!newNoteInput.trim()}
-                            className="px-4 py-2 bg-gold-600 hover:bg-[#a67e2b] text-cream-100 hover:text-slate-900 border-0 text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer"
+                            className="px-4 py-2.5 sm:py-2 bg-gold-600 hover:bg-[#a67e2b] text-cream-100 hover:text-slate-900 border-0 text-xs sm:text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap font-bold"
                           >
-                            Pinar Nota
+                            Guardar Nota
                           </button>
                         </div>
 
-                        {/* List of pinned notes */}
-                        <div className="space-y-2.5 max-h-56 overflow-y-auto pt-2 divide-y divide-gray-100 dark:divide-slate-700/50">
+                        {/* Lista de notas */}
+                        <div className="space-y-2.5 max-h-48 sm:max-h-56 overflow-y-auto pt-2 divide-y divide-gray-100 dark:divide-slate-700/50">
                           {notesList.map((n) => (
-                            <div key={n.id} className="pt-2 flex justify-between gap-4 text-xs">
-                              <div className="space-y-1">
-                                <p className="m-0 text-neutral-400 dark:text-gray-200 leading-normal">{n.text}</p>
-                                <span className="block text-[8px] font-mono text-neutral-400">{n.date}</span>
+                            <div key={n.id} className="pt-2 flex justify-between gap-3 sm:gap-4 text-sm sm:text-xs">
+                              <div className="space-y-1 flex-1 min-w-0">
+                                <p className="m-0 text-slate-650 dark:text-gray-200 leading-normal">{n.text}</p>
+                                <span className="block text-[10px] font-mono text-neutral-400">{n.date}</span>
                               </div>
-                              <span className="bg-ink-900/5 text-gold-600 font-mono text-[9px] font-bold px-2 py-0.5 rounded border border-ink-900/10 text-center self-start shrink-0">
+                              <button
+                                className="bg-ink-900/5 text-gold-600 font-mono text-[10px] sm:text-[9px] font-bold px-2.5 py-1 rounded-lg border border-ink-900/10 text-center self-start shrink-0 cursor-pointer hover:bg-gold-600 hover:text-white transition-colors"
+                                onClick={() => {
+                                  if (videoRef.current) {
+                                    videoRef.current.currentTime = n.timestamp;
+                                  }
+                                }}
+                                title="Saltar para este momento"
+                              >
                                 ⏱ {Math.floor(n.timestamp / 60)}:{(n.timestamp % 60).toString().padStart(2, '0')}
-                              </span>
+                              </button>
                             </div>
                           ))}
                         </div>
@@ -964,7 +929,7 @@ export default function StudentPortal({
                     </div>
 
                     {/* Right column: Curricular lessons sequence tree list */}
-                    <div className="lg:col-span-4">
+                    <div className="hidden lg:block lg:col-span-4">
                       <div className={`p-4 rounded-2xl flex flex-col h-full ${cardThemeClass}`}>
                         <span className="text-[9px] font-mono text-neutral-400 uppercase tracking-widest block border-b border-gray-100 dark:border-ink-800 pb-3 mb-3">
                           CURSOGRAMA ACADÉMICO
