@@ -23,8 +23,6 @@ import {
 
 interface AdminPortalProps {
   setCurrentPage: (page: PageId) => void;
-  currentUser: User | null;
-  setCurrentUser: (user: User | null) => void;
 }
 
 // Initial audit logs for security
@@ -47,10 +45,8 @@ function gerarSenhaForte(): string {
 
 export default function AdminPortal({
   setCurrentPage,
-  currentUser,
-  setCurrentUser,
 }: AdminPortalProps) {
-  const { signOut } = useAuth();
+  const { signOut, user: currentUser, updateUser: setCurrentUser } = useAuth();
   const { isDarkMode, toggleTheme, setThemeMode } = useTheme();
   
   // Theme and accessibility states

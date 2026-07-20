@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { academicService } from '../services/supabase/academicService';
 import { supabase } from '../lib/supabase/client';
 import { messageService } from '../services/supabase/messageService';
@@ -15,11 +15,15 @@ export function useStudentData(userId: string | undefined) {
   const [loading, setLoading] = useState(true);
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
 
-  const fetchData = async () => {
-    if (!userId) return;
+  // Usar ref para evitar stale closures nas subscrições realtime e callbacks
+  const userIdRef = useRef(userId);
+  userIdRef.current = userId;
+
+  const fetchData = useCallback(async () => {
+    if (!userIdRef.current) return;
     setLoading(true);
     try {
-      const enrollData = await academicService.getStudentEnrollments(userId);
+      const enrollData = await academicService.getStudentEnrollments(userIdRef.current);
       setEnrollments(enrollData || []);
 
       if (enrollData && enrollData.length > 0) {
@@ -27,54 +31,59 @@ export function useStudentData(userId: string | undefined) {
         setSelectedCourseId(activeCourseId);
         const lessonsData = await academicService.getLessons(activeCourseId);
         setRealLessons(lessonsData || []);
-        const completions = await academicService.getCompletedLessons(userId, activeCourseId);
+        const completions = await academicService.getCompletedLessons(userIdRef.current, activeCourseId);
         setCompletedLessons(completions || []);
       } else {
         setRealLessons([]);
         setCompletedLessons([]);
       }
 
-      const certs = await academicService.getStudentCertificates(userId);
+      const certs = await academicService.getStudentCertificates(userIdRef.current);
       setCertificates(certs || []);
 
-      const schedules = await academicService.getScheduledLessonsForStudent(userId);
+      const schedules = await academicService.getScheduledLessonsForStudent(userIdRef.current);
       setScheduledLessons(schedules || []);
 
-      const notifs = await notificationService.getNotifications(userId);
-      setNotifications(notifs);
+      const notifs = await notificationService.getNotifications(userIdRef.current);
+      setNotifications(notifs || []);
     } catch (err) {
       console.warn('Erro ao carregar dados do aluno:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCourseId]);
 
-  const fetchUnreadCount = async () => {
-    if (!userId) return;
+  const fetchUnreadCount = useCallback(async () => {
+    if (!userIdRef.current) return;
     try {
-      const parts = await messageService.getConversationPartners(userId);
-      setUnreadMessagesCount(parts.reduce((acc, p) => acc + (p.unreadCount || 0), 0));
+      const parts = await messageService.getConversationPartners(userIdRef.current);
+      setUnreadMessagesCount(parts.reduce((acc: number, p: any) => acc + (p.unreadCount || 0), 0));
     } catch {}
-  };
+  }, []);
 
-  const changeCourse = async (courseId: string) => {
-    if (!userId) return;
+  const changeCourse = useCallback(async (courseId: string) => {
+    if (!userIdRef.current) return;
     setSelectedCourseId(courseId);
     try {
       setLoading(true);
       const lessonsData = await academicService.getLessons(courseId);
       setRealLessons(lessonsData || []);
-      const completions = await academicService.getCompletedLessons(userId, courseId);
+      const completions = await academicService.getCompletedLessons(userIdRef.current, courseId);
       setCompletedLessons(completions || []);
     } catch (err) {
       console.error('Erro ao trocar de curso:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchData(); }, [userId]);
-  useEffect(() => { fetchUnreadCount(); }, [userId]);
+  useEffect(() => { 
+    fetchData(); 
+  }, [userId, fetchData]);
+
+  useEffect(() => { 
+    fetchUnreadCount(); 
+  }, [userId, fetchUnreadCount]);
 
   // Real-time subscription para mensagens
   useEffect(() => {
@@ -92,7 +101,7 @@ export function useStudentData(userId: string | undefined) {
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [userId]);
+  }, [userId, fetchUnreadCount]);
 
   // Real-time subscription para notificações
   useEffect(() => {

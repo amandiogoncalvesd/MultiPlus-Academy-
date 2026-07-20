@@ -229,20 +229,16 @@ export const messageService = {
     return true;
   },
 
-  // 6. Delete message for me (Durable or Local-based fallback delete)
-  async deleteMessageForMe(userId: string, messageId: string, partnerId: string): Promise<boolean> {
+  // 6. Delete message for me
+  async deleteMessageForMe(userId: string, messageId: string, _partnerId: string): Promise<boolean> {
     validateUUID(userId);
-    validateUUID(partnerId);
-    try {
-      // 1. Try PostgreSQL message_deletions table
-      const { error } = await supabase
-        .from('message_deletions')
-        .upsert({ user_id: userId, message_id: messageId }, { onConflict: 'user_id,message_id' });
-      
-      if (error) throw error;
-    } catch (err) {
-      console.error('Erro ao eliminar mensagem para mim (tabela message_deletions pode não existir):', err);
-      throw err;
+    const { error } = await supabase
+      .from('message_deletions')
+      .upsert({ user_id: userId, message_id: messageId }, { onConflict: 'user_id,message_id' });
+    
+    if (error) {
+      console.error('Erro ao eliminar mensagem para mim (tabela message_deletions):', error);
+      throw error;
     }
     return true;
   },
@@ -253,17 +249,15 @@ export const messageService = {
     validateUUID(partnerId);
     const clearedAt = new Date().toISOString();
     
-    try {
-      const { error } = await supabase
-        .from('conversation_clears')
-        .upsert({
-          user_id: userId,
-          partner_id: partnerId,
-          cleared_at: clearedAt
-        }, { onConflict: 'user_id,partner_id' });
-      
-      if (error) throw error;
-    } catch (error) {
+    const { error } = await supabase
+      .from('conversation_clears')
+      .upsert({
+        user_id: userId,
+        partner_id: partnerId,
+        cleared_at: clearedAt
+      }, { onConflict: 'user_id,partner_id' });
+    
+    if (error) {
       console.error('Erro ao limpar conversa no servidor:', error);
       throw error;
     }
@@ -274,20 +268,18 @@ export const messageService = {
   async getConversationClearTimestamp(userId: string, partnerId: string): Promise<string | null> {
     validateUUID(userId);
     validateUUID(partnerId);
-    let localVal: string | null = null;
-    try {
-      const { data, error } = await supabase
-        .from('conversation_clears')
-        .select('cleared_at')
-        .eq('user_id', userId)
-        .eq('partner_id', partnerId)
-        .maybeSingle();
-      
-      if (error || !data) return localVal;
-      return data.cleared_at;
-    } catch {
-      return localVal;
+    const { data, error } = await supabase
+      .from('conversation_clears')
+      .select('cleared_at')
+      .eq('user_id', userId)
+      .eq('partner_id', partnerId)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Erro ao buscar timestamp de limpeza:', error);
+      return null;
     }
+    return data?.cleared_at || null;
   },
 
   // 9. Mark a single message as read
@@ -370,79 +362,89 @@ export const messageService = {
     return data as SupabaseAnnouncement;
   },
 
-  // 13. Get conversation partners
+  // 13. Get conversation partners (optimized batch retrieval)
   async getConversationPartners(userId: string): Promise<any[]> {
     validateUUID(userId);
 
-    // Query otimizada: buscar apenas mensagens necessárias por parceiro
-    // Buscar IDs únicos de parceiros com mensagens não lidas + última mensagem
-    const { data: allMsgs, error: msgsError } = await supabase
-      .from('messages')
-      .select('id, sender_id, receiver_id, texto, lido, created_at')
-      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-      .order('created_at', { ascending: false })
-      .limit(500); // Limitar para performance
+    // Step A: Fetch distinct sender/receiver partners with message status
+    const [sentResult, receivedResult] = await Promise.all([
+      supabase
+        .from('messages')
+        .select('receiver_id')
+        .eq('sender_id', userId)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('messages')
+        .select('sender_id, lido')
+        .eq('receiver_id', userId)
+        .order('created_at', { ascending: false }),
+    ]);
 
-    if (msgsError) {
-      console.error('Error fetching conversation partners:', msgsError);
-      throw msgsError;
+    if (sentResult.error) {
+      console.error('Error fetching sent partners:', sentResult.error);
+      throw sentResult.error;
+    }
+    if (receivedResult.error) {
+      console.error('Error fetching received partners:', receivedResult.error);
+      throw receivedResult.error;
     }
 
-    const messages = (allMsgs || []) as SupabaseMessage[];
+    const partnerMap = new Map<string, { unreadCount: number }>();
     
-    const partnerMap = new Map<string, { lastMessage: SupabaseMessage; unreadCount: number }>();
+    for (const msg of receivedResult.data || []) {
+      const pid = msg.sender_id;
+      if (!partnerMap.has(pid)) {
+        partnerMap.set(pid, { unreadCount: 0 });
+      }
+      if (!msg.lido) {
+        partnerMap.get(pid)!.unreadCount++;
+      }
+    }
     
-    messages.forEach((msg) => {
-      const partnerId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
-      if (!partnerId) return;
-      
-      // Filter out deleted messages or clear boundaries if loaded
-      const localClearVal = localStorage.getItem(`chat_clear_${userId}_${partnerId}`);
-      if (localClearVal && new Date(msg.created_at).getTime() <= new Date(localClearVal).getTime()) {
-        return;
+    for (const msg of sentResult.data || []) {
+      if (!partnerMap.has(msg.receiver_id)) {
+        partnerMap.set(msg.receiver_id, { unreadCount: 0 });
       }
-      
-      const localDeleted = JSON.parse(localStorage.getItem(`chat_deleted_for_me_${userId}_${partnerId}`) || '[]');
-      if (localDeleted.includes(msg.id)) {
-        return;
-      }
+    }
 
-      const isUnread = msg.receiver_id === userId && !msg.lido;
-      
-      const existing = partnerMap.get(partnerId);
-      if (!existing) {
-        partnerMap.set(partnerId, {
-          lastMessage: msg,
-          unreadCount: isUnread ? 1 : 0
-        });
-      } else {
-        existing.unreadCount += isUnread ? 1 : 0;
-      }
-    });
-    
     if (partnerMap.size === 0) return [];
-    
+
     const partnerIds = Array.from(partnerMap.keys());
-    const { data: users, error } = await supabase
-      .from('users')
-      .select('id, email, nome_completo, role, foto_perfil')
-      .in('id', partnerIds);
-      
-    if (error) {
-      console.error('Error fetching partner profiles:', error);
-      throw error;
+
+    // Step B: Retrieve partner profiles and their latest chat message in parallel
+    const [usersResult, ...lastMsgResults] = await Promise.all([
+      supabase
+        .from('users')
+        .select('id, email, nome_completo, role, foto_perfil')
+        .in('id', partnerIds),
+      ...partnerIds.map(pid =>
+        supabase
+          .from('messages')
+          .select('*')
+          .or(`and(sender_id.eq.${userId},receiver_id.eq.${pid}),and(sender_id.eq.${pid},receiver_id.eq.${userId})`)
+          .order('created_at', { ascending: false })
+          .limit(1)
+      )
+    ]);
+
+    if (usersResult.error) {
+      console.error('Error fetching partner profiles:', usersResult.error);
+      throw usersResult.error;
     }
-    
-    return users.map((u) => {
-      const entry = partnerMap.get(u.id)!;
+
+    return (usersResult.data || []).map((u: any, index: number) => {
+      const entry = partnerMap.get(u.id);
+      const lastMsgData = lastMsgResults[index];
+      const lastMessage = lastMsgData?.data?.[0] || null;
+
       return {
         id: u.id,
         email: u.email,
         nome_completo: u.nome_completo,
         role: u.role,
         foto_perfil: u.foto_perfil,
-        lastMessage: entry.lastMessage,
-        unreadCount: entry.unreadCount
+        lastMessage,
+        unreadCount: entry?.unreadCount || 0
       };
     });
   },
@@ -469,62 +471,54 @@ export const messageService = {
   // 15. Reactions Support (Graceful mockable layer)
   async addReaction(messageId: string, userId: string, emoji: string): Promise<boolean> {
     validateUUID(userId);
-    try {
-      const { error } = await supabase
-        .from('message_reactions')
-        .insert({ message_id: messageId, user_id: userId, emoji });
-      if (error) throw error;
-      return true;
-    } catch (err) {
-      console.error('Erro ao adicionar reação (tabela message_reactions pode não existir):', err);
-      throw err;
+    const { error } = await supabase
+      .from('message_reactions')
+      .insert({ message_id: messageId, user_id: userId, emoji });
+    if (error) {
+      console.error('Erro ao adicionar reação (tabela message_reactions):', error);
+      throw error;
     }
+    return true;
   },
 
   async removeReaction(messageId: string, userId: string, emoji: string): Promise<boolean> {
     validateUUID(userId);
-    try {
-      const { error } = await supabase
-        .from('message_reactions')
-        .delete()
-        .eq('message_id', messageId)
-        .eq('user_id', userId)
-        .eq('emoji', emoji);
-      if (error) throw error;
-      return true;
-    } catch (err) {
-      console.error('Erro ao remover reação:', err);
-      throw err;
+    const { error } = await supabase
+      .from('message_reactions')
+      .delete()
+      .eq('message_id', messageId)
+      .eq('user_id', userId)
+      .eq('emoji', emoji);
+    if (error) {
+      console.error('Erro ao remover reação:', error);
+      throw error;
     }
+    return true;
   },
 
   // 16. Pin Support (Graceful mockable layer)
   async pinMessage(conversationKey: string, messageId: string, userId: string): Promise<boolean> {
     validateUUID(userId);
-    try {
-      const { error } = await supabase
-        .from('pinned_messages')
-        .insert({ conversation_key: conversationKey, message_id: messageId, pinned_by: userId });
-      if (error) throw error;
-      return true;
-    } catch (err) {
-      console.error('Erro ao fixar mensagem (tabela pinned_messages pode não existir):', err);
-      throw err;
+    const { error } = await supabase
+      .from('pinned_messages')
+      .insert({ conversation_key: conversationKey, message_id: messageId, pinned_by: userId });
+    if (error) {
+      console.error('Erro ao fixar mensagem (tabela pinned_messages):', error);
+      throw error;
     }
+    return true;
   },
 
   async unpinMessage(conversationKey: string, messageId: string): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from('pinned_messages')
-        .delete()
-        .eq('conversation_key', conversationKey)
-        .eq('message_id', messageId);
-      if (error) throw error;
-      return true;
-    } catch (err) {
-      console.error('Erro ao desafixar mensagem:', err);
-      throw err;
+    const { error } = await supabase
+      .from('pinned_messages')
+      .delete()
+      .eq('conversation_key', conversationKey)
+      .eq('message_id', messageId);
+    if (error) {
+      console.error('Erro ao desafixar mensagem:', error);
+      throw error;
     }
+    return true;
   }
 };

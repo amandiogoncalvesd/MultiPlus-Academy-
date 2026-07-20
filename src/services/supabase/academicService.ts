@@ -1,5 +1,23 @@
 import { supabase } from '../../lib/supabase/client';
-import { Course } from '../../types';
+import { generateSlug } from '../../lib/utils/slug';
+import { quizService } from './quizService';
+import { schedulingService } from './schedulingService';
+import { noteService } from './noteService';
+import { progressService } from './progressService';
+import { materialService } from './materialService';
+import { enrollmentService } from './enrollmentService';
+
+// Re-exportar serviços especializados para compatibilidade temporária
+// Os consumidores podem migrar para importar diretamente dos novos serviços
+export { quizService } from './quizService';
+export { schedulingService } from './schedulingService';
+export { noteService } from './noteService';
+export { progressService } from './progressService';
+export { materialService } from './materialService';
+
+// =========================================================================
+// Interfaces compartilhadas (mantidas aqui pois são usadas por múltiplos serviços)
+// =========================================================================
 
 export interface DBEnrollment {
   id: string;
@@ -19,6 +37,10 @@ export interface DBLesson {
   video_url?: string;
   ordem: number;
   duracao?: string;
+  scheduled_at?: string;
+  status?: string;
+  quiz?: any;
+  meeting_url?: string;
 }
 
 export interface DBModule {
@@ -45,12 +67,16 @@ export interface DBLessonProgress {
   created_at: string;
 }
 
+// =========================================================================
+// Serviço acadêmico — apenas cursos, módulos, aulas, matrículas e certificados
+// =========================================================================
+
 export const academicService = {
   // =========================================================================
   // 1. COURSES CRUD
   // =========================================================================
   async getCourses(onlyActive = true): Promise<any[]> {
-    let query = supabase.from('courses').select('*');
+    let query = supabase.from('courses').select('id, title, slug, description, thumbnail, category, level, duration, status, teacher_id, created_at');
     if (onlyActive) {
       query = query.eq('status', 'PUBLISHED');
     }
@@ -64,7 +90,7 @@ export const academicService = {
 
   async createCourse(course: any): Promise<any> {
     const titleVal = course.title || course.titulo || 'Novo Curso';
-    const slugVal = course.slug || titleVal.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
+    const slugVal = course.slug || generateSlug(titleVal);
     const { data, error } = await supabase
       .from('courses')
       .insert({
@@ -155,12 +181,12 @@ export const academicService = {
   },
 
   // =========================================================================
-  // 3. LESSONS AND MATERIALS SYSTEM
+  // 3. LESSONS SYSTEM
   // =========================================================================
   async getLessons(courseId: string): Promise<DBLesson[]> {
     const { data, error } = await supabase
       .from('lessons')
-      .select('*')
+      .select('id, course_id, module_id, titulo, descricao, video_url, ordem, duracao, scheduled_at, status, quiz, meeting_url')
       .eq('course_id', courseId)
       .order('ordem', { ascending: true });
 
@@ -199,30 +225,14 @@ export const academicService = {
   },
 
   // =========================================================================
-  // 4. ENROLLMENTS & PROGRESS
+  // 4. ENROLLMENTS
   // =========================================================================
-  async enrollStudent(studentId: string, courseId: string): Promise<DBEnrollment> {
-    const { data, error } = await supabase
-      .from('enrollments')
-      .insert({
-        student_id: studentId,
-        course_id: courseId,
-        status: 'ACTIVE'
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error enrolling student:', error);
-      throw error;
-    }
-    return data;
-  },
+  enrollStudent: enrollmentService.enrollStudent.bind(enrollmentService),
 
   async getStudentEnrollments(studentId: string): Promise<any[]> {
     const { data, error } = await supabase
       .from('enrollments')
-      .select('*, course:courses(*)')
+      .select('id, student_id, course_id, status, data_inicio, progress_percent, course:courses(id, title, slug, thumbnail, duration, category, status)')
       .eq('student_id', studentId);
 
     if (error) {
@@ -250,45 +260,12 @@ export const academicService = {
   },
 
   // =========================================================================
-  // 5. LESSON COMPLETIONS
-  // =========================================================================
-  async getCompletedLessons(studentId: string, courseId: string): Promise<string[]> {
-    const { data, error } = await supabase
-      .from('lesson_progress')
-      .select('lesson_id')
-      .eq('student_id', studentId)
-      .eq('completed', true);
-
-    if (error) {
-      console.error('Error fetching completed lessons:', error);
-      return [];
-    }
-    return (data || []).map((row: any) => row.lesson_id);
-  },
-
-  async markLessonComplete(studentId: string, courseId: string, lessonId: string, completed = true): Promise<boolean> {
-    const { error } = await supabase
-      .from('lesson_progress')
-      .upsert({
-        student_id: studentId,
-        lesson_id: lessonId,
-        completed
-      }, { onConflict: 'student_id,lesson_id' });
-
-    if (error) {
-      console.error('Upsert on lesson_progress failed:', error);
-      throw error;
-    }
-    return true;
-  },
-
-  // =========================================================================
-  // 6. CERTIFICATES GENERATION & VALIDATION
+  // 5. CERTIFICATES
   // =========================================================================
   async getStudentCertificates(studentId: string): Promise<any[]> {
     const { data, error } = await supabase
       .from('certificates')
-      .select('*, course:courses(*)')
+      .select('*, course:courses(id, title, slug, thumbnail, duration)')
       .eq('student_id', studentId);
 
     if (error) {
@@ -301,7 +278,7 @@ export const academicService = {
   async verifyCertificate(codigo: string): Promise<any> {
     const { data, error } = await supabase
       .from('certificates')
-      .select('*, student:users(*), course:courses(*)')
+      .select('*, student:users(id, email, nome_completo, role, foto_perfil), course:courses(id, title, slug, description)')
       .eq('codigo_validacao', codigo.trim().toUpperCase())
       .maybeSingle();
 
@@ -312,286 +289,32 @@ export const academicService = {
     return data;
   },
 
-  async getQuizByLesson(lessonId: string): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('lessons')
-      .select('quiz')
-      .eq('id', lessonId)
-      .maybeSingle();
+  // =========================================================================
+  // 6. DELEGATED METHODS (compatibilidade — chamar serviços especializados)
+  // =========================================================================
+  // Quiz
+  getQuizByLesson: quizService.getQuizByLesson,
+  submitQuizResponse: quizService.submitQuizResponse,
+  getQuizSubmissions: quizService.getQuizSubmissions,
 
-    if (error) {
-      console.error('Error fetching quiz by lesson:', error);
-      throw error;
-    }
-    
-    return data?.quiz || [];
-  },
+  // Scheduling
+  scheduleLesson: schedulingService.scheduleLesson,
+  getScheduledLessonsForStudent: schedulingService.getScheduledLessonsForStudent,
+  getScheduledLessonsForProfessor: schedulingService.getScheduledLessonsForProfessor,
 
-  async submitQuizResponse(userId: string, lessonId: string, score: number, answers: any): Promise<any> {
-    const { data, error } = await supabase
-      .from('quiz_submissions')
-      .upsert({
-        student_id: userId,
-        lesson_id: lessonId,
-        answers: answers,
-        score: score,
-        submitted_at: new Date().toISOString()
-      }, { onConflict: 'student_id,lesson_id' })
-      .select()
-      .single();
+  // Progress
+  getCompletedLessons: progressService.getCompletedLessons,
+  markLessonComplete: progressService.markLessonComplete,
+  saveVideoProgress: progressService.saveVideoProgress,
+  getVideoProgress: progressService.getVideoProgress,
+  getStudentProgressMetrics: progressService.getStudentProgressMetrics,
 
-    if (error) {
-      console.error('Error submitting quiz response:', error);
-      throw error;
-    }
-    return data;
-  },
+  // Notes
+  getLessonNotes: noteService.getLessonNotes,
+  saveLessonNote: noteService.saveLessonNote,
 
-  async getQuizSubmissions(userId: string): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('quiz_submissions')
-      .select('*')
-      .eq('student_id', userId);
-
-    if (error) {
-      console.error('Error fetching quiz submissions:', error);
-      return [];
-    }
-    return data || [];
-  },
-
-  async scheduleLesson(lessonId: string, studentId: string, courseId: string, scheduledAt: string): Promise<any> {
-    const { data: targetData, error: targetError } = await supabase
-      .from('lesson_targets')
-      .upsert({
-        lesson_id: lessonId,
-        student_id: studentId,
-        course_id: courseId
-      }, { onConflict: 'lesson_id,student_id' })
-      .select()
-      .single();
-
-    if (targetError) {
-      console.error('Error inserting into lesson_targets:', targetError);
-      throw targetError;
-    }
-
-    const { error: lessonError } = await supabase
-      .from('lessons')
-      .update({
-        scheduled_at: scheduledAt,
-        status: 'PUBLISHED'
-      })
-      .eq('id', lessonId);
-
-    if (lessonError) {
-      console.warn('Error updating scheduled_at on lessons:', lessonError);
-    }
-
-    return targetData;
-  },
-
-  async getScheduledLessonsForStudent(studentId: string): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('lesson_targets')
-      .select('*, lesson:lessons(*, course:courses(*))')
-      .eq('student_id', studentId);
-
-    if (error) {
-      console.error('Error fetching scheduled lessons for student:', error);
-      return [];
-    }
-    return data || [];
-  },
-
-  async getScheduledLessonsForProfessor(): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('lesson_targets')
-      .select('*, lesson:lessons(*, course:courses(*)), student:users(*)');
-
-    if (error) {
-      console.error('Error fetching scheduled lessons for professor:', error);
-      return [];
-    }
-    return data || [];
-  },
-
-  async getStudentProgressMetrics(userId: string): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('vw_student_progress')
-      .select('*')
-      .eq('student_id', userId);
-
-    if (error) {
-      console.warn('Error fetching student progress metrics from view, running direct calculation fallback:', error);
-      try {
-        const completed = await this.getCompletedLessons(userId, '');
-        const submissions = await this.getQuizSubmissions(userId);
-        const avgScore = submissions.length > 0 
-          ? Math.round(submissions.reduce((acc, curr) => acc + (Number(curr.score) || 0), 0) / submissions.length)
-          : 0;
-
-        // Buscar contagem real de aulas dos cursos do aluno
-        const { data: studentEnrollments } = await supabase
-          .from('enrollments')
-          .select('course_id')
-          .eq('student_id', userId)
-          .eq('status', 'ACTIVE');
-
-        const enrolledCourseIds = (studentEnrollments || []).map((e: any) => e.course_id);
-
-        let totalLessons = 0;
-        if (enrolledCourseIds.length > 0) {
-          const { count } = await supabase
-            .from('lessons')
-            .select('*', { count: 'exact', head: true })
-            .in('course_id', enrolledCourseIds);
-          totalLessons = count || 0;
-        }
-
-        return [{
-          student_id: userId,
-          total_lessons: totalLessons,
-          completed_lessons: completed.length,
-          progress_percent: totalLessons > 0 ? Math.min(100, Math.round((completed.length / totalLessons) * 100)) : 0,
-          avg_quiz_score: avgScore || 0,
-          last_activity: new Date().toISOString()
-        }];
-      } catch (fallbackErr) {
-        console.error('Fallback calculation also failed:', fallbackErr);
-        return [];
-      }
-    }
-    return data || [];
-  },
-
-  // Salvar progresso do vídeo
-  async saveVideoProgress(studentId: string, courseId: string, lessonId: string, secondsWatched: number): Promise<void> {
-    const { error } = await supabase
-      .from('lesson_progress')
-      .upsert({
-        student_id: studentId,
-        lesson_id: lessonId,
-        course_id: courseId,
-        video_progress_seconds: secondsWatched,
-      }, { onConflict: 'student_id,lesson_id' });
-    if (error) console.error('Erro ao salvar progresso do vídeo:', error);
-  },
-
-  // Buscar progresso do vídeo de uma aula
-  async getVideoProgress(studentId: string, lessonId: string): Promise<number> {
-    const { data } = await supabase
-      .from('lesson_progress')
-      .select('video_progress_seconds')
-      .eq('student_id', studentId)
-      .eq('lesson_id', lessonId)
-      .maybeSingle();
-    return data?.video_progress_seconds || 0;
-  },
-
-  // Buscar apontamentos do aluno para uma aula
-  async getLessonNotes(studentId: string, lessonId: string): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('lesson_notes')
-      .select('*')
-      .eq('student_id', studentId)
-      .eq('lesson_id', lessonId)
-      .order('video_timestamp', { ascending: true });
-    if (error) { console.error('Erro ao buscar apontamentos:', error); return []; }
-    return data || [];
-  },
-
-  // Salvar apontamento do aluno
-  async saveLessonNote(studentId: string, lessonId: string, courseId: string, content: string, videoTimestamp: number): Promise<any> {
-    const { data, error } = await supabase
-      .from('lesson_notes')
-      .insert({
-        student_id: studentId,
-        lesson_id: lessonId,
-        course_id: courseId,
-        content,
-        video_timestamp: videoTimestamp
-      })
-      .select()
-      .single();
-    if (error) { console.error('Erro ao salvar apontamento:', error); throw error; }
-    return data;
-  },
-
-  // Buscar materiais de todos os cursos matriculados do aluno
-  async getStudentMaterials(studentId: string): Promise<any[]> {
-    // 1. Buscar cursos matriculados
-    const { data: enrollments } = await supabase
-      .from('enrollments')
-      .select('course_id')
-      .eq('student_id', studentId)
-      .eq('status', 'ACTIVE');
-    
-    if (!enrollments || enrollments.length === 0) return [];
-    
-    const courseIds = enrollments.map(e => e.course_id);
-    
-    // 2. Buscar aulas desses cursos
-    const { data: lessons } = await supabase
-      .from('lessons')
-      .select('id, course_id, titulo')
-      .in('course_id', courseIds);
-    
-    if (!lessons || lessons.length === 0) return [];
-    
-    const lessonIds = lessons.map(l => l.id);
-    
-    // 3. Buscar materiais associados
-    const { data: materials, error } = await supabase
-      .from('materials')
-      .select('*')
-      .in('lesson_id', lessonIds);
-    
-    if (error) { console.error('Erro ao buscar materiais:', error); return []; }
-    
-    // Enriquecer com informações do curso
-    return (materials || []).map(m => ({
-      ...m,
-      course_id: lessons.find(l => l.id === m.lesson_id)?.course_id,
-      lesson_title: lessons.find(l => l.id === m.lesson_id)?.titulo
-    }));
-  },
-
-  // Buscar tarefas do aluno
-  async getStudentAssignments(studentId: string): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('enrollments')
-      .select('course_id, course:courses(id, title)')
-      .eq('student_id', studentId)
-      .eq('status', 'ACTIVE');
-    
-    if (error || !data) return [];
-    
-    const courseIds = data.map(e => e.course_id);
-    
-    const { data: assignments, error: aError } = await supabase
-      .from('assignments')
-      .select('*')
-      .in('course_id', courseIds)
-      .eq('status', 'PUBLISHED');
-    
-    if (aError) { console.error('Erro ao buscar tarefas:', aError); return []; }
-    return assignments || [];
-  },
-
-  // Submeter tarefa
-  async submitAssignment(assignmentId: string, studentId: string, submission: { text?: string; url?: string }): Promise<any> {
-    const { data, error } = await supabase
-      .from('assignment_submissions')
-      .upsert({
-        assignment_id: assignmentId,
-        student_id: studentId,
-        submission_text: submission.text || null,
-        submission_url: submission.url || null,
-      }, { onConflict: 'assignment_id,student_id' })
-      .select()
-      .single();
-    if (error) { console.error('Erro ao submeter tarefa:', error); throw error; }
-    return data;
-  }
+  // Materials & Assignments
+  getStudentMaterials: materialService.getStudentMaterials,
+  getStudentAssignments: materialService.getStudentAssignments,
+  submitAssignment: materialService.submitAssignment,
 };

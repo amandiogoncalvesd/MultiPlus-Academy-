@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PageId, User } from './types';
 import Navbar from './components/Navbar';
@@ -10,27 +10,24 @@ import InstructorsPanel from './components/InstructorsPanel';
 import BlogPanel from './components/BlogPanel';
 import ContactPanel from './components/ContactPanel';
 import LoginPanel from './components/LoginPanel';
-import StudentPortal from './components/StudentPortal';
-import InstructorPortal from './components/InstructorPortal';
-import AdminPortal from './components/AdminPortal';
 import VerifyCertificatePanel from './components/VerifyCertificatePanel';
-import MessagesPage from './components/MessagesPage';
 import { X, GraduationCap, CheckCircle2, Phone, Award, Scale } from 'lucide-react';
 import { useAuth } from './components/auth/AuthProvider';
 import { supabase } from './lib/supabase/client';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { ToastProvider } from './components/ui/Toast';
+import LoadingSpinner from './components/ui/LoadingSpinner';
+
+const StudentPortal = lazy(() => import('./components/StudentPortal'));
+const InstructorPortal = lazy(() => import('./components/InstructorPortal'));
+const AdminPortal = lazy(() => import('./components/AdminPortal'));
+const MessagesPage = lazy(() => import('./components/MessagesPage'));
 
 export default function App() {
-  const { user } = useAuth();
+  const { user: currentUser } = useAuth();
   const [currentPage, setCurrentPage] = useState<PageId>('home');
   const [previousDashboardPage, setPreviousDashboardPage] = useState<PageId>('admin-dashboard');
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [courses, setCourses] = useState<any[]>([]);
-
-  useEffect(() => {
-    setCurrentUser(user);
-  }, [user]);
 
   const [verificationCode, setVerificationCode] = useState<string>('');
   const [showSplash, setShowSplash] = useState(true);
@@ -139,14 +136,12 @@ export default function App() {
       case 'contact':
         return <ContactPanel setCurrentPage={setCurrentPage} />;
       case 'login':
-        return <LoginPanel setCurrentPage={setCurrentPage} currentUser={currentUser} setCurrentUser={setCurrentUser} />;
+        return <LoginPanel setCurrentPage={setCurrentPage} />;
       case 'student-dashboard':
         return (
           <ProtectedRoute allowedRoles={['ALUNO', 'PROFESSOR', 'ADMIN']} setCurrentPage={setCurrentPage}>
             <StudentPortal 
               setCurrentPage={setCurrentPage} 
-              currentUser={currentUser} 
-              setCurrentUser={setCurrentUser} 
               setVerificationCode={setVerificationCode}
             />
           </ProtectedRoute>
@@ -154,13 +149,13 @@ export default function App() {
       case 'instructor-dashboard':
         return (
           <ProtectedRoute allowedRoles={['PROFESSOR', 'ADMIN']} setCurrentPage={setCurrentPage}>
-            <InstructorPortal setCurrentPage={setCurrentPage} currentUser={currentUser} setCurrentUser={setCurrentUser} />
+            <InstructorPortal setCurrentPage={setCurrentPage} />
           </ProtectedRoute>
         );
       case 'admin-dashboard':
         return (
           <ProtectedRoute allowedRoles={['ADMIN']} setCurrentPage={setCurrentPage}>
-            <AdminPortal setCurrentPage={setCurrentPage} currentUser={currentUser} setCurrentUser={setCurrentUser} />
+            <AdminPortal setCurrentPage={setCurrentPage} />
           </ProtectedRoute>
         );
       case 'verify-certificate':
@@ -268,8 +263,6 @@ export default function App() {
             setSignUpCourse(courses[0]?.id || '');
             setIsSignUpOpen(true);
           }} 
-          currentUser={currentUser}
-          setCurrentUser={setCurrentUser}
         />
       )}
 
@@ -284,7 +277,9 @@ export default function App() {
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             className="flex-grow flex flex-col"
           >
-            {renderActivePage()}
+            <Suspense fallback={<LoadingSpinner text="A carregar painel..." />}>
+              {renderActivePage()}
+            </Suspense>
           </motion.div>
         </AnimatePresence>
       </main>

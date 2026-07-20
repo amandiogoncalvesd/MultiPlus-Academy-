@@ -1,33 +1,33 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
+const rawUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
+const rawKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  const errorMsg = [
-    'ERRO CRÍTICO: Variáveis de ambiente do Supabase não configuradas!',
-    '',
-    'Certifique-se de que o ficheiro .env contém:',
-    '  VITE_SUPABASE_URL=https://seu-projeto.supabase.co',
-    '  VITE_SUPABASE_ANON_KEY=sua-anon-key',
-    '',
-    'A aplicação não pode funcionar sem estas variáveis.',
-  ].join('\n');
-  
-  console.error(errorMsg);
-  throw new Error(errorMsg);
+const isUrlValid = rawUrl && rawUrl.startsWith('http') && !rawUrl.includes('placeholder') && !rawUrl.includes('your-project');
+const isKeyValid = rawKey && rawKey !== 'placeholder-anon-key' && rawKey !== 'your-anon-key' && !rawKey.startsWith('your-');
+
+if (!isUrlValid || !isKeyValid) {
+  console.warn(
+    'Supabase: Credenciais inválidas ou ausentes. Defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no .env. A autenticação não funcionará.'
+  );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 10,
+export const supabase = createClient(
+  isUrlValid ? rawUrl : 'https://placeholder-project.supabase.co',
+  isKeyValid ? rawKey : 'placeholder-anon-key',
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
     },
-  },
-});
+    realtime: {
+      params: {
+        eventsPerSecond: 10,
+      },
+    },
+  }
+);
+
+export const isSupabaseMock = !isUrlValid || !isKeyValid;
 

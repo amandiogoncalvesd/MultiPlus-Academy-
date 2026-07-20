@@ -1,10 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase/client';
-import { authService, SupabaseAuthUser } from '../../services/supabase/authService';
+import { authService } from '../../services/supabase/authService';
 import { userService, SupabaseUserProfile } from '../../services/supabase/userService';
 import { User, UserRole } from '../../types';
-
-
+import { mapSupabaseUserToAppUser } from '../../lib/utils/userMapper';
 
 interface AuthContextType {
   user: User | null;
@@ -13,14 +12,11 @@ interface AuthContextType {
   role: 'ALUNO' | 'PROFESSOR' | 'ADMIN' | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<User>;
-  login: (email: string, password: string) => Promise<User>;
   signUp: (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR') => Promise<any>;
-  register: (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR') => Promise<any>;
   signOut: () => Promise<void>;
-  logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<any>;
-  recoverPassword: (email: string) => Promise<any>;
   refreshProfile: () => Promise<void>;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,18 +27,15 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
   const [userProfile, setUserProfile] = useState<SupabaseUserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Map Supabase role to local UserRole
-  const mapSupabaseRole = (sbRole: string): UserRole => {
-    if (sbRole === 'ADMIN') return 'ADMIN';
-    if (sbRole === 'PROFESSOR') return 'PROFESSOR';
-    return 'ALUNO';
-  };
-
   // Map local UserRole to Supabase role
   const mapLocalRole = (localRole: UserRole): 'ADMIN' | 'PROFESSOR' | 'ALUNO' => {
     if (localRole === 'ADMIN') return 'ADMIN';
     if (localRole === 'PROFESSOR') return 'PROFESSOR';
     return 'ALUNO';
+  };
+
+  const updateUser = (updates: Partial<User>) => {
+    setCurrentUser(prev => prev ? { ...prev, ...updates } : prev);
   };
 
   // Calcular métricas reais de progresso do aluno
@@ -72,7 +65,6 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
         progressData.map((p: any) => new Date(p.created_at).toISOString().split('T')[0])
       )].sort().reverse();
 
-      let streak = 0;
       let longestStreak = 0;
       let currentStreak = 0;
       const today = new Date().toISOString().split('T')[0];
@@ -93,7 +85,7 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
       // Verificar se o streak atual está ativo (último dia é hoje ou ontem)
       const lastDay = sortedDays[sortedDays.length - 1];
       const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-      streak = (lastDay === today || lastDay === yesterday) ? currentStreak : 0;
+      const streak = (lastDay === today || lastDay === yesterday) ? currentStreak : 0;
 
       return { streak, longestStreak, totalHoursLearned };
     } catch (err) {
@@ -116,20 +108,7 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
           .single();
 
         if (userData) {
-          const matchedRole = mapSupabaseRole(userData.role);
-          const localUser: User = {
-            id: userData.id,
-            email: userData.email,
-            firstName: userData.nome_completo?.split(' ')[0] || '',
-            lastName: userData.nome_completo?.split(' ').slice(1).join(' ') || '',
-            role: matchedRole,
-            avatarUrl: userData.foto_perfil || '',
-            phone: userData.telefone || '',
-            status: 'ACTIVE',
-            streak: 0,
-            longestStreak: 0,
-            totalHoursLearned: 0
-          };
+          const localUser = mapSupabaseUserToAppUser(userData);
           setCurrentUser(localUser);
           
           // Calcular métricas reais de forma assíncrona
@@ -145,19 +124,16 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
           // The public.users row may not exist yet if the trigger hasn't fired.
           // On next sync, the correct role will be read from public.users.
           const uMeta = sbSession.user.user_metadata;
-          const localUser: User = {
+          const fallbackUser = {
             id: sbSession.user.id,
             email: sbSession.user.email || '',
-            firstName: uMeta?.nome_completo?.split(' ')[0] || uMeta?.firstName || '',
-            lastName: uMeta?.nome_completo?.split(' ').slice(1).join(' ') || uMeta?.lastName || '',
-            role: 'ALUNO' as const,
-            avatarUrl: uMeta?.foto_perfil || null,
-            phone: uMeta?.telefone || '',
-            status: 'ACTIVE',
-            streak: 0,
-            longestStreak: 0,
-            totalHoursLearned: 0
+            nome_completo: uMeta?.nome_completo || `${uMeta?.firstName || ''} ${uMeta?.lastName || ''}`.trim(),
+            role: 'ALUNO',
+            foto_perfil: uMeta?.foto_perfil || null,
+            telefone: uMeta?.telefone || '',
+            status: 'ACTIVE'
           };
+          const localUser = mapSupabaseUserToAppUser(fallbackUser);
           setCurrentUser(localUser);
 
           calculateUserMetrics(sbSession.user.id).then(metrics => {
@@ -209,20 +185,8 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
       if (!result || !result.user) {
         throw new Error('Falha na autenticação.');
       }
-      const localRole = mapSupabaseRole(result.user.role);
-      const mappedUser: User = {
-        id: result.user.id,
-        email: result.user.email,
-        firstName: result.user.nome_completo.split(' ')[0] || '',
-        lastName: result.user.nome_completo.split(' ').slice(1).join(' ') || '',
-        role: localRole,
-        avatarUrl: result.user.foto_perfil || '',
-        phone: result.user.telefone || '',
-        status: 'ACTIVE',
-        streak: 0,
-        longestStreak: 0,
-        totalHoursLearned: 0
-      };
+      
+      const mappedUser = mapSupabaseUserToAppUser(result.user);
       setCurrentUser(mappedUser);
 
       calculateUserMetrics(result.user.id).then(metrics => {
@@ -236,8 +200,6 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
     }
   };
 
-  const login = signIn;
-
   const signUp = async (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR' = 'ALUNO'): Promise<any> => {
     setLoading(true);
     try {
@@ -248,8 +210,6 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
       setLoading(false);
     }
   };
-
-  const register = signUp;
 
   const signOut = async () => {
     setLoading(true);
@@ -271,13 +231,9 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
     }
   };
 
-  const logout = signOut;
-
   const resetPassword = async (email: string) => {
     return await authService.recoverPassword(email);
   };
-
-  const recoverPassword = resetPassword;
 
   const refreshProfile = async () => {
     if (currentUser) {
@@ -321,14 +277,11 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
         role: mappedRole,
         loading,
         signIn,
-        login,
         signUp,
-        register,
         signOut,
-        logout,
         resetPassword,
-        recoverPassword,
-        refreshProfile
+        refreshProfile,
+        updateUser
       }}
     >
       {children}

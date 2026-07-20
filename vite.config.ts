@@ -11,8 +11,30 @@ export default defineConfig(() => {
     },
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve(__dirname, './src'),
       },
+    },
+    build: {
+      sourcemap: true,
+      emptyOutDir: true,
+      chunkSizeWarningLimit: 500,
+      rollupOptions: {
+        output: {
+          chunkFileNames: 'assets/js/[name]-[hash].js',
+          entryFileNames: 'assets/js/[name]-[hash].js',
+          assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom'],
+            'vendor-motion': ['motion/react'],
+            'vendor-supabase': ['@supabase/supabase-js'],
+            'vendor-lucide': ['lucide-react'],
+            'vendor-pdf': ['jspdf'],
+            'vendor-gsap': ['gsap'],
+          },
+        },
+      },
+      minify: 'esbuild',
+      target: 'es2022',
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.

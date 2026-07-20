@@ -57,17 +57,14 @@ import StudentProgressTab from './portal/StudentProgressTab';
 
 interface StudentPortalProps {
   setCurrentPage: (page: PageId) => void;
-  currentUser: User | null;
-  setCurrentUser: (user: User | null) => void;
   setVerificationCode: (code: string) => void;
 }
 
 export default function StudentPortal({
   setCurrentPage,
-  currentUser,
-  setCurrentUser,
   setVerificationCode
 }: StudentPortalProps) {
+  const { user: currentUser, updateUser: setCurrentUser } = useAuth();
   // Navigation Tabs state
   const [activeTab, setActiveTab] = useState<'dashboard' | 'courses' | 'calendar' | 'materials' | 'tasks' | 'messages' | 'certificates' | 'progress' | 'profile' | 'settings'>('dashboard');
   

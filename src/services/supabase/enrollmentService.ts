@@ -1,5 +1,6 @@
 import { supabase } from '../../lib/supabase/client';
 import { notificationService } from './notificationService';
+import { mapSupabaseUserToAppUser } from '../../lib/utils/userMapper';
 
 export interface Enrollment {
   id: string;
@@ -96,51 +97,30 @@ export const enrollmentService = {
   },
 
   /**
-   * Gets all students enrolled in a specific course.
+   * Gets all students enrolled in a specific course using a single joined query (prevents N+1 query pattern).
    */
   async getCourseStudents(courseId: string): Promise<any[]> {
-    const { data: enrollments, error: enrollError } = await supabase
+    const { data, error } = await supabase
       .from('enrollments')
-      .select('*')
+      .select('id, created_at, status, student:users(id, email, nome_completo, role, foto_perfil, telefone, status)')
       .eq('course_id', courseId);
 
-    if (enrollError) {
-      console.error('Error fetching enrollments:', enrollError);
+    if (error) {
+      console.error('Error fetching course students:', error);
       return [];
     }
 
-    if (!enrollments || enrollments.length === 0) {
-      return [];
-    }
+    if (!data || data.length === 0) return [];
 
-    const studentIds = enrollments.map(e => e.student_id);
-
-    // Fetch matching user profiles
-    const { data: students, error: studentsError } = await supabase
-      .from('users')
-      .select('*')
-      .in('id', studentIds);
-
-    if (studentsError) {
-      console.error('Error fetching students for course:', studentsError);
-      return [];
-    }
-
-    return (students || []).map(student => {
-      const enrollment = enrollments.find(e => e.student_id === student.id);
+    return data.map((enrollment: any) => {
+      const student = enrollment.student;
+      if (!student) return null;
       return {
-        id: student.id,
-        email: student.email,
-        firstName: student.nome_completo?.split(' ')[0] || student.firstName || '',
-        lastName: student.nome_completo?.split(' ').slice(1).join(' ') || student.lastName || '',
-        role: student.role,
-        avatarUrl: student.foto_perfil || null,
-        phone: student.telefone || '',
-        status: student.status || 'ACTIVE',
-        enrolled_at: enrollment?.created_at,
-        enrollment_id: enrollment?.id
+        ...mapSupabaseUserToAppUser(student),
+        enrolled_at: enrollment.created_at,
+        enrollment_id: enrollment.id
       };
-    });
+    }).filter(Boolean);
   },
 
   /**
@@ -208,7 +188,7 @@ export const enrollmentService = {
   async getAllStudents(): Promise<any[]> {
     const { data: students, error } = await supabase
       .from('users')
-      .select('*')
+      .select('id, email, nome_completo, role, foto_perfil, telefone, status')
       .eq('role', 'ALUNO');
 
     if (error) {
@@ -216,14 +196,6 @@ export const enrollmentService = {
       return [];
     }
 
-    return (students || []).map(student => ({
-      id: student.id,
-      email: student.email,
-      firstName: student.nome_completo?.split(' ')[0] || student.firstName || '',
-      lastName: student.nome_completo?.split(' ').slice(1).join(' ') || student.lastName || '',
-      avatarUrl: student.foto_perfil || null,
-      phone: student.telefone || '',
-      status: student.status || 'ACTIVE'
-    }));
+    return (students || []).map(student => mapSupabaseUserToAppUser(student));
   }
 };

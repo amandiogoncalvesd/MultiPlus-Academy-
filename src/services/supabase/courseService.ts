@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase/client';
+import { generateSlug } from '../../lib/utils/slug';
 
 export interface SupabaseCourse {
   id: string;
@@ -88,7 +89,7 @@ export const courseService = {
    */
   async createCourse(course: Partial<SupabaseCourse>): Promise<SupabaseCourse> {
     const titleVal = course.title || 'Novo Curso';
-    const slugVal = course.slug || titleVal.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
+    const slugVal = course.slug || generateSlug(titleVal);
 
     const payload = {
       title: titleVal,
@@ -157,43 +158,5 @@ export const courseService = {
       throw error;
     }
     return true;
-  },
-
-  /**
-   * Enrolls a student in a course.
-   */
-  async enrollStudent(studentId: string, courseId: string): Promise<any> {
-    const { data, error } = await supabase
-      .from('enrollments')
-      .insert({
-        student_id: studentId,
-        course_id: courseId,
-        status: 'ACTIVE'
-      })
-      .select()
-      .single();
-    
-    if (error) {
-      console.error(`Error enrolling student ${studentId} in course ${courseId}:`, error);
-      throw error;
-    }
-    return data;
-  },
-
-  /**
-   * Retrieves enrollments for a student.
-   */
-  async getStudentEnrollments(studentId: string): Promise<any[]> {
-    const { data, error } = await supabase
-      .from('enrollments')
-      .select('*, course:courses(*)')
-      .eq('student_id', studentId)
-      .eq('status', 'ACTIVE');
-    
-    if (error) {
-      console.error(`Error fetching enrollments for student ${studentId}:`, error);
-      return [];
-    }
-    return data || [];
   }
 };

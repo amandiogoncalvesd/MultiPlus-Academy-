@@ -6,11 +6,9 @@ import StarBorder from './ui/StarBorder';
 
 interface LoginPanelProps {
   setCurrentPage: (page: PageId) => void;
-  currentUser: User | null;
-  setCurrentUser: (user: User | null) => void;
 }
 
-export default function LoginPanel({ setCurrentPage, currentUser, setCurrentUser }: LoginPanelProps) {
+export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
   const { signIn, signUp } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');

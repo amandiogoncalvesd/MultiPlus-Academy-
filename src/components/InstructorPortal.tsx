@@ -65,15 +65,12 @@ import CertificateIssueModal from './certificates/CertificateIssueModal';
 
 interface InstructorPortalProps {
   setCurrentPage: (page: PageId) => void;
-  currentUser: User | null;
-  setCurrentUser: (user: User | null) => void;
 }
 
 export default function InstructorPortal({
-  setCurrentPage,
-  currentUser,
-  setCurrentUser,
+  setCurrentPage
 }: InstructorPortalProps) {
+  const { user: currentUser, updateUser: setCurrentUser } = useAuth();
   const { signOut } = useAuth();
   const toast = useToast();
   

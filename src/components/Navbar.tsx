@@ -9,18 +9,14 @@ interface NavbarProps {
   currentPage: PageId;
   setCurrentPage: (page: PageId) => void;
   onOpenSignUp: () => void;
-  currentUser: User | null;
-  setCurrentUser: (user: User | null) => void;
 }
 
 export default function Navbar({ 
   currentPage, 
   setCurrentPage, 
   onOpenSignUp,
-  currentUser,
-  setCurrentUser
 }: NavbarProps) {
-  const { signOut } = useAuth();
+  const { signOut, user: currentUser } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -80,7 +76,6 @@ export default function Navbar({
     try {
       await signOut();
     } catch (e) {}
-    setCurrentUser(null);
     navigateTo('home');
   };
 
