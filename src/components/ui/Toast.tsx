@@ -60,21 +60,23 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed top-4 right-4 z-[9999] space-y-2 pointer-events-none" style={{ maxWidth: '380px' }}>
+      <div aria-live="polite" aria-atomic="true" className="pointer-events-none fixed inset-x-3 top-3 z-[9999] space-y-2 sm:left-auto sm:right-4 sm:top-4 sm:w-[min(380px,calc(100vw-2rem))]">
         <AnimatePresence>
           {toasts.map(toast => (
             <motion.div
               key={toast.id}
+              role={toast.type === 'error' ? 'alert' : 'status'}
               initial={{ opacity: 0, x: 80, scale: 0.95 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 80, scale: 0.95 }}
-              className={`pointer-events-auto p-3 rounded-xl border shadow-lg flex items-start gap-2.5 ${bgMap[toast.type]}`}
+              className={`pointer-events-auto flex items-start gap-2.5 rounded-2xl border p-3 shadow-lg ${bgMap[toast.type]}`}
             >
               <div className="shrink-0 mt-0.5">{iconMap[toast.type]}</div>
               <p className="text-xs text-ink-900 dark:text-cream-100 flex-1 leading-relaxed m-0">{toast.message}</p>
               <button
                 onClick={() => removeToast(toast.id)}
-                className="shrink-0 p-0.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-cream-200 border-0 bg-transparent cursor-pointer"
+                aria-label="Fechar notificação"
+                className="shrink-0 rounded p-0.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-cream-200 border-0 bg-transparent cursor-pointer"
               >
                 <X size={12} />
               </button>
