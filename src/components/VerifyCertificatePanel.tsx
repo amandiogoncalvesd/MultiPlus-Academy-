@@ -29,7 +29,7 @@ export default function VerifyCertificatePanel({
       if (match) {
         setResult({
           certificateNumber: match.codigo_validacao,
-          courseName: match.course?.titulo || 'Curso Jurídico',
+          courseName: match.course?.title || match.course?.titulo || 'Curso Jurídico',
           recipientName: match.student?.nome_completo || 'Aluno MultiPlus',
           completionDate: match.emitido_em ? match.emitido_em.slice(0, 10) : '2026-06-01',
           instructorName: 'Esmeralda Bruno Sumbelelo',

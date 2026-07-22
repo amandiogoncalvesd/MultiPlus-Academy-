@@ -23,12 +23,12 @@ export default function StudentSelector({
 
   useEffect(() => {
     loadAllStudents();
-  }, []);
+  }, [courseId, alreadyEnrolledIds]);
 
   const loadAllStudents = async () => {
     try {
       setLoading(true);
-      const allStudents = await enrollmentService.getAllStudents();
+      const allStudents = await enrollmentService.getEnrollmentCandidates(courseId);
       // Filter out already enrolled students
       const nonEnrolled = allStudents.filter(
         student => !alreadyEnrolledIds.includes(student.id)

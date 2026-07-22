@@ -16,7 +16,6 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [mobilePhone, setMobilePhone] = useState('');
-  const [userRole, setUserRole] = useState<UserRole>('ALUNO');
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -34,12 +33,10 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
           return;
         }
 
-        const dbRole: 'ALUNO' | 'PROFESSOR' = userRole === 'PROFESSOR' ? 'PROFESSOR' : 'ALUNO';
-
         const fullName = `${firstName.trim()} ${lastName.trim()}`;
 
         // Attempt real Supabase sign up
-        await signUp(email.trim(), password, fullName, dbRole);
+        await signUp(email.trim(), password, fullName);
         // Automate sign-in right after registration
         const authUser = await signIn(email.trim(), password);
         routeAccordingToRole(authUser.role);
@@ -174,16 +171,10 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
                         className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-sans focus:outline-none focus:border-[#C89B3C] focus:bg-white text-slate-900 placeholder-slate-400 shadow-2xs"
                       />
                     </div>
-                    <div>
-                      <label className="block text-[10px] font-mono font-bold uppercase text-slate-400 tracking-wider mb-1.5">Tipo de Acesso</label>
-                      <select
-                        value={userRole}
-                        onChange={(e) => setUserRole(e.target.value as UserRole)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-sans focus:outline-none focus:border-[#C89B3C] text-slate-900 shadow-2xs"
-                      >
-                        <option value="ALUNO">Aluno de Elite</option>
-                        <option value="PROFESSOR">Corpo de Formadores</option>
-                      </select>
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5">
+                      <span className="block text-[10px] font-mono font-bold uppercase text-slate-400 tracking-wider">Tipo de conta</span>
+                      <span className="mt-1 block text-xs font-semibold text-slate-700">Aluno</span>
+                      <span className="mt-0.5 block text-[10px] text-slate-500">Contas de professor são criadas pela administração.</span>
                     </div>
                   </div>
                 )}

@@ -12,7 +12,7 @@ interface AuthContextType {
   role: 'ALUNO' | 'PROFESSOR' | 'ADMIN' | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<User>;
-  signUp: (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR') => Promise<any>;
+  signUp: (email: string, password: string, name: string) => Promise<any>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<any>;
   refreshProfile: () => Promise<void>;
@@ -200,12 +200,10 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
     }
   };
 
-  const signUp = async (email: string, password: string, name: string, role: 'ALUNO' | 'PROFESSOR' = 'ALUNO'): Promise<any> => {
+  const signUp = async (email: string, password: string, name: string): Promise<any> => {
     setLoading(true);
     try {
-      // SECURITY: Never allow ADMIN role from client-side signup
-      const safeRole: 'ALUNO' | 'PROFESSOR' = role === 'PROFESSOR' ? 'PROFESSOR' : 'ALUNO';
-      return await authService.register(email, password, name, safeRole);
+      return await authService.register(email, password, name);
     } finally {
       setLoading(false);
     }

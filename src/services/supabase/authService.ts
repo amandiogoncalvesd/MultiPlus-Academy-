@@ -67,16 +67,15 @@ export const authService = {
   /**
    * Registers a new user with Supabase Auth
    */
-  async register(email: string, password: string, nomeCompleto: string, role: 'ALUNO' | 'PROFESSOR' = 'ALUNO'): Promise<any> {
-    // SECURITY: Force ALUNO for self-registration. Role elevation must go through admin panel only.
-    const safeRole: 'ALUNO' | 'PROFESSOR' = role === 'PROFESSOR' ? 'PROFESSOR' : 'ALUNO';
+  async register(email: string, password: string, nomeCompleto: string): Promise<any> {
+    // Public registration is intentionally roleless. The database trigger creates ALUNO.
+    // Professor and administrator accounts are provisioned by an authorized admin flow only.
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
-          nome_completo: nomeCompleto,
-          role: safeRole
+          nome_completo: nomeCompleto
         }
       }
     });

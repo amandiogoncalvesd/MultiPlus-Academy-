@@ -277,16 +277,30 @@ export const academicService = {
 
   async verifyCertificate(codigo: string): Promise<any> {
     const { data, error } = await supabase
-      .from('certificates')
-      .select('*, student:users(id, email, nome_completo, role, foto_perfil), course:courses(id, title, slug, description)')
-      .eq('codigo_validacao', codigo.trim().toUpperCase())
+      .rpc('verify_certificate_public', { p_codigo: codigo.trim() })
       .maybeSingle();
 
     if (error) {
       console.error('Error verifying certificate:', error);
       throw error;
     }
-    return data;
+    if (!data) return null;
+
+    const certificate = data as {
+      codigo_validacao: string;
+      emitido_em: string;
+      final_grade: number | null;
+      student_name: string;
+      course_title: string;
+    };
+
+    return {
+      codigo_validacao: certificate.codigo_validacao,
+      emitido_em: certificate.emitido_em,
+      final_grade: certificate.final_grade,
+      student: { nome_completo: certificate.student_name },
+      course: { title: certificate.course_title },
+    };
   },
 
   // =========================================================================

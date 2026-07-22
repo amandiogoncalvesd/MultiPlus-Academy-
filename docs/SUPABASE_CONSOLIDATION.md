@@ -21,6 +21,7 @@ As migrations devem ser aplicadas em ordem numérica. O arquivo `supabase_schema
 | `003_messages_whatsapp_features.sql` | Edição/remoção/resposta de mensagem e limpeza de conversa. |
 | `004_video_notes_assignments.sql` | Progresso de vídeo, notas, tarefas e submissões. |
 | `005_schema_reconciliation.sql` | Completa colunas, tabelas, índices, buckets e Realtime que já eram consultados pelo front-end mas não estavam versionados. |
+| `006_security_rbac_and_lesson_access.sql` | Fecha cadastro público, RLS por curso/matrícula, RPCs mínimos e janela de acesso de aula. |
 
 ## Entidades reconciliadas pela migration 005
 
@@ -95,10 +96,4 @@ Esses valores pertencem aos secrets do Supabase/Vercel/GitHub Actions, conforme 
 
 ## Próxima migration: segurança por escopo acadêmico
 
-A migration 005 cria o mínimo de RLS para as novas tabelas. A próxima etapa deve revisar e substituir as policies históricas das tabelas centrais (`users`, `profiles`, `courses`, `enrollments`, `lessons`, `materials`, `certificates`, `messages`) para garantir:
-
-1. aluno só lê os próprios recursos e cursos matriculados;
-2. professor só gere cursos e alunos vinculados a ele;
-3. administrador gere o escopo institucional;
-4. cadastro público cria somente aluno;
-5. armazenamento de certificados e materiais sensíveis é privado.
+A migration 006 já fecha as policies das tabelas centrais e o cadastro público. O próximo passo é aplicar as regras de janela de aula na UI/serviços e migrar certificados/materiais sensíveis para Storage privado com URLs assinadas.

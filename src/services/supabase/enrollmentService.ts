@@ -185,17 +185,15 @@ export const enrollmentService = {
   /**
    * Fetches all real profiles with role = ALUNO.
    */
-  async getAllStudents(): Promise<any[]> {
+  async getEnrollmentCandidates(courseId: string): Promise<any[]> {
     const { data: students, error } = await supabase
-      .from('users')
-      .select('id, email, nome_completo, role, foto_perfil, telefone, status')
-      .eq('role', 'ALUNO');
+      .rpc('get_enrollment_candidates', { p_course_id: courseId });
 
     if (error) {
-      console.error('Error fetching all students:', error);
+      console.error('Error fetching enrollment candidates:', error);
       return [];
     }
 
-    return (students || []).map(student => mapSupabaseUserToAppUser(student));
+    return (students || []).map((student: any) => mapSupabaseUserToAppUser({ ...student, role: 'ALUNO' }));
   }
 };
