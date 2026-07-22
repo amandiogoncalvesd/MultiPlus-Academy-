@@ -1,3 +1,5 @@
+-- DEPRECATED: historical snapshot of the initial schema only.
+-- Do not use this file to provision environments. Apply supabase/migrations/*.sql in order.
 -- DATABASE MIGRATE / INITIAL SCHEMA: MULTIPLUS ACADEMY
 -- Target platform: Supabase PostgreSQL (auth-integrated)
 
