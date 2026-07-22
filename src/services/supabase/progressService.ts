@@ -1,12 +1,18 @@
 import { supabase } from '../../lib/supabase/client';
 
 export const progressService = {
-  async getCompletedLessons(studentId: string, _courseId: string): Promise<string[]> {
-    const { data, error } = await supabase
+  async getCompletedLessons(studentId: string, courseId: string): Promise<string[]> {
+    let query = supabase
       .from('lesson_progress')
       .select('lesson_id')
       .eq('student_id', studentId)
       .eq('completed', true);
+
+    if (courseId) {
+      query = query.eq('course_id', courseId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching completed lessons:', error);

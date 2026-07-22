@@ -38,6 +38,9 @@ export interface DBLesson {
   ordem: number;
   duracao?: string;
   scheduled_at?: string;
+  access_starts_at?: string;
+  access_ends_at?: string;
+  allow_replay_after_end?: boolean;
   status?: string;
   quiz?: any;
   meeting_url?: string;
@@ -186,7 +189,7 @@ export const academicService = {
   async getLessons(courseId: string): Promise<DBLesson[]> {
     const { data, error } = await supabase
       .from('lessons')
-      .select('id, course_id, module_id, titulo, descricao, video_url, ordem, duracao, scheduled_at, status, quiz, meeting_url')
+      .select('id, course_id, module_id, titulo, descricao, video_url, ordem, duracao, scheduled_at, access_starts_at, access_ends_at, allow_replay_after_end, status, quiz, meeting_url')
       .eq('course_id', courseId)
       .order('ordem', { ascending: true });
 

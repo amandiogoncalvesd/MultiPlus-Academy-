@@ -99,6 +99,7 @@ export const courseService = {
       category: course.category || 'Geral',
       level: course.level || 'Intermédio',
       duration: course.duration || '12 Semanas',
+      price: course.price ?? null,
       teacher_id: course.teacher_id,
       status: course.status || 'DRAFT',
       updated_at: new Date().toISOString()

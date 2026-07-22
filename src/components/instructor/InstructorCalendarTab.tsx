@@ -37,6 +37,7 @@ export default function InstructorCalendarTab({
   
   const [meetingDate, setMeetingDate] = useState(new Date().toISOString().slice(0, 10));
   const [meetingTime, setMeetingTime] = useState('18:30');
+  const [meetingEndTime, setMeetingEndTime] = useState('20:00');
   const [loadingLessons, setLoadingLessons] = useState(false);
   const [scheduling, setScheduling] = useState(false);
 
@@ -93,21 +94,28 @@ export default function InstructorCalendarTab({
 
   const handleCreateMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedMeetingCourse || !selectedStudent || !selectedLesson) {
-      toast.error('Por favor, preencha todos os campos para efetuar o agendamento.');
+    if (!selectedMeetingCourse || !selectedLesson) {
+      toast.error('Selecione o curso e a aula para efetuar o agendamento.');
       return;
     }
 
     setScheduling(true);
     const scheduledAtStr = `${meetingDate}T${meetingTime}:00`;
+    const endsAtStr = `${meetingDate}T${meetingEndTime}:00`;
+    if (new Date(endsAtStr) <= new Date(scheduledAtStr)) {
+      toast.error('O fim da aula deve ser posterior ao início.');
+      setScheduling(false);
+      return;
+    }
 
     try {
       // Save schedule to database via academicService
       await academicService.scheduleLesson(
         selectedLesson,
-        selectedStudent,
+        selectedStudent || '00000000-0000-0000-0000-000000000000',
         selectedMeetingCourse,
-        scheduledAtStr
+        scheduledAtStr,
+        endsAtStr
       );
 
       // Refresh list
@@ -140,8 +148,8 @@ export default function InstructorCalendarTab({
     return {
       id: sl.id || `sl-${index}`,
       title: `${title} (${studentName})`,
-      date: sl.lesson?.scheduled_at?.split('T')[0] || new Date().toISOString().slice(0, 10),
-      time: sl.lesson?.scheduled_at?.split('T')[1]?.substring(0, 5) || '18:30',
+      date: (sl.lesson?.access_starts_at || sl.lesson?.scheduled_at)?.split('T')[0] || new Date().toISOString().slice(0, 10),
+      time: (sl.lesson?.access_starts_at || sl.lesson?.scheduled_at)?.split('T')[1]?.substring(0, 5) || '18:30',
       type: 'Síncrona'
     };
   });
@@ -188,7 +196,7 @@ export default function InstructorCalendarTab({
             
             <div className="border-b border-gray-150 dark:border-ink-800/60 pb-3">
               <span className="text-[9px] font-mono text-gold-600 font-black tracking-widest block uppercase">CRIAÇÃO DE SESSÕES DINÂMICAS</span>
-              <h4 className="font-serif font-black text-ink-900 dark:text-cream-100 text-sm leading-snug mt-1">Agendar Aula Síncrona para Aluno Alvo</h4>
+              <h4 className="font-serif font-black text-ink-900 dark:text-cream-100 text-sm leading-snug mt-1">Agendar Aula Síncrona para a Turma</h4>
             </div>
 
             <form onSubmit={handleCreateMeeting} className="space-y-4">
@@ -211,13 +219,13 @@ export default function InstructorCalendarTab({
 
                 {/* Student Selection */}
                 <div>
-                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">2. Selecionar Aluno</label>
+                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">2. Turma abrangida</label>
                   <select
                     value={selectedStudent}
                     onChange={(e) => setSelectedStudent(e.target.value)}
                     className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl focus:outline-none focus:border-gold-600 text-slate-850 dark:text-cream-100"
                   >
-                    <option value="">-- Selecione o Aluno --</option>
+                    <option value="">Todos os alunos matriculados no curso</option>
                     {studentDropdownList.map(s => (
                       <option key={s.id} value={s.id}>{s.firstName} {s.lastName} ({s.email})</option>
                     ))}
@@ -264,11 +272,21 @@ export default function InstructorCalendarTab({
 
                 {/* Meeting Time */}
                 <div>
-                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">5. Hora Prevista</label>
+                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">5. Início do acesso</label>
                   <input
                     type="time"
                     value={meetingTime}
                     onChange={(e) => setMeetingTime(e.target.value)}
+                    className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl focus:outline-none focus:border-gold-600 text-slate-800 dark:text-cream-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">6. Fim do acesso</label>
+                  <input
+                    type="time"
+                    value={meetingEndTime}
+                    onChange={(e) => setMeetingEndTime(e.target.value)}
                     className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl focus:outline-none focus:border-gold-600 text-slate-800 dark:text-cream-100"
                   />
                 </div>
@@ -310,8 +328,9 @@ export default function InstructorCalendarTab({
                 {scheduledLessons.map((session, index) => {
                   const courseName = session.lesson?.course?.title || 'English for the Legal Field';
                   const title = session.lesson?.titulo || session.lesson?.title || 'Aula Síncrona';
-                  const dateVal = session.lesson?.scheduled_at?.split('T')[0] || new Date().toISOString().slice(0, 10);
-                  const timeVal = session.lesson?.scheduled_at?.split('T')[1]?.substring(0, 5) || '18:30';
+                  const startAt = session.lesson?.access_starts_at || session.lesson?.scheduled_at;
+                  const dateVal = startAt?.split('T')[0] || new Date().toISOString().slice(0, 10);
+                  const timeVal = startAt?.split('T')[1]?.substring(0, 5) || '18:30';
                   const sUser = session.student;
                   const studentName = sUser ? `${sUser.firstName || ''} ${sUser.lastName || ''}`.trim() || sUser.email : 'Aluno';
                   const meetUrl = session.lesson?.meeting_url || 'Link indisponível';

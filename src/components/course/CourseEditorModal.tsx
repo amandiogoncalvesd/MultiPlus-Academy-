@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Upload, BookOpen, Users, Plus, Trash2, Edit2, Save, 
-  AlertCircle, Check, CheckCircle2, Calendar, FileText, 
+import {
+  X, Upload, BookOpen, Users, Plus, Trash2, Edit2, Save,
+  AlertCircle, Check, CheckCircle2, Calendar, FileText,
   ArrowLeft, Eye, Bold, Italic, List, Heading, HelpCircle, Loader2
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase/client';
@@ -45,7 +45,7 @@ export default function CourseEditorModal({
           .from('users')
           .select('id, nome_completo')
           .eq('role', 'PROFESSOR');
-        
+
         if (error) throw error;
         setTeachers(data || []);
       } catch (err) {
@@ -86,11 +86,12 @@ export default function CourseEditorModal({
   const [lessonVideo, setLessonVideo] = useState('');
   const [lessonDuration, setLessonDuration] = useState('45 min');
   const [lessonStatus, setLessonStatus] = useState<'DRAFT' | 'PUBLISHED'>('DRAFT');
-  const [lessonScheduled, setLessonScheduled] = useState('');
-  
+  const [lessonStartsAt, setLessonStartsAt] = useState('');
+  const [lessonEndsAt, setLessonEndsAt] = useState('');
+
   // Quiz Builder states
   const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
-  
+
   // Lesson Target states
   const [targetType, setTargetType] = useState<'ALL' | 'SPECIFIC'>('ALL');
   const [selectedTargetStudentIds, setSelectedTargetStudentIds] = useState<string[]>([]);
@@ -185,7 +186,7 @@ export default function CourseEditorModal({
       const publicUrl = data.publicUrl;
 
       setThumbnail(publicUrl);
-      
+
       // Auto-update course row with thumbnail
       await courseService.updateCourse(courseId, { thumbnail: publicUrl });
     } catch (err: any) {
@@ -300,10 +301,20 @@ export default function CourseEditorModal({
     e.preventDefault();
     if (!lessonTitle || !courseId) return;
 
+    if (lessonStatus === 'PUBLISHED' && (!lessonStartsAt || !lessonEndsAt)) {
+      alert('Defina o início e o fim da janela de acesso antes de publicar a aula.');
+      return;
+    }
+
+    if (lessonStartsAt && lessonEndsAt && new Date(lessonEndsAt) <= new Date(lessonStartsAt)) {
+      alert('O fim da aula deve ser posterior ao início.');
+      return;
+    }
+
     try {
       setIsSaving(true);
       const quizPayload = quizQuestions.length > 0 ? quizQuestions : null;
-      
+
       const payload: Partial<SupabaseLesson> = {
         course_id: courseId,
         titulo: lessonTitle,
@@ -311,7 +322,10 @@ export default function CourseEditorModal({
         video_url: lessonVideo,
         duracao: lessonDuration,
         quiz: quizPayload,
-        scheduled_at: lessonScheduled ? new Date(lessonScheduled).toISOString() : null,
+        // scheduled_at is kept for legacy calendar compatibility; access_* is authoritative.
+        scheduled_at: lessonStartsAt ? new Date(lessonStartsAt).toISOString() : null,
+        access_starts_at: lessonStartsAt ? new Date(lessonStartsAt).toISOString() : null,
+        access_ends_at: lessonEndsAt ? new Date(lessonEndsAt).toISOString() : null,
         status: lessonStatus
       };
 
@@ -387,16 +401,17 @@ export default function CourseEditorModal({
       setLessonDesc(lesson.descricao || '');
       setLessonVideo(lesson.video_url || '');
       setLessonDuration(lesson.duracao || '45 min');
-      setLessonStatus(lesson.status || 'DRAFT');
-      setLessonScheduled(lesson.scheduled_at ? new Date(lesson.scheduled_at).toISOString().slice(0, 16) : '');
+      setLessonStatus(lesson.status === 'PUBLISHED' ? 'PUBLISHED' : 'DRAFT');
+      setLessonStartsAt((lesson.access_starts_at || lesson.scheduled_at) ? new Date(lesson.access_starts_at || lesson.scheduled_at || '').toISOString().slice(0, 16) : '');
+      setLessonEndsAt(lesson.access_ends_at ? new Date(lesson.access_ends_at).toISOString().slice(0, 16) : '');
       setQuizQuestions(lesson.quiz || []);
-      
+
       // Load current targets
       const { data: targets } = await supabase
         .from('lesson_targets')
         .select('student_id')
         .eq('lesson_id', lesson.id);
-      
+
       const targetIds = (targets || []).map(t => t.student_id);
       if (targetIds.length === enrolledStudents.length && enrolledStudents.length > 0) {
         setTargetType('ALL');
@@ -413,7 +428,8 @@ export default function CourseEditorModal({
       setLessonVideo('');
       setLessonDuration('45 min');
       setLessonStatus('DRAFT');
-      setLessonScheduled('');
+      setLessonStartsAt('');
+      setLessonEndsAt('');
       setQuizQuestions([]);
       setTargetType('ALL');
       setSelectedTargetStudentIds([]);
@@ -440,7 +456,7 @@ export default function CourseEditorModal({
   return (
     <div className="fixed inset-0 bg-black/60 dark:bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 z-40 animate-fadeIn overflow-y-auto">
       <div className="bg-cream-100 dark:bg-ink-900 rounded-3xl max-w-4xl w-full overflow-hidden border border-gray-150 dark:border-ink-800/60 shadow-2xl flex flex-col max-h-[90vh] relative my-8">
-        
+
         {/* Header decoration */}
         <div className="absolute top-[-5%] left-[-5%] w-[45%] h-[45%] bg-gradient-to-br from-gold-600/5 to-transparent rounded-full blur-[90px] pointer-events-none" />
 
@@ -454,7 +470,7 @@ export default function CourseEditorModal({
               {courseId ? `ID: ${courseId}` : 'Configuração do Rascunho Curricular'}
             </p>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-1.5 hover:bg-cream-250 dark:hover:bg-ink-800 rounded-full text-neutral-400 hover:text-gray-650 dark:hover:text-cream-100 transition-colors border-0 bg-transparent cursor-pointer"
           >
@@ -483,8 +499,8 @@ export default function CourseEditorModal({
                   setActiveTab(tab.id as any);
                 }}
                 className={`py-3.5 flex items-center gap-1.5 font-bold uppercase border-b-2 transition-all cursor-pointer bg-transparent border-0 ${
-                  activeTab === tab.id 
-                    ? 'border-gold-600 text-gold-600' 
+                  activeTab === tab.id
+                    ? 'border-gold-600 text-gold-600'
                     : 'border-transparent text-neutral-400 hover:text-gray-650 dark:hover:text-cream-200'
                 }`}
               >
@@ -497,21 +513,21 @@ export default function CourseEditorModal({
 
         {/* Modal Body Container */}
         <div className="flex-grow overflow-y-auto p-6 relative z-10 max-h-[60vh]">
-          
+
           {/* TAB 1: GENERAL DETAILS */}
           {activeTab === 'details' && (
             <form onSubmit={handleSaveCourse} className="space-y-6 text-left">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                
+
                 {/* Column 1: Cover image */}
                 <div className="space-y-3">
                   <span className="block text-[10px] font-mono text-neutral-400 uppercase tracking-widest font-black">Capa da Especialização</span>
                   <div className="relative group aspect-video rounded-2xl overflow-hidden bg-cream-200 dark:bg-ink-950 border border-gray-250 dark:border-ink-800 flex items-center justify-center">
                     {thumbnail ? (
                       <>
-                        <img 
-                          src={thumbnail} 
-                          alt="Capa do Curso" 
+                        <img
+                          src={thumbnail}
+                          alt="Capa do Curso"
                           className="w-full h-full object-cover"
                           referrerPolicy="no-referrer"
                         />
@@ -537,17 +553,17 @@ export default function CourseEditorModal({
                   </div>
                   {courseId ? (
                     <div className="text-center">
-                      <label 
-                        htmlFor="course-cover-file" 
+                      <label
+                        htmlFor="course-cover-file"
                         className="text-3xs font-mono font-bold text-gold-600 uppercase hover:underline cursor-pointer"
                       >
                         {uploadingCover ? 'Enviando...' : 'Carregar Capa Real'}
                       </label>
-                      <input 
-                        type="file" 
-                        id="course-cover-file" 
-                        accept="image/*" 
-                        onChange={handleCoverUpload} 
+                      <input
+                        type="file"
+                        id="course-cover-file"
+                        accept="image/*"
+                        onChange={handleCoverUpload}
                         className="hidden"
                       />
                     </div>
@@ -563,25 +579,25 @@ export default function CourseEditorModal({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Nome da Especialização</label>
-                      <input 
-                        type="text" 
-                        value={title} 
+                      <input
+                        type="text"
+                        value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Ex: Introdução ao Direito de Exploração de Hidrocarbonetos..." 
+                        placeholder="Ex: Introdução ao Direito de Exploração de Hidrocarbonetos..."
                         required
-                        className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs font-serif font-black focus:outline-none focus:border-gold-600" 
+                        className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs font-serif font-black focus:outline-none focus:border-gold-600"
                       />
                     </div>
-                    
+
                     <div className="space-y-1">
                       <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Preço (Mensalidade)</label>
                       <div className="relative">
-                        <input 
-                          type="number" 
-                          value={price} 
+                        <input
+                          type="number"
+                          value={price}
                           onChange={(e) => setPrice(e.target.value)}
-                          placeholder="Ex: 450000" 
-                          className="w-full pl-3 pr-10 py-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs font-mono focus:outline-none focus:border-gold-600" 
+                          placeholder="Ex: 450000"
+                          className="w-full pl-3 pr-10 py-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs font-mono focus:outline-none focus:border-gold-600"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs font-mono font-bold">Kz</span>
                       </div>
@@ -612,9 +628,9 @@ export default function CourseEditorModal({
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">
                       <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Categoria</label>
-                      <input 
-                        type="text" 
-                        value={category} 
+                      <input
+                        type="text"
+                        value={category}
                         onChange={(e) => setCategory(e.target.value)}
                         placeholder="Ex: Regulamentar / Petróleo"
                         className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs focus:outline-none focus:border-gold-600"
@@ -622,8 +638,8 @@ export default function CourseEditorModal({
                     </div>
                     <div className="space-y-1">
                       <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Nível de Rigor</label>
-                      <select 
-                        value={level} 
+                      <select
+                        value={level}
                         onChange={(e) => setLevel(e.target.value)}
                         className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs focus:outline-none focus:border-gold-600"
                       >
@@ -634,9 +650,9 @@ export default function CourseEditorModal({
                     </div>
                     <div className="space-y-1">
                       <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Duração Estipulada</label>
-                      <input 
-                        type="text" 
-                        value={duration} 
+                      <input
+                        type="text"
+                        value={duration}
                         onChange={(e) => setDuration(e.target.value)}
                         placeholder="Ex: 10 Semanas"
                         className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs focus:outline-none focus:border-gold-600"
@@ -646,12 +662,12 @@ export default function CourseEditorModal({
 
                   <div className="space-y-1">
                     <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Descrição Curricular</label>
-                    <textarea 
+                    <textarea
                       rows={3}
-                      value={description} 
+                      value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Indique os objetivos primários de ensino e abrangência metodológica no Huambo..." 
-                      className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs focus:outline-none focus:border-gold-600 resize-none" 
+                      placeholder="Indique os objetivos primários de ensino e abrangência metodológica no Huambo..."
+                      className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs focus:outline-none focus:border-gold-600 resize-none"
                     />
                   </div>
 
@@ -669,8 +685,8 @@ export default function CourseEditorModal({
                       </select>
                     </div>
 
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       disabled={isSaving}
                       className="px-5 py-2 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 hover:bg-gold-600 hover:text-slate-900 font-mono font-bold text-3xs uppercase rounded-xl border-0 flex items-center gap-1.5 cursor-pointer shadow-sm"
                     >
@@ -695,7 +711,7 @@ export default function CourseEditorModal({
                       <h4 className="font-serif font-black text-sm text-ink-900 dark:text-cream-100 m-0">Grade de Conteúdos Letivos</h4>
                       <p className="text-[10px] text-neutral-400 mt-0.5">Planeie as exposições cronológicas, videoconferências associadas e exames rápidos.</p>
                     </div>
-                    <button 
+                    <button
                       onClick={() => handleOpenLessonEditor()}
                       className="px-3.5 py-1.5 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 hover:bg-gold-600 rounded-xl text-3xs font-mono font-bold uppercase transition-all flex items-center gap-1.5 border-0 cursor-pointer"
                     >
@@ -715,8 +731,8 @@ export default function CourseEditorModal({
                   ) : (
                     <div className="space-y-3">
                       {lessons.map((lesson, idx) => (
-                        <div 
-                          key={lesson.id} 
+                        <div
+                          key={lesson.id}
                           className="p-4 bg-cream-150 dark:bg-ink-950/20 border border-gray-200 dark:border-ink-850 rounded-2xl flex flex-col sm:flex-row justify-between sm:items-center gap-4 text-left"
                         >
                           <div className="space-y-1">
@@ -742,13 +758,13 @@ export default function CourseEditorModal({
                           </div>
 
                           <div className="flex gap-2">
-                            <button 
+                            <button
                               onClick={() => handleOpenLessonEditor(lesson)}
                               className="px-2.5 py-1.5 bg-cream-200 dark:bg-ink-800 hover:bg-gold-600 hover:text-slate-950 transition-all text-ink-900 dark:text-cream-100 rounded text-3xs font-mono font-bold uppercase border border-gray-150 dark:border-ink-750 flex items-center gap-1 cursor-pointer"
                             >
                               <Edit2 size={10} /> Editar
                             </button>
-                            <button 
+                            <button
                               onClick={() => handleDeleteLesson(lesson.id)}
                               className="px-2.5 py-1.5 bg-red-100/50 dark:bg-danger-700/10 hover:bg-red-500 hover:text-white dark:hover:bg-red-650 transition-all text-red-700 rounded text-3xs font-mono font-bold uppercase border border-red-200/40 flex items-center gap-1 cursor-pointer"
                             >
@@ -764,9 +780,9 @@ export default function CourseEditorModal({
                 // Individual Lesson Editor Sub-view (Constructor)
                 <form onSubmit={handleSaveLesson} className="space-y-6 text-left">
                   <div className="flex items-center gap-2 border-b border-gray-100 dark:border-ink-800/40 pb-3">
-                    <button 
-                      type="button" 
-                      onClick={() => setEditingLesson(null)} 
+                    <button
+                      type="button"
+                      onClick={() => setEditingLesson(null)}
                       className="p-1 hover:bg-cream-200 dark:hover:bg-ink-800 rounded text-neutral-400 border-0 bg-transparent cursor-pointer"
                     >
                       <ArrowLeft size={16} />
@@ -784,13 +800,13 @@ export default function CourseEditorModal({
                     <div className="space-y-4">
                       <div className="space-y-1">
                         <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Título da Aula</label>
-                        <input 
-                          type="text" 
-                          value={lessonTitle} 
+                        <input
+                          type="text"
+                          value={lessonTitle}
                           onChange={(e) => setLessonTitle(e.target.value)}
-                          placeholder="Ex: Noções Gerais sobre a Concessão de Blocos do Kwanza..." 
+                          placeholder="Ex: Noções Gerais sobre a Concessão de Blocos do Kwanza..."
                           required
-                          className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs font-serif font-bold focus:outline-none focus:border-gold-600" 
+                          className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs font-serif font-bold focus:outline-none focus:border-gold-600"
                         />
                       </div>
 
@@ -799,69 +815,81 @@ export default function CourseEditorModal({
                         <div className="flex justify-between items-center mb-1">
                           <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Conteúdo de Descrição Rich Text</label>
                           <div className="flex items-center gap-1 bg-cream-200 dark:bg-ink-950 border border-gray-200 dark:border-ink-850 rounded p-1">
-                            <button 
-                              type="button" 
-                              onClick={() => insertTextMarkup('**', '**')} 
-                              title="Negrito" 
+                            <button
+                              type="button"
+                              onClick={() => insertTextMarkup('**', '**')}
+                              title="Negrito"
                               className="p-1 hover:bg-cream-250 dark:hover:bg-ink-850 text-neutral-450 dark:text-cream-100 rounded border-0 bg-transparent cursor-pointer"
                             >
                               <Bold size={11} />
                             </button>
-                            <button 
-                              type="button" 
-                              onClick={() => insertTextMarkup('*', '*')} 
-                              title="Itálico" 
+                            <button
+                              type="button"
+                              onClick={() => insertTextMarkup('*', '*')}
+                              title="Itálico"
                               className="p-1 hover:bg-cream-250 dark:hover:bg-ink-850 text-neutral-450 dark:text-cream-100 rounded border-0 bg-transparent cursor-pointer"
                             >
                               <Italic size={11} />
                             </button>
-                            <button 
-                              type="button" 
-                              onClick={() => insertTextMarkup('\n- ', '')} 
-                              title="Lista com Marcadores" 
+                            <button
+                              type="button"
+                              onClick={() => insertTextMarkup('\n- ', '')}
+                              title="Lista com Marcadores"
                               className="p-1 hover:bg-cream-250 dark:hover:bg-ink-850 text-neutral-450 dark:text-cream-100 rounded border-0 bg-transparent cursor-pointer"
                             >
                               <List size={11} />
                             </button>
-                            <button 
-                              type="button" 
-                              onClick={() => insertTextMarkup('### ', '')} 
-                              title="Título H3" 
+                            <button
+                              type="button"
+                              onClick={() => insertTextMarkup('### ', '')}
+                              title="Título H3"
                               className="p-1 hover:bg-cream-250 dark:hover:bg-ink-850 text-neutral-450 dark:text-cream-100 rounded border-0 bg-transparent cursor-pointer"
                             >
                               <Heading size={11} />
                             </button>
                           </div>
                         </div>
-                        <textarea 
+                        <textarea
                           id="lesson-desc-editor"
                           rows={4}
-                          value={lessonDesc} 
+                          value={lessonDesc}
                           onChange={(e) => setLessonDesc(e.target.value)}
-                          placeholder="Escreva a descrição rica da aula usando markdown / texto estruturado..." 
-                          className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs focus:outline-none focus:border-gold-600 resize-none font-sans leading-normal" 
+                          placeholder="Escreva a descrição rica da aula usando markdown / texto estruturado..."
+                          className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs focus:outline-none focus:border-gold-600 resize-none font-sans leading-normal"
                         />
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                           <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Duração Estimada</label>
-                          <input 
-                            type="text" 
-                            value={lessonDuration} 
+                          <input
+                            type="text"
+                            value={lessonDuration}
                             onChange={(e) => setLessonDuration(e.target.value)}
                             placeholder="Ex: 1h 30min"
                             className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs focus:outline-none focus:border-gold-600"
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Agendamento (Data/Hora)</label>
-                          <input 
-                            type="datetime-local" 
-                            value={lessonScheduled} 
-                            onChange={(e) => setLessonScheduled(e.target.value)}
+                          <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Início do acesso</label>
+                          <input
+                            type="datetime-local"
+                            value={lessonStartsAt}
+                            onChange={(e) => setLessonStartsAt(e.target.value)}
+                            required={lessonStatus === 'PUBLISHED'}
                             className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs font-mono focus:outline-none focus:border-gold-600"
                           />
+                        </div>
+                        <div className="space-y-1 col-span-2">
+                          <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Fim do acesso</label>
+                          <input
+                            type="datetime-local"
+                            value={lessonEndsAt}
+                            onChange={(e) => setLessonEndsAt(e.target.value)}
+                            required={lessonStatus === 'PUBLISHED'}
+                            className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs font-mono focus:outline-none focus:border-gold-600"
+                          />
+                          <p className="text-[9px] text-neutral-400 m-0">Aulas publicadas ficam visíveis em “Minhas Aulas” apenas entre estes horários; depois seguem para o histórico do calendário.</p>
                         </div>
                       </div>
 
@@ -872,12 +900,12 @@ export default function CourseEditorModal({
                             <span className="text-[9px] text-amber-500 font-mono font-semibold">⚠ Não é um link Cloudinary padrão</span>
                           )}
                         </div>
-                        <input 
-                          type="text" 
-                          value={lessonVideo} 
+                        <input
+                          type="text"
+                          value={lessonVideo}
                           onChange={(e) => validateCloudinaryUrl(e.target.value)}
-                          placeholder="Ex: https://res.cloudinary.com/multiplus/video/upload/aula1.mp4" 
-                          className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs focus:outline-none focus:border-gold-600" 
+                          placeholder="Ex: https://res.cloudinary.com/multiplus/video/upload/aula1.mp4"
+                          className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs focus:outline-none focus:border-gold-600"
                         />
                         <p className="text-[10px] text-neutral-400 italic">Insira links otimizados na infraestrutura Cloudinary para execução síncrona sem buffer.</p>
                       </div>
@@ -887,20 +915,20 @@ export default function CourseEditorModal({
                         <span className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Alunos Alvo</span>
                         <div className="flex gap-4 text-xs font-mono">
                           <label className="flex items-center gap-1.5 cursor-pointer">
-                            <input 
-                              type="radio" 
-                              name="targetType" 
-                              checked={targetType === 'ALL'} 
-                              onChange={() => setTargetType('ALL')} 
+                            <input
+                              type="radio"
+                              name="targetType"
+                              checked={targetType === 'ALL'}
+                              onChange={() => setTargetType('ALL')}
                             />
                             Todos Matriculados
                           </label>
                           <label className="flex items-center gap-1.5 cursor-pointer">
-                            <input 
-                              type="radio" 
-                              name="targetType" 
-                              checked={targetType === 'SPECIFIC'} 
-                              onChange={() => setTargetType('SPECIFIC')} 
+                            <input
+                              type="radio"
+                              name="targetType"
+                              checked={targetType === 'SPECIFIC'}
+                              onChange={() => setTargetType('SPECIFIC')}
                             />
                             Seleção Específica
                           </label>
@@ -912,11 +940,11 @@ export default function CourseEditorModal({
                               const isChecked = selectedTargetStudentIds.includes(student.id);
                               return (
                                 <label key={student.id} className="flex items-center gap-2 p-1 text-xs select-none cursor-pointer">
-                                  <input 
-                                    type="checkbox" 
+                                  <input
+                                    type="checkbox"
                                     checked={isChecked}
                                     onChange={() => {
-                                      setSelectedTargetStudentIds(prev => 
+                                      setSelectedTargetStudentIds(prev =>
                                         prev.includes(student.id)
                                           ? prev.filter(id => id !== student.id)
                                           : [...prev, student.id]
@@ -940,11 +968,11 @@ export default function CourseEditorModal({
                       <div className="p-4 bg-cream-200 dark:bg-ink-950 rounded-2xl border border-gray-250 dark:border-ink-850 space-y-4">
                         <div className="flex justify-between items-center">
                           <span className="block text-[10px] font-mono text-gold-600 uppercase font-black tracking-widest">Questionário Integrado ({quizQuestions.length})</span>
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onClick={() => {
                               setQuizQuestions(prev => [
-                                ...prev, 
+                                ...prev,
                                 { question: 'Qual a resposta ideal sobre...', options: ['Opção A', 'Opção B', 'Opção C', 'Opção D'], correctAnswer: 0 }
                               ]);
                             }}
@@ -957,8 +985,8 @@ export default function CourseEditorModal({
                         <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
                           {quizQuestions.map((q, qIdx) => (
                             <div key={qIdx} className="p-3 bg-cream-100 dark:bg-ink-900 rounded-xl border border-gray-200 dark:border-ink-800 space-y-2 relative text-left">
-                              <button 
-                                type="button" 
+                              <button
+                                type="button"
                                 onClick={() => {
                                   setQuizQuestions(prev => prev.filter((_, idx) => idx !== qIdx));
                                 }}
@@ -969,16 +997,16 @@ export default function CourseEditorModal({
 
                               <div className="space-y-1">
                                 <span className="block text-[9px] font-mono text-neutral-400 uppercase">Pergunta #{qIdx + 1}</span>
-                                <input 
-                                  type="text" 
-                                  value={q.question} 
+                                <input
+                                  type="text"
+                                  value={q.question}
                                   onChange={(e) => {
                                     const updated = [...quizQuestions];
                                     updated[qIdx].question = e.target.value;
                                     setQuizQuestions(updated);
                                   }}
                                   className="w-full p-2 bg-cream-200 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 rounded-lg text-xs"
-                                  placeholder="Enunciado da pergunta..." 
+                                  placeholder="Enunciado da pergunta..."
                                 />
                               </div>
 
@@ -986,9 +1014,9 @@ export default function CourseEditorModal({
                                 <span className="block text-[8px] font-mono text-neutral-400 uppercase">Opções e Correto</span>
                                 {q.options.map((opt: string, oIdx: number) => (
                                   <div key={oIdx} className="flex gap-2 items-center">
-                                    <input 
-                                      type="radio" 
-                                      name={`correct-${qIdx}`} 
+                                    <input
+                                      type="radio"
+                                      name={`correct-${qIdx}`}
                                       checked={q.correctAnswer === oIdx}
                                       onChange={() => {
                                         const updated = [...quizQuestions];
@@ -996,16 +1024,16 @@ export default function CourseEditorModal({
                                         setQuizQuestions(updated);
                                       }}
                                     />
-                                    <input 
-                                      type="text" 
-                                      value={opt} 
+                                    <input
+                                      type="text"
+                                      value={opt}
                                       onChange={(e) => {
                                         const updated = [...quizQuestions];
                                         updated[qIdx].options[oIdx] = e.target.value;
                                         setQuizQuestions(updated);
                                       }}
                                       className="flex-grow p-1 px-2 bg-cream-200 dark:bg-ink-950 border border-gray-200 dark:border-ink-850 rounded text-2xs"
-                                      placeholder={`Opção ${oIdx + 1}`} 
+                                      placeholder={`Opção ${oIdx + 1}`}
                                     />
                                   </div>
                                 ))}
@@ -1035,15 +1063,15 @@ export default function CourseEditorModal({
                     </div>
 
                     <div className="flex gap-2">
-                      <button 
-                        type="button" 
-                        onClick={() => setEditingLesson(null)} 
+                      <button
+                        type="button"
+                        onClick={() => setEditingLesson(null)}
                         className="px-4 py-2 border border-gray-250 dark:border-ink-750 text-xs font-mono font-bold rounded-xl hover:bg-cream-250 dark:hover:bg-ink-800 text-neutral-450 dark:text-cream-100 uppercase transition-all cursor-pointer bg-transparent"
                       >
                         Cancelar
                       </button>
-                      <button 
-                        type="submit" 
+                      <button
+                        type="submit"
                         disabled={isSaving}
                         className="px-5 py-2 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 hover:bg-gold-600 rounded-xl text-xs font-mono font-bold uppercase flex items-center gap-1 cursor-pointer border-0 shadow-sm"
                       >
@@ -1065,7 +1093,7 @@ export default function CourseEditorModal({
                   <h4 className="font-serif font-black text-sm text-ink-900 dark:text-cream-100 m-0">Lista de Alunos Matriculados</h4>
                   <p className="text-[10px] text-neutral-400 mt-0.5">Utilizadores com privilégios de visualização curricular ativa e notas anexas.</p>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowStudentSelector(true)}
                   className="px-3.5 py-1.5 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 hover:bg-gold-600 rounded-xl text-3xs font-mono font-bold uppercase transition-all flex items-center gap-1.5 border-0 cursor-pointer"
                 >
@@ -1085,14 +1113,14 @@ export default function CourseEditorModal({
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {enrolledStudents.map(student => (
-                    <div 
-                      key={student.id} 
+                    <div
+                      key={student.id}
                       className="p-4 bg-cream-150 dark:bg-ink-950/20 border border-gray-200 dark:border-ink-850 rounded-2xl flex justify-between items-center text-left"
                     >
                       <div className="flex items-center gap-3">
-                        <img 
-                          src={student.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256'} 
-                          alt={student.firstName} 
+                        <img
+                          src={student.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256'}
+                          alt={student.firstName}
                           className="w-10 h-10 rounded-full border border-gray-200 dark:border-ink-800 object-cover"
                           referrerPolicy="no-referrer"
                         />
@@ -1103,7 +1131,7 @@ export default function CourseEditorModal({
                           <span className="text-[10px] text-neutral-400 dark:text-cream-200/60 block">{student.email}</span>
                         </div>
                       </div>
-                      <button 
+                      <button
                         onClick={() => handleRemoveStudent(student.id)}
                         className="p-2 text-red-550 hover:text-red-700 hover:bg-red-50/10 rounded-lg transition-colors border-0 bg-transparent cursor-pointer"
                         title="Anular Matrícula"
@@ -1121,7 +1149,7 @@ export default function CourseEditorModal({
 
         {/* Modal Overlay / Student Selector Portal */}
         {showStudentSelector && (
-          <StudentSelector 
+          <StudentSelector
             courseId={courseId || ''}
             alreadyEnrolledIds={enrolledStudents.map(s => s.id)}
             onEnroll={handleEnrollStudents}

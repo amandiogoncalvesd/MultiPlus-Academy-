@@ -17,6 +17,7 @@ import StudentDashboardView from './portal/StudentDashboardView';
 import { useStudentData } from '../hooks/useStudentData';
 import { useVideoPlayer } from '../hooks/useVideoPlayer';
 import { useLessonNotes } from '../hooks/useLessonNotes';
+import { getLessonAvailability, isLessonActive } from '../lib/academic/lessonAccess';
 
 
 import { 
@@ -102,15 +103,20 @@ export default function StudentPortal({
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
 
   // Lecture list definitions (Flagship Legal course)
-  const activeSyllabus = realLessons.length > 0 ? realLessons.map(l => ({
+  const courseSyllabus = realLessons.length > 0 ? realLessons.map(l => ({
     id: l.id,
     title: l.titulo || l.title || 'Sem título',
     duration: l.duracao || '15:00',
     description: l.descricao || l.description || '',
     scheduled_at: l.scheduled_at,
+    access_starts_at: l.access_starts_at || l.scheduled_at,
+    access_ends_at: l.access_ends_at,
     video_url: l.video_url
   })) : [];
 
+  // “Minhas aulas” deliberately contains only the lessons whose access
+  // window is open. Future and ended lessons stay in the calendar timeline.
+  const activeSyllabus = courseSyllabus.filter(lesson => isLessonActive(lesson));
   const currentLecture = activeSyllabus[activeLessonIdx] || activeSyllabus[0] || null;
 
   // 2. Video Player Integration
@@ -513,7 +519,7 @@ export default function StudentPortal({
     lessonsWithDate.forEach((session, idx) => {
       const title = session.lesson?.titulo || session.lesson?.title || 'Aula Síncrona';
       const description = session.lesson?.descricao || 'Sessão em videoconferência síncrona com avaliação e debates.';
-      const rawDate = session.lesson?.scheduled_at;
+      const rawDate = session.lesson?.access_starts_at || session.lesson?.scheduled_at;
       if (!rawDate) return;
       const courseTitle = session.lesson?.course?.title || session.lesson?.course?.titulo || 'Curso MultiPlus';
       
@@ -568,7 +574,7 @@ export default function StudentPortal({
   const nextScheduledLesson = scheduledLessons && scheduledLessons.length > 0
     ? scheduledLessons
         .filter(l => l.lesson?.scheduled_at && new Date(l.lesson.scheduled_at) > new Date())
-        .sort((a, b) => new Date(a.lesson!.scheduled_at!).getTime() - new Date(b.lesson!.scheduled_at!).getTime())[0]
+        .sort((a, b) => new Date(a.lesson!.access_starts_at || a.lesson!.scheduled_at!).getTime() - new Date(b.lesson!.access_starts_at || b.lesson!.scheduled_at!).getTime())[0]
     : null;
 
   return (
@@ -749,7 +755,7 @@ export default function StudentPortal({
                           </div>
                         ) : (
                           <>
-                            {(!currentLecture.scheduled_at || new Date(currentLecture.scheduled_at) > new Date()) ? (
+                            {getLessonAvailability(currentLecture) !== 'ACTIVE' ? (
                               <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,rgba(93,10,10,0.35)_0%,#1a0404_100%)]">
                                 <Lock size={44} className="text-red-500 mb-2 animate-bounce" />
                                 <h4 className="text-cream-100 text-xs sm:text-sm font-serif font-black text-center max-w-sm mt-1 mb-0 leading-snug">
@@ -1047,9 +1053,9 @@ export default function StudentPortal({
                       
                       {(() => {
                         const now = new Date();
-                        const rawLessons = scheduledLessons.filter(s => s.lesson?.scheduled_at);
+                        const rawLessons = scheduledLessons.filter(s => s.lesson?.access_starts_at || s.lesson?.scheduled_at);
                         const filtered = rawLessons.filter(s => {
-                          const date = new Date(s.lesson.scheduled_at);
+                          const date = new Date(s.lesson.access_starts_at || s.lesson.scheduled_at);
                           if (calendarView === 'WEEK') {
                             const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
                             return date >= now && date <= oneWeekFromNow;
@@ -1065,8 +1071,10 @@ export default function StudentPortal({
                         if (displayLessons.length > 0) {
                           return displayLessons.map((session, index) => {
                             const title = session.lesson?.titulo || session.lesson?.title || 'Aula Síncrona';
-                            const dateVal = session.lesson.scheduled_at.split('T')[0];
-                            const timeVal = session.lesson.scheduled_at.split('T')[1]?.substring(0, 5) || '--:--';
+                            const startAt = session.lesson.access_starts_at || session.lesson.scheduled_at;
+                            const dateVal = startAt.split('T')[0];
+                            const timeVal = startAt.split('T')[1]?.substring(0, 5) || '--:--';
+                            const availability = getLessonAvailability(session.lesson);
                             const courseTitle = session.lesson?.course?.title || session.lesson?.course?.titulo || 'English for the Legal Field';
                             const meetUrl = session.lesson?.meeting_url || null;
 
@@ -1075,7 +1083,9 @@ export default function StudentPortal({
                                 <div className="absolute top-0 left-0 right-0 h-1 bg-gold-600" />
                                 <div className="flex justify-between items-center text-2xs font-mono font-bold">
                                   <span className="text-gold-600 uppercase truncate max-w-[150px]">{courseTitle}</span>
-                                  <span className="bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400 px-1.5 py-0.5 rounded">{timeVal}</span>
+                                  <span className={`px-1.5 py-0.5 rounded ${availability === 'ACTIVE' ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-400' : availability === 'UPCOMING' ? 'bg-amber-50 text-amber-800 dark:bg-amber-950/20 dark:text-amber-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>
+                                    {availability === 'ACTIVE' ? 'Disponível agora' : availability === 'UPCOMING' ? `Disponível às ${timeVal}` : 'Encerrada'}
+                                  </span>
                                 </div>
                                 <div>
                                   <h4 className="text-xs font-serif font-black text-ink-900 dark:text-gold-600 leading-snug">{title}</h4>
@@ -1083,7 +1093,7 @@ export default function StudentPortal({
                                     Aula agendada pelo seu professor titular para o dia {dateVal}.
                                   </p>
                                 </div>
-                                {meetUrl ? (
+                                {availability === 'ACTIVE' && meetUrl ? (
                                   <a 
                                     href={meetUrl}
                                     target="_blank"
@@ -1094,7 +1104,7 @@ export default function StudentPortal({
                                   </a>
                                 ) : (
                                   <span className="py-2.5 bg-gray-100 dark:bg-slate-800 text-neutral-400 text-center rounded-lg text-3xs font-mono font-bold uppercase block">
-                                    Link da aula indisponível
+                                    {availability === 'UPCOMING' ? 'Acesso bloqueado até ao horário agendado' : availability === 'ENDED' ? 'Aula guardada no histórico letivo' : 'Aula sem janela de acesso definida'}
                                   </span>
                                 )}
                               </div>

@@ -10,7 +10,10 @@ export interface SupabaseLesson {
   duracao: string;
   quiz?: any[] | null;
   scheduled_at?: string | null;
-  status?: 'DRAFT' | 'PUBLISHED';
+  access_starts_at?: string | null;
+  access_ends_at?: string | null;
+  allow_replay_after_end?: boolean;
+  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   meeting_url?: string | null;      // NOVO
   created_by?: string | null;        // NOVO
 }

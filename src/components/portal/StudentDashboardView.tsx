@@ -86,7 +86,7 @@ export default function StudentDashboardView({
                     {nextScheduledLesson.titulo || nextScheduledLesson.title || 'Sessão Prática'}
                   </h4>
                   <span className="text-[10px] font-mono text-emerald-400 block font-bold uppercase">
-                    {new Date(nextScheduledLesson.scheduled_at).toLocaleDateString('pt-AO', { weekday: 'long' })} • {new Date(nextScheduledLesson.scheduled_at).toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(nextScheduledLesson.access_starts_at || nextScheduledLesson.scheduled_at).toLocaleDateString('pt-AO', { weekday: 'long' })} • {new Date(nextScheduledLesson.access_starts_at || nextScheduledLesson.scheduled_at).toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                   
                   {nextScheduledLesson.meeting_url && (

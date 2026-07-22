@@ -59,6 +59,7 @@ import InstructorCoursesTab from './instructor/InstructorCoursesTab';
 import InstructorStudentsTab from './instructor/InstructorStudentsTab';
 import InstructorEvaluationsTab from './instructor/InstructorEvaluationsTab';
 import InstructorCalendarTab from './instructor/InstructorCalendarTab';
+import InstructorProgressTab from './instructor/InstructorProgressTab';
 import InstructorMessagesTab from './instructor/InstructorMessagesTab';
 import { courseService } from '../services/supabase/courseService';
 import CertificateIssueModal from './certificates/CertificateIssueModal';
@@ -943,69 +944,9 @@ export default function InstructorPortal({
             />
           )}
 
-          {/* TAB 12: MÉTRICAS & SVGS */}
+          {/* TAB 12: PROGRESSO POR CURSO E AULA */}
           {activeTab === 'relatorios' && (
-            <div className="space-y-6 text-left">
-              
-              <div className={`p-5 rounded-3xl ${cardThemeClass}`}>
-                <span className="text-[9px] font-mono text-gold-600 font-black uppercase block tracking-widest">Relatório Académico Geral</span>
-                <h3 className="font-serif font-black text-lg text-ink-900 dark:text-cream-100 m-0 leading-tight">Taxas de Retenção & Notas Gerais</h3>
-                <p className="text-xs text-neutral-400 mt-1">Dados estatísticos sincronizados diretos do Sistema de Gestão Escolar (LMS).</p>
-              </div>
-
-              {/* Rich Visual SVGs grids stats */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-                
-                {/* SVG 1: Distribuição de Alunos por Nível Letivo */}
-                <div className={`p-6 rounded-3xl flex flex-col justify-between align-stretch text-left ${cardThemeClass}`}>
-                  <div className="border-b pb-2 mb-3 border-gray-150 dark:border-ink-800/60">
-                    <span className="text-[8px] font-mono text-neutral-400 block uppercase">KPI - Nível Geral</span>
-                    <h4 className="font-serif font-black text-xs text-ink-900 dark:text-cream-100 m-0">Inscritos por Módulo Curricular</h4>
-                  </div>
-                  
-                  {/* Visual SVG Circular or Stacked bars */}
-                  <div className="py-4 flex justify-center">
-                    <svg width="150" height="150" className="overflow-visible" viewBox="0 0 100 100">
-                      {/* Circle arcs mock */}
-                      <circle cx="50" cy="50" r="40" fill="none" stroke={isDarkMode ? "#1B222E" : "#e1e1e1"} strokeWidth="8" />
-                      {/* Active arc */}
-                      <circle cx="50" cy="50" r="40" fill="none" stroke="#BB8533" strokeWidth="8" strokeDasharray="180 250" strokeLinecap="round" transform="rotate(-90 50 50)" />
-                      <text x="50" y="55" textAnchor="middle" className="font-serif font-black text-lg fill-[#151D29] dark:fill-cream-100 text-xs">78%</text>
-                    </svg>
-                  </div>
-                  <span className="text-[9px] font-mono text-center text-neutral-400">78% de frequência conclutiva de exercícios práticos</span>
-                </div>
-
-                {/* SVG 2: Engajamento por dia de semana */}
-                <div className={`p-6 rounded-3xl flex flex-col justify-between align-stretch text-left ${cardThemeClass}`}>
-                  <div className="border-b pb-2 mb-3 border-gray-150 dark:border-ink-800/60">
-                    <span className="text-[8px] font-mono text-neutral-400 block uppercase">KPI - Atividade LMS</span>
-                    <h4 className="font-serif font-black text-xs text-ink-900 dark:text-cream-100 m-0">Acessos dos Juristas por Dia</h4>
-                  </div>
-                  
-                  {/* SVG Vertical Charts bars */}
-                  <div className="py-4">
-                    <svg viewBox="0 0 100 40" className="w-full h-24">
-                      {/* Bars */}
-                      <rect x="5" y="10" width="8" height="30" fill={isDarkMode ? "#C89B3C" : "#151D29"} rx="2" />
-                      <rect x="25" y="5" width="8" height="35" fill="#BB8533" rx="2" />
-                      <rect x="45" y="15" width="8" height="25" fill={isDarkMode ? "#C89B3C" : "#151D29"} rx="2" />
-                      <rect x="65" y="2" width="8" height="38" fill="#BB8533" rx="2" />
-                      <rect x="85" y="20" width="8" height="20" fill={isDarkMode ? "#C89B3C" : "#151D29"} rx="2" />
-                    </svg>
-                    <div className="flex justify-between text-[7px] font-mono text-neutral-400 pt-2 border-t border-gray-150 dark:border-ink-800/60">
-                      <span>SEG</span>
-                      <span>TER (AULA)</span>
-                      <span>QUA</span>
-                      <span>QUI (AULA)</span>
-                      <span>SAB (WSHOP)</span>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
+            <InstructorProgressTab courses={courses} />
           )}
 
           {/* TAB 13: PERFIL DO DOCENTE CP */}
