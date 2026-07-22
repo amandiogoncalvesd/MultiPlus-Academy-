@@ -12,25 +12,20 @@ import {
   CheckCircle2,
   CalendarCheck
 } from 'lucide-react';
-import { User, Course } from '../../types';
+import { Course } from '../../types';
 import { academicService } from '../../services/supabase/academicService';
 import { useToast } from '../ui/Toast';
 
 interface InstructorCalendarTabProps {
-  students: User[];
   courses: Course[];
 }
 
-export default function InstructorCalendarTab({
-  students = [],
-  courses = []
-}: InstructorCalendarTabProps) {
+export default function InstructorCalendarTab({ courses = [] }: InstructorCalendarTabProps) {
   const toast = useToast();
   const [calendarView, setCalendarView] = useState<'month' | 'week' | 'day'>('month');
 
   // Database lesson and student agendamento state
   const [selectedMeetingCourse, setSelectedMeetingCourse] = useState('');
-  const [selectedStudent, setSelectedStudent] = useState('');
   const [selectedLesson, setSelectedLesson] = useState('');
   const [dbLessons, setDbLessons] = useState<any[]>([]);
   const [scheduledLessons, setScheduledLessons] = useState<any[]>([]);
@@ -47,14 +42,6 @@ export default function InstructorCalendarTab({
       setSelectedMeetingCourse(courses[0].id || '');
     }
   }, [courses]);
-
-  useEffect(() => {
-    if (students && students.length > 0) {
-      const onlyAlunos = students.filter(s => s.role === 'ALUNO');
-      const targetList = onlyAlunos.length > 0 ? onlyAlunos : students;
-      setSelectedStudent(targetList[0].id || '');
-    }
-  }, [students]);
 
   // Load lessons for chosen course
   useEffect(() => {
@@ -112,7 +99,7 @@ export default function InstructorCalendarTab({
       // Save schedule to database via academicService
       await academicService.scheduleLesson(
         selectedLesson,
-        selectedStudent || '00000000-0000-0000-0000-000000000000',
+        '00000000-0000-0000-0000-000000000000',
         selectedMeetingCourse,
         scheduledAtStr,
         endsAtStr
@@ -134,11 +121,6 @@ export default function InstructorCalendarTab({
     navigator.clipboard.writeText(url);
     toast.success('Link copiado para a Área de Transferência!');
   };
-
-  // Filter students with role 'ALUNO' for select dropdown
-  const studentDropdownList = students.filter(s => s.role === 'ALUNO').length > 0
-    ? students.filter(s => s.role === 'ALUNO')
-    : students;
 
   // Compile combined events array for the calendar grid mapping
   const calendarEvents = scheduledLessons.map((sl: any, index: number) => {
@@ -217,20 +199,7 @@ export default function InstructorCalendarTab({
                   </select>
                 </div>
 
-                {/* Student Selection */}
-                <div>
-                  <label className="block text-[8.5px] font-mono font-bold uppercase text-neutral-400 dark:text-cream-200/60 tracking-wider mb-1.5">2. Turma abrangida</label>
-                  <select
-                    value={selectedStudent}
-                    onChange={(e) => setSelectedStudent(e.target.value)}
-                    className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl focus:outline-none focus:border-gold-600 text-slate-850 dark:text-cream-100"
-                  >
-                    <option value="">Todos os alunos matriculados no curso</option>
-                    {studentDropdownList.map(s => (
-                      <option key={s.id} value={s.id}>{s.firstName} {s.lastName} ({s.email})</option>
-                    ))}
-                  </select>
-                </div>
+
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

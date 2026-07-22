@@ -929,10 +929,7 @@ export default function InstructorPortal({
 
           {/* TAB 10: AGENDA LETIVA */}
           {activeTab === 'calendario' && (
-            <InstructorCalendarTab
-              students={students}
-              courses={courses}
-            />
+            <InstructorCalendarTab courses={courses} />
           )}
 
           {/* TAB 11: MENSAGENS & MURAL */}
