@@ -34,7 +34,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
           return;
         }
 
-        const dbRole: 'ALUNO' | 'PROFESSOR' | 'ADMIN' = userRole;
+        const dbRole: 'ALUNO' | 'PROFESSOR' = userRole === 'PROFESSOR' ? 'PROFESSOR' : 'ALUNO';
 
         const fullName = `${firstName.trim()} ${lastName.trim()}`;
 

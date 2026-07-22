@@ -16,7 +16,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<any>;
   refreshProfile: () => Promise<void>;
-  updateUser: (updates: Partial<User>) => void;
+  updateUser: (updates: Partial<User> | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,8 +34,8 @@ export function AuthProvider({ children, onPageRedirect }: { children: React.Rea
     return 'ALUNO';
   };
 
-  const updateUser = (updates: Partial<User>) => {
-    setCurrentUser(prev => prev ? { ...prev, ...updates } : prev);
+  const updateUser = (updates: Partial<User> | null) => {
+    setCurrentUser(prev => updates === null ? null : (prev ? { ...prev, ...updates } : prev));
   };
 
   // Calcular métricas reais de progresso do aluno

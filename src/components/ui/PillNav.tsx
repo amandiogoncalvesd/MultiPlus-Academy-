@@ -342,13 +342,13 @@ const PillNav: React.FC<PillNavProps> = ({
             aria-label="Home"
             onMouseEnter={handleLogoEnter}
             role="menuitem"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
               if (items[0].onClick) {
                 e.preventDefault();
                 items[0].onClick(e);
               }
             }}
-            ref={el => {
+            ref={(el: HTMLAnchorElement | null) => {
               logoRef.current = el;
             }}
             className="rounded-full p-1.5 inline-flex items-center justify-center overflow-hidden border border-slate-200/40 shadow-sm"
@@ -365,13 +365,13 @@ const PillNav: React.FC<PillNavProps> = ({
             href={items?.[0]?.href || '#'}
             aria-label="Home"
             onMouseEnter={handleLogoEnter}
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
               if (items?.[0]?.onClick) {
                 e.preventDefault();
                 items[0].onClick(e);
               }
             }}
-            ref={el => {
+            ref={(el: HTMLAnchorElement | null) => {
               logoRef.current = el as HTMLAnchorElement;
             }}
             className="rounded-full p-1.5 inline-flex items-center justify-center overflow-hidden border border-slate-200/40 shadow-sm"
@@ -417,7 +417,7 @@ const PillNav: React.FC<PillNavProps> = ({
                       willChange: 'transform'
                     }}
                     aria-hidden="true"
-                    ref={el => {
+                    ref={(el: HTMLAnchorElement | null) => {
                       circleRefs.current[i] = el;
                     }}
                   />
@@ -463,7 +463,7 @@ const PillNav: React.FC<PillNavProps> = ({
                       aria-label={item.ariaLabel || item.label}
                       onMouseEnter={() => handleEnter(i)}
                       onMouseLeave={() => handleLeave(i)}
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                         if (item.onClick) {
                           e.preventDefault();
                           item.onClick(e);
@@ -481,7 +481,7 @@ const PillNav: React.FC<PillNavProps> = ({
                       aria-label={item.ariaLabel || item.label}
                       onMouseEnter={() => handleEnter(i)}
                       onMouseLeave={() => handleLeave(i)}
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                         if (item.onClick) {
                           e.preventDefault();
                           item.onClick(e);
@@ -537,7 +537,7 @@ const PillNav: React.FC<PillNavProps> = ({
 
       <div
         ref={mobileMenuRef}
-        onClick={(e) => {
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => {
           const target = e.target as HTMLElement;
           if (target.closest('button') || target.closest('a')) {
             setIsMobileMenuOpen(false);
@@ -583,7 +583,7 @@ const PillNav: React.FC<PillNavProps> = ({
                       style={defaultStyle}
                       onMouseEnter={hoverIn}
                       onMouseLeave={hoverOut}
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                         setIsMobileMenuOpen(false);
                         if (item.onClick) {
                           e.preventDefault();
@@ -600,7 +600,7 @@ const PillNav: React.FC<PillNavProps> = ({
                       style={defaultStyle}
                       onMouseEnter={hoverIn}
                       onMouseLeave={hoverOut}
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                         setIsMobileMenuOpen(false);
                         if (item.onClick) {
                           e.preventDefault();

@@ -306,7 +306,7 @@ export default function App() {
               initial={{ scale: 0.93, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.93, opacity: 0, y: 20 }}
-              transition={{ cubicBezier: [0.16, 1, 0.3, 1], duration: 0.5 }}
+              transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.5 }}
               className="relative w-full max-w-xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-[#C89B3C]/40 text-left shadow-[#C89B3C]/10"
             >
               {/* Premium golden visual bar */}

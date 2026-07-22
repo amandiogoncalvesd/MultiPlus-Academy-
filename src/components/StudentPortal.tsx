@@ -513,7 +513,8 @@ export default function StudentPortal({
     lessonsWithDate.forEach((session, idx) => {
       const title = session.lesson?.titulo || session.lesson?.title || 'Aula Síncrona';
       const description = session.lesson?.descricao || 'Sessão em videoconferência síncrona com avaliação e debates.';
-      const rawDate = session.lesson?.scheduled_at!;
+      const rawDate = session.lesson?.scheduled_at;
+      if (!rawDate) return;
       const courseTitle = session.lesson?.course?.title || session.lesson?.course?.titulo || 'Curso MultiPlus';
       
       const d = new Date(rawDate);
@@ -848,7 +849,7 @@ export default function StudentPortal({
                           </span>
                         </div>
                         <div className="text-sm sm:text-base text-slate-600 dark:text-gray-300 leading-relaxed font-sans">
-                          {currentLecture?.descricao || currentLecture?.description || (
+                          {currentLecture?.description || (
                             <span className="text-neutral-400 italic text-xs sm:text-sm">
                               Transcrição não disponível para esta aula.
                             </span>
@@ -891,7 +892,7 @@ export default function StudentPortal({
                             className="flex-1 px-3 py-2.5 sm:py-2 text-sm sm:text-xs rounded-xl bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-850 text-[#1C1C1C] dark:text-cream-100 focus:outline-none min-h-[44px]"
                           />
                           <button
-                            onClick={handleSaveNote}
+                            onClick={() => handleSaveNote(videoPlaySec)}
                             disabled={!newNoteInput.trim()}
                             className="px-4 py-2.5 sm:py-2 bg-gold-600 hover:bg-[#a67e2b] text-cream-100 hover:text-slate-900 border-0 text-xs sm:text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap font-bold"
                           >
@@ -1394,7 +1395,7 @@ export default function StudentPortal({
               initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              transition={{ cubicBezier: [0.16, 1, 0.3, 1], duration: 0.4 }}
+              transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.4 }}
               className="relative w-full max-w-md bg-white dark:bg-ink-950 rounded-3xl overflow-hidden shadow-2xl border border-gold-600/30 p-6 space-y-6 text-left"
             >
               <div className="flex items-center gap-3">

@@ -320,7 +320,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              transition={{ cubicBezier: [0.16, 1, 0.3, 1], duration: 0.4 }}
+              transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.4 }}
               className="relative w-full max-w-3xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200 flex flex-col max-h-[85vh]"
             >
               {/* Premium golden visual bar */}

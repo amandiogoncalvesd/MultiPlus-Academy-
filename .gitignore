@@ -6,3 +6,11 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Test and browser automation artifacts
+playwright-report/
+test-results/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

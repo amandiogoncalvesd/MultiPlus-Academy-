@@ -34,7 +34,6 @@ export function mapSupabaseUserToAppUser(
     lastName: nameParts.slice(1).join(' ') || '',
     role: mappedRole,
     avatarUrl: row.foto_perfil || undefined,
-    foto_perfil: row.foto_perfil || undefined,
     phone: row.telefone || '',
     status: (row.status as 'ACTIVE' | 'SUSPENDED') || 'ACTIVE',
     streak: row.streak ?? defaults?.streak ?? 0,

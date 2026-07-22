@@ -122,7 +122,7 @@ export default function InstructorEvaluationsTab({
         teacher_id: currentUser.id,
         titulo: newTitle,
         descricao: `Tipo: ${newType} | Nota mínima: ${newMinGrade}/100`,
-        due_date: null,
+        due_date: undefined,
         lesson_id: selectedModuleId || undefined,
         status: 'PUBLISHED'
       });
