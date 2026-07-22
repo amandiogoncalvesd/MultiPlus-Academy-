@@ -102,76 +102,29 @@ export default function CertificateIssueModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.id) return;
     setErrorMsg('');
 
-    if (!selectedStudentId) {
-      setErrorMsg('Por favor, selecione um aluno.');
-      return;
-    }
-
-    if (!selectedCourseId) {
-      setErrorMsg('Por favor, selecione um curso.');
-      return;
-    }
-
-    if (!pdfFile) {
-      setErrorMsg('Por favor, carregue o arquivo PDF do certificado.');
+    if (!selectedStudentId || !selectedCourseId || !pdfFile) {
+      setErrorMsg('Selecione o aluno, o curso e o PDF do certificado.');
       return;
     }
 
     try {
       setIsSubmitting(true);
+      const formData = new FormData();
+      formData.append('studentId', selectedStudentId);
+      formData.append('courseId', selectedCourseId);
+      formData.append('file', pdfFile);
 
-      const codigo = `MPA-${new Date().getFullYear()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+      const { data, error } = await supabase.functions.invoke('certificate-files?action=issue', {
+        body: formData,
+      });
+      if (error || data?.error) throw new Error(error?.message || data?.error || 'Não foi possível emitir o certificado.');
 
-      // Insert metadata into certificates table
-      const { data: certRow, error: insertError } = await supabase
-        .from('certificates')
-        .insert({
-          student_id: selectedStudentId,
-          course_id: selectedCourseId,
-          codigo_validacao: codigo,
-          issued_by: user.id
-        })
-        .select()
-        .single();
-
-      if (insertError) throw insertError;
-
-      // Upload file to storage
-      const fileExt = pdfFile.name.split('.').pop();
-      const filePath = `certificates/${certRow.id}/${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('media')
-        .upload(filePath, pdfFile);
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: urlData } = supabase.storage.from('media').getPublicUrl(filePath);
-
-      // Update certificate with public URL
-      const { error: updateError } = await supabase
-        .from('certificates')
-        .update({ certificate_pdf_url: urlData.publicUrl })
-        .eq('id', certRow.id);
-
-      if (updateError) throw updateError;
-
-      setSuccessMsg(`Certificado outorgado com sucesso! Código: ${codigo}`);
-      if (onSave) {
-        onSave({
-          ...certRow,
-          certificate_pdf_url: urlData.publicUrl
-        });
-      }
-
-      setTimeout(() => {
-        onClose();
-      }, 2000);
-
+      const certificate = data.data;
+      setSuccessMsg(`Certificado PDF emitido com sucesso! Código: ${certificate.codigo_validacao}`);
+      onSave?.(certificate);
+      setTimeout(onClose, 1800);
     } catch (err: any) {
       console.error('Error issuing certificate:', err);
       setErrorMsg(err.message || 'Erro inesperado ao emitir certificado.');

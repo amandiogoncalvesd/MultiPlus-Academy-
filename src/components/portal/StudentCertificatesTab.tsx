@@ -13,6 +13,7 @@ import {
 import { User, PageId } from '../../types';
 import StarBorder from '../ui/StarBorder';
 import { academicService } from '../../services/supabase/academicService';
+import { supabase } from '../../lib/supabase/client';
 
 interface StudentCertificatesTabProps {
   currentUser: User | null;
@@ -51,22 +52,23 @@ export default function StudentCertificatesTab({
     fetchCertificates();
   }, [currentUser]);
 
-  const triggerExport = (id: string, title: string, pdfUrl?: string) => {
-    if (pdfUrl) {
-      window.open(pdfUrl, '_blank');
-      return;
-    }
-    
+  const triggerExport = async (id: string, title: string) => {
     setDownloadingId(id);
-    setExportMessage("Processando dados e assinaturas digitais da gerência...");
-    setTimeout(() => {
-      setExportMessage("Gerando PDF com carimbo jurídico estrito...");
-      setTimeout(() => {
-        setDownloadingId(null);
-        setExportMessage(null);
-        alert(`O seu certificado em "${title}" foi exportado localmente com sucesso.\nCódigo Hash de Autenticidade: ${id}`);
-      }, 1500);
-    }, 1200);
+    setExportMessage(`A preparar o PDF privado de “${title}”…`);
+    try {
+      const { data, error } = await supabase.functions.invoke('certificate-files?action=download', {
+        body: { certificateId: id },
+      });
+      if (error || data?.error || !data?.url) throw new Error(error?.message || data?.error || 'PDF indisponível.');
+      window.open(data.url, '_blank', 'noopener,noreferrer');
+      setExportMessage('PDF aberto com link temporário e seguro.');
+    } catch (err) {
+      console.error('Erro ao descarregar certificado:', err);
+      setExportMessage('Não foi possível preparar o PDF. Tente novamente.');
+    } finally {
+      setDownloadingId(null);
+      window.setTimeout(() => setExportMessage(null), 3500);
+    }
   };
 
   const handleVerifyOnPortal = (serial: string) => {
@@ -188,7 +190,7 @@ export default function StudentCertificatesTab({
                   </div>
 
                   <button
-                    onClick={() => triggerExport(cert.id, courseTitle, cert.certificate_pdf_url)}
+                    onClick={() => triggerExport(cert.id, courseTitle)}
                     disabled={downloadingId !== null}
                     className="px-4 py-2 bg-gradient-to-r from-gold-600 to-[#E2B755] hover:scale-105 active:scale-95 text-ink-900 rounded-xl text-3xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-0"
                   >
