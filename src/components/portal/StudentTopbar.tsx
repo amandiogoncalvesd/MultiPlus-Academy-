@@ -65,7 +65,7 @@ export default function StudentTopbar({
   cardThemeClass
 }: StudentTopbarProps) {
   return (
-    <header className={`h-16 px-6 border-b flex items-center justify-between sticky top-0 z-30 transition-colors ${
+    <header className={`min-h-16 px-3 sm:px-6 border-b flex items-center justify-between sticky top-0 z-30 transition-colors ${
       isHighContrast ? 'bg-black border-yellow-500 text-yellow-300' : themeMode === 'dark' ? 'bg-ink-900 border-ink-800 text-cream-100' : 'bg-white border-slate-200/60 text-slate-800'
     }`}>
       {/* Topbar Left - Hamburger and section headers */}
@@ -99,7 +99,7 @@ export default function StudentTopbar({
       </form>
 
       {/* Topbar Right - Actions buttons widgets */}
-      <div className="flex items-center gap-4 text-xs">
+      <div className="flex items-center gap-2 sm:gap-4 text-xs">
         
         {/* Streak Indicator widget */}
         <div className="hidden sm:flex items-center gap-1 bg-orange-50 dark:bg-orange-950/20 px-2.5 py-1 rounded-full border border-orange-100 dark:border-orange-900/30 text-orange-600 font-bold font-mono text-[10px]">
@@ -111,7 +111,7 @@ export default function StudentTopbar({
         <button 
           onClick={toggleTheme}
           className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-gold-600 border-0 cursor-pointer"
-          title="Mudar visual cor"
+          title="Mudar visual cor" aria-label="Alternar tema"
         >
           {themeMode === 'light' ? <Moon size={14} /> : <Sun size={14} />}
         </button>
@@ -120,7 +120,7 @@ export default function StudentTopbar({
         <button
           onClick={() => setCurrentPage('messages')}
           className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
-          title="Abrir Mensagens"
+          title="Abrir Mensagens" aria-label="Abrir mensagens"
         >
           <MessageSquare size={14} className="text-gold-600" />
           {unreadMessagesCount > 0 && (
@@ -153,7 +153,7 @@ export default function StudentTopbar({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className={`absolute right-0 sm:right-0 mt-2 w-[calc(100vw-2rem)] sm:w-72 rounded-2xl p-4 shadow-xl text-left ${cardThemeClass} z-50`}
+                role="dialog" aria-label="Notificações" className={`fixed inset-x-3 top-[4.5rem] max-h-[70dvh] overflow-hidden sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 rounded-2xl p-4 shadow-2xl text-left ${cardThemeClass} z-50`}
               >
                 <div className="flex justify-between items-center pb-2 border-b border-gray-100">
                   <span className="font-mono text-2xs font-bold text-neutral-400">NOTIFICAÇÕES</span>
@@ -172,14 +172,14 @@ export default function StudentTopbar({
                     Marcar tudo lido
                   </button>
                 </div>
-                <div className="space-y-2 mt-2 divide-y divide-gray-100 max-h-60 overflow-y-auto">
+                <div className="mt-2 max-h-[52dvh] space-y-1 divide-y divide-gray-100 overflow-y-auto pr-1">
                   {notifications.length === 0 ? (
                     <p className="text-neutral-400 text-center py-4 m-0 text-3xs">Sem novas notificações</p>
                   ) : (
                     notifications.map(n => (
-                      <div key={n.id} className="pt-2 flex items-start gap-2 text-2xs text-neutral-400 dark:text-gray-300">
-                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1 ${n.read ? 'bg-gray-200' : 'bg-gold-600'}`} />
-                        <p className="m-0 leading-snug">{n.text}</p>
+                      <div key={n.id} className={`flex gap-2 rounded-xl px-2 py-2.5 text-xs ${n.read ? 'text-neutral-400' : 'bg-gold-600/5 text-ink-900 dark:text-cream-100'} dark:text-gray-300`}>
+                        <div className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${n.read ? 'bg-gray-200' : 'bg-gold-600'}`} />
+                        <div className="min-w-0"><p className="m-0 leading-snug">{n.text}</p><time className="mt-1 block text-[9px] font-mono text-neutral-400">{n.created_at ? new Date(n.created_at).toLocaleString('pt-AO') : 'Agora'}</time></div>
                       </div>
                     ))
                   )}

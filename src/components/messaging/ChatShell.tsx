@@ -484,7 +484,7 @@ export default function ChatShell({ role }: ChatShellProps) {
   }, [user]);
 
   return (
-    <div id="chat-shell" className="flex bg-cream-100/95 dark:bg-ink-950/80 rounded-3xl border border-gray-150 dark:border-ink-800/85 overflow-hidden shadow-[0_20px_50px_rgba(10,46,93,0.08)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] h-[650px] relative">
+    <div id="chat-shell" className="relative flex h-full min-h-0 overflow-hidden bg-cream-100/95 shadow-[0_20px_50px_rgba(10,46,93,0.08)] dark:bg-ink-950/80 dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] sm:rounded-3xl sm:border sm:border-gray-150 sm:dark:border-ink-800/85">
       
       {/* 1. Left Contact Sidebar View */}
       <ChatSidebar
@@ -501,7 +501,7 @@ export default function ChatShell({ role }: ChatShellProps) {
       />
 
       {/* 2. Main Active Chat Window */}
-      <div className={`flex-grow flex flex-col h-full bg-cream-100/30 dark:bg-ink-950/20 ${!activePartner ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`min-w-0 min-h-0 flex-1 flex flex-col bg-cream-100/30 dark:bg-ink-950/20 ${!activePartner ? 'hidden md:flex' : 'flex'}`}>
         {activePartner ? (
           <>
             <ChatWindow

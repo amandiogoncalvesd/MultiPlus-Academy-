@@ -32,7 +32,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   );
 
   return (
-    <div className={`w-full md:w-80 border-r border-gray-150 dark:border-ink-800 flex flex-col h-full bg-cream-100/40 dark:bg-ink-900/40 relative ${activePartner ? 'hidden md:flex' : 'flex'}`}>
+    <div className={`min-h-0 w-full md:w-96 md:max-w-[42%] border-r border-gray-150 dark:border-ink-800 flex flex-col h-full bg-cream-100/40 dark:bg-ink-900/40 relative ${activePartner ? 'hidden md:flex' : 'flex'}`}>
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-600/30 to-transparent pointer-events-none" />
       
       {/* Sidebar Header with controls */}
@@ -46,7 +46,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             {role === 'ADMIN' && (
               <button
                 onClick={onShowBulkModal}
-                title="Envio em massa"
+                title="Envio em massa" aria-label="Abrir envio em massa"
                 className="p-1.5 rounded-full hover:bg-cream-200 dark:hover:bg-ink-800 text-gold-600 transition-colors border border-gold-600/20 bg-transparent cursor-pointer"
               >
                 <Megaphone className="w-4 h-4" />
@@ -55,7 +55,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             <button
               onClick={onShowNewModal}
               className="p-1.5 rounded-full bg-gradient-to-r from-gold-600 to-[#E2B755] hover:shadow-md hover:scale-105 text-white transition-all border-0 cursor-pointer flex items-center justify-center"
-              title="Nova Conversa"
+              title="Nova Conversa" aria-label="Iniciar nova conversa"
             >
               <Plus className="w-4 h-4" />
             </button>

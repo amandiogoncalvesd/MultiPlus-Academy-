@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { MessageSquare, Trash, ChevronDown } from 'lucide-react';
+import { ChevronDown, MessageSquare, Trash } from 'lucide-react';
 import { ChatMessage, ChatPartner, ChatTheme } from '../../types/chat.types';
 import { MessageBubble } from './MessageBubble';
 
@@ -26,16 +26,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onEditMessage,
   onDeleteMessage,
   onReactMessage,
-  onBack
+  onBack,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const nearBottomRef = useRef(true);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
-  // Auto scroll to bottom
-  const scrollToBottom = (behavior: 'smooth' | 'auto' = 'smooth') => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    const element = scrollRef.current;
+    if (!element) return;
+    element.scrollTo({ top: element.scrollHeight, behavior });
+    nearBottomRef.current = true;
+    setShowScrollButton(false);
   };
 
   useEffect(() => {
@@ -43,175 +45,74 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   }, [activePartner.id]);
 
   useEffect(() => {
-    scrollToBottom('smooth');
+    if (nearBottomRef.current) scrollToBottom('smooth');
+    else setShowScrollButton(true);
   }, [messages.length]);
 
-  // Handle scroll to toggle the "scroll to bottom" button
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.currentTarget;
-    const diff = target.scrollHeight - target.scrollTop - target.clientHeight;
-    setShowScrollBtn(diff > 300);
+  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const element = event.currentTarget;
+    const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
+    nearBottomRef.current = distanceFromBottom < 96;
+    setShowScrollButton(!nearBottomRef.current);
   };
 
-  // Group messages by day
-  const groupMessagesByDay = (msgs: ChatMessage[]) => {
-    const groups: { [key: string]: ChatMessage[] } = {};
-    msgs.forEach(m => {
-      const dateStr = new Date(m.createdAt).toDateString();
-      if (!groups[dateStr]) {
-        groups[dateStr] = [];
-      }
-      groups[dateStr].push(m);
-    });
-    return groups;
-  };
+  const groups = messages.reduce<Record<string, ChatMessage[]>>((accumulator, message) => {
+    const key = new Date(message.createdAt).toDateString();
+    (accumulator[key] ||= []).push(message);
+    return accumulator;
+  }, {});
 
-  const getDayHeader = (dateStr: string) => {
-    const date = new Date(dateStr);
+  const getDayLabel = (value: string) => {
+    const date = new Date(value);
     const today = new Date();
     const yesterday = new Date();
     yesterday.setDate(today.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return 'Hoje';
-    }
-    if (date.toDateString() === yesterday.toDateString()) {
-      return 'Ontem';
-    }
-    return date.toLocaleDateString('pt-AO', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
+    if (date.toDateString() === today.toDateString()) return 'Hoje';
+    if (date.toDateString() === yesterday.toDateString()) return 'Ontem';
+    return date.toLocaleDateString('pt-AO', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
-  const messageGroups = groupMessagesByDay(messages);
   const isOnline = activePartner.status === 'ONLINE' || activePartner.status === 'TYPING';
 
   return (
-    <div className="flex-grow flex flex-col h-full bg-cream-100/30 dark:bg-ink-950/20 relative">
-      
-      {/* Active Conversation Top Header */}
-      <div className="p-4 border-b border-gray-150 dark:border-ink-800/60 flex items-center gap-3 bg-cream-200/40 dark:bg-ink-900/40 backdrop-blur-sm shrink-0">
-        <button
-          onClick={onBack}
-          className="md:hidden text-xs font-bold text-gold-600 hover:underline mr-1 bg-transparent border-0 cursor-pointer"
-        >
-          ← Voltar
+    <section className="relative flex min-h-0 flex-1 flex-col bg-[#f6f4ef] dark:bg-ink-950" aria-label={`Conversa com ${activePartner.nome_completo}`}>
+      <header className="z-10 flex shrink-0 items-center gap-3 border-b border-gray-150 bg-white/95 px-3 py-3 shadow-sm backdrop-blur-xl dark:border-ink-800 dark:bg-ink-900/95 sm:px-4">
+        <button onClick={onBack} className="rounded-xl border-0 bg-cream-200 px-2.5 py-2 text-xs font-bold text-gold-600 md:hidden dark:bg-ink-800" aria-label="Voltar à lista de conversas">
+          ←
         </button>
-
-        {/* Profile Avatar inside Golden Frame */}
-        <div className="relative shrink-0 select-none">
+        <div className="relative shrink-0">
           {activePartner.foto_perfil ? (
-            <img
-              src={activePartner.foto_perfil}
-              alt={activePartner.nome_completo}
-              className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-ink-800"
-              referrerPolicy="no-referrer"
-            />
+            <img src={activePartner.foto_perfil} alt="" className="h-10 w-10 rounded-full border border-gold-600/25 object-cover" referrerPolicy="no-referrer" />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-cream-200 dark:bg-ink-800 flex items-center justify-center text-gold-600 font-bold border border-gold-600/20">
-              {activePartner.nome_completo.charAt(0).toUpperCase()}
-            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-600/15 font-bold text-gold-600">{activePartner.nome_completo.charAt(0).toUpperCase()}</div>
           )}
-          {isOnline && (
-            <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-ink-900 animate-pulse" />
-          )}
+          {isOnline && <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-ink-900" aria-label="Online" />}
         </div>
-
-        <div className="text-left">
-          <h4 className="text-sm font-bold text-ink-900 dark:text-cream-100 leading-none mb-1">
-            {activePartner.nome_completo}
-          </h4>
-          <p className="text-[10px] text-neutral-400 leading-none capitalize">
-            {activePartner.status === 'TYPING' ? (
-              <span className="text-emerald-500 font-bold animate-pulse">A escrever...</span>
-            ) : isOnline ? (
-              <span className="text-emerald-500 font-semibold">Online</span>
-            ) : (
-              activePartner.role.toLowerCase()
-            )}
-          </p>
+        <div className="min-w-0 flex-1 text-left">
+          <h2 className="truncate text-sm font-bold text-ink-900 dark:text-cream-100">{activePartner.nome_completo}</h2>
+          <p className="mt-0.5 text-[10px] text-neutral-400">{activePartner.status === 'TYPING' ? 'A escrever…' : isOnline ? 'Online' : activePartner.role.toLowerCase()}</p>
         </div>
-
-        {/* Clear Conversation trigger */}
-        <button
-          type="button"
-          onClick={onClearConversation}
-          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 dark:bg-rose-950/10 text-rose-600 hover:text-white hover:bg-rose-600 dark:hover:bg-rose-700 rounded-xl transition-all border border-rose-200/35 dark:border-rose-900/30 text-3xs font-mono font-bold uppercase cursor-pointer"
-          title="Limpar Conversa"
-        >
-          <Trash size={12} />
-          <span className="hidden sm:inline">Limpar Conversa</span>
+        <button type="button" onClick={onClearConversation} className="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-rose-50 px-2.5 py-2 text-[10px] font-mono font-bold uppercase text-rose-600 transition hover:bg-rose-600 hover:text-white dark:border-rose-900/40 dark:bg-rose-950/20" aria-label="Limpar conversa">
+          <Trash size={13} /><span className="hidden sm:inline">Limpar</span>
         </button>
-      </div>
+      </header>
 
-      {/* Messages Scrolling Grid */}
-      <div 
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="flex-grow overflow-y-auto p-4 space-y-4 bg-cream-100/10 dark:bg-ink-950/10 relative scrollbar-thin"
-      >
+      <div ref={scrollRef} onScroll={handleScroll} role="log" aria-live="polite" aria-relevant="additions" className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-5">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-neutral-400 gap-1.5 select-none py-12">
-            <MessageSquare className="w-8 h-8 stroke-[1.2] text-neutral-300" />
-            <span className="text-xs">Nenhuma mensagem nesta conversa.</span>
+          <div className="flex min-h-full flex-col items-center justify-center gap-3 py-16 text-center text-neutral-400">
+            <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-ink-900"><MessageSquare className="text-gold-600" size={28} /></div>
+            <div><p className="text-sm font-semibold text-ink-900 dark:text-cream-100">Comece a conversa</p><p className="mt-1 text-xs">Envie uma mensagem para {activePartner.nome_completo}.</p></div>
           </div>
-        ) : (
-          Object.keys(messageGroups).map(dateStr => (
-            <div key={dateStr} className="space-y-1">
-              
-              {/* Sticky day banner header */}
-              <div className="flex justify-center sticky top-0 z-10 py-2 select-none">
-                <span className="bg-cream-200/85 dark:bg-ink-900/90 text-[10px] font-bold text-neutral-500 dark:text-cream-300 px-3 py-1 rounded-full border border-gray-150/50 dark:border-ink-800/60 shadow-4xs backdrop-blur-xs">
-                  {getDayHeader(dateStr)}
-                </span>
-              </div>
-
-              {/* Day bubbles map */}
-              {messageGroups[dateStr].map(m => {
-                const isMe = m.senderId === activeUserId;
-                return (
-                  <MessageBubble
-                    key={m.id}
-                    message={m}
-                    isMe={isMe}
-                    theme={theme}
-                    activeUserId={activeUserId}
-                    partnerName={activePartner.nome_completo}
-                    onReply={onReplyMessage}
-                    onEdit={onEditMessage}
-                    onDelete={onDeleteMessage}
-                    onReact={onReactMessage}
-                  />
-                );
-              })}
-            </div>
-          ))
-        )}
-
-        {/* Realtime Typing anim circle indicator overlay */}
-        {activePartner.status === 'TYPING' && (
-          <div className="flex justify-start mb-3 select-none">
-            <div className="bg-cream-200/60 dark:bg-ink-850 text-neutral-400 px-3.5 py-2.5 rounded-full rounded-tl-none border border-gray-150 dark:border-ink-800/50 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-            </div>
+        ) : Object.entries(groups).map(([day, dayMessages]) => (
+          <div key={day} className="mb-4">
+            <div className="sticky top-0 z-10 mb-3 flex justify-center py-1"><span className="rounded-full border border-gray-150 bg-white/90 px-3 py-1 text-[10px] font-semibold text-neutral-500 shadow-sm backdrop-blur dark:border-ink-800 dark:bg-ink-900/90">{getDayLabel(day)}</span></div>
+            {dayMessages.map((message) => <MessageBubble key={message.id} message={message} isMe={message.senderId === activeUserId} theme={theme} activeUserId={activeUserId} partnerName={activePartner.nome_completo} onReply={onReplyMessage} onEdit={onEditMessage} onDelete={onDeleteMessage} onReact={onReactMessage} />)}
           </div>
-        )}
+        ))}
+        {activePartner.status === 'TYPING' && <p className="mb-3 w-fit rounded-2xl bg-white px-3 py-2 text-xs text-neutral-400 shadow-sm dark:bg-ink-900">A escrever…</p>}
       </div>
 
-      {/* Floating scroller bottom button */}
-      {showScrollBtn && (
-        <button
-          onClick={() => scrollToBottom('smooth')}
-          className="absolute bottom-20 right-6 p-2 rounded-full bg-gradient-to-r from-gold-600 to-[#E2B755] hover:scale-105 transition-all text-white shadow-lg border-0 cursor-pointer flex items-center justify-center animate-bounce z-10"
-          title="Scroll para baixo"
-        >
-          <ChevronDown size={18} />
-        </button>
-      )}
-    </div>
+      {showScrollButton && <button onClick={() => scrollToBottom('smooth')} className="absolute bottom-24 right-5 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-ink-900 text-white shadow-lg transition hover:bg-gold-600" aria-label="Ir para as mensagens mais recentes"><ChevronDown size={19} /></button>}
+    </section>
   );
 };

@@ -635,6 +635,8 @@ export default function InstructorPortal({
             <div className="relative">
               <button 
                 onClick={() => setShowNotificationsMenu(!showNotificationsMenu)}
+                aria-label="Abrir notificações da turma"
+                aria-expanded={showNotificationsMenu}
                 className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
               >
                 <Bell size={14} />
@@ -647,12 +649,12 @@ export default function InstructorPortal({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className={`absolute right-0 mt-2 w-72 rounded-2xl p-4 shadow-xl text-left ${cardThemeClass} z-50`}
+                    role="dialog" aria-label="Notificações da turma" className={`fixed inset-x-3 top-[4.5rem] max-h-[70dvh] overflow-hidden sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 rounded-2xl p-4 shadow-2xl text-left ${cardThemeClass} z-50`}
                   >
                     <div className="flex justify-between items-center pb-2 border-b border-gray-100">
                       <span className="font-mono text-2xs font-bold text-neutral-400">NOTIFICAÇÕES DA TURMA</span>
                     </div>
-                    <div className="space-y-2 mt-2 divide-y divide-gray-100">
+                    <div className="mt-2 max-h-[52dvh] space-y-1 divide-y divide-gray-100 overflow-y-auto pr-1">
                       {notifications.length === 0 ? (
                         <p className="text-2xs text-neutral-400 m-0 py-2">Sem novas notificações.</p>
                       ) : (

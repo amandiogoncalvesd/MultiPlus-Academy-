@@ -24,7 +24,7 @@ export default function MessagesPage({ setCurrentPage, previousDashboardPage }: 
   const chatRole = getChatRole(user?.role);
 
   return (
-    <div className="flex flex-col h-screen bg-cream-150 dark:bg-ink-950 overflow-hidden text-slate-850 dark:text-cream-100">
+    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-cream-150 text-slate-850 dark:bg-ink-950 dark:text-cream-100">
       {/* Upper header bar */}
       <header className="h-16 border-b border-gray-150 dark:border-ink-800 bg-cream-100 dark:bg-ink-900/80 backdrop-blur-md px-6 flex items-center justify-between shrink-0 z-10">
         <div className="flex items-center gap-4">
@@ -90,8 +90,8 @@ export default function MessagesPage({ setCurrentPage, previousDashboardPage }: 
       </header>
 
       {/* Main Chat component */}
-      <main className="flex-1 overflow-hidden p-4 md:p-6 bg-gradient-to-b from-cream-150 to-cream-200 dark:from-ink-950 dark:to-ink-900">
-        <div className="max-w-7xl mx-auto h-full">
+      <main className="min-h-0 flex-1 overflow-hidden bg-gradient-to-b from-cream-150 to-cream-200 p-0 dark:from-ink-950 dark:to-ink-900 sm:p-4 md:p-6">
+        <div className="mx-auto h-full min-h-0 max-w-7xl">
           {/* We supply the role prop dynamically */}
           <ChatShell role={chatRole} />
         </div>

@@ -70,3 +70,18 @@
 .dark ::-webkit-scrollbar-thumb:hover {
   background: rgba(200, 155, 60, 0.5);
 }
+
+/* Application shells: prevent nested flex layouts from pushing fixed controls below the viewport. */
+html, body, #root { min-height: 100%; }
+@supports (height: 100dvh) {
+  .min-h-screen { min-height: 100dvh; }
+}
+
+@media (max-width: 639px) {
+  input, textarea, select { font-size: 16px; }
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-gold-600) 70%, white);
+  outline-offset: 2px;
+}
