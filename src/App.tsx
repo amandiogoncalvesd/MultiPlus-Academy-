@@ -17,6 +17,7 @@ import { supabase } from './lib/supabase/client';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useToast } from './components/ui/Toast';
 import LoadingSpinner from './components/ui/LoadingSpinner';
+import AppExperiencePrompt from './components/ui/AppExperiencePrompt';
 
 const StudentPortal = lazy(() => import('./components/StudentPortal'));
 const InstructorPortal = lazy(() => import('./components/InstructorPortal'));
@@ -533,6 +534,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      <AppExperiencePrompt enabled={['student-dashboard', 'instructor-dashboard', 'admin-dashboard'].includes(currentPage)} />
     </div>
     </>
   );
