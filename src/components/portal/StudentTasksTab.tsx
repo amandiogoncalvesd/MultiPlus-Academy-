@@ -156,44 +156,21 @@ export default function StudentTasksTab({ userId }: StudentTasksTabProps) {
 
   const handleSubmitTask = async () => {
     if (!fileToUpload || !selectedTaskId || !userId) return;
-    
     setSuccessAnimation(true);
     try {
-      // 1. Upload do arquivo para o Supabase Storage no bucket 'media'
-      const fileExt = fileToUpload.name.split('.').pop();
-      const filePath = `assignments/${userId}/${selectedTaskId}/${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('media')
-        .upload(filePath, fileToUpload, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // 2. Obter a URL pública do arquivo
-      const { data } = supabase.storage.from('media').getPublicUrl(filePath);
-      const publicUrl = data.publicUrl;
-
-      // 3. Registrar a submissão de tarefa no banco
-      await academicService.submitAssignment(selectedTaskId, userId, {
-        url: publicUrl,
-        text: `Submissão do ficheiro ${fileToUpload.name}`
-      });
-
-      // 4. Sucesso! Recarregar
-      setTimeout(async () => {
-        await fetchTasksAndSubmissions();
-        setFileToUpload(null);
-        setUploadedFileName(null);
-        setIsSubmitOpen(false);
-        setSuccessAnimation(false);
-        setActiveTab('COMPLETED');
-      }, 1000);
-      
+      const formData = new FormData();
+      formData.append('assignmentId', selectedTaskId);
+      formData.append('file', fileToUpload);
+      formData.append('text', `Submissão do ficheiro ${fileToUpload.name}`);
+      const { data, error } = await supabase.functions.invoke('student-files?action=upload-submission', { body: formData });
+      if (error || data?.error) throw new Error(error?.message || data?.error || 'Falha ao enviar tarefa.');
+      await fetchTasksAndSubmissions();
+      setFileToUpload(null); setUploadedFileName(null); setIsSubmitOpen(false); setActiveTab('COMPLETED');
+      toast.success('Tarefa enviada com segurança para correção.');
     } catch (err) {
-      console.error('Erro ao submeter tarefa para o Supabase:', err);
+      console.error('Erro ao submeter tarefa:', err);
       toast.error(`Erro ao submeter arquivo: ${(err as any).message || 'falha desconhecida'}`);
-      setSuccessAnimation(false);
-    }
+    } finally { setSuccessAnimation(false); }
   };
 
   const currentUploadTask = tasks.find(t => t.id === selectedTaskId);

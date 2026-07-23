@@ -15,7 +15,7 @@ for (const migration of migrations) {
 }
 
 const secretPatterns = [/ghp_[A-Za-z0-9]+/, /sbp_[A-Za-z0-9]+/, /SUPABASE_SERVICE_ROLE_KEY\s*[:=]\s*['"][^'$]/];
-const files = ['supabase/functions/admin-users/index.ts', 'supabase/functions/admin-settings/index.ts', 'supabase/functions/certificate-files/index.ts'];
+const files = ['supabase/functions/admin-users/index.ts', 'supabase/functions/admin-settings/index.ts', 'supabase/functions/certificate-files/index.ts', 'supabase/functions/student-files/index.ts'];
 for (const file of files) {
   const content = await readFile(file, 'utf8');
   if (!content.includes('serve(')) throw new Error(`${file} não exporta um servidor Edge Function.`);

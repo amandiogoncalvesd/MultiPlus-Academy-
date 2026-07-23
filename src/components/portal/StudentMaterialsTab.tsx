@@ -13,6 +13,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { academicService } from '../../services/supabase/academicService';
+import { supabase } from '../../lib/supabase/client';
 
 interface StudentMaterialsTabProps {
   userId?: string;
@@ -56,15 +57,19 @@ export default function StudentMaterialsTab({ userId }: StudentMaterialsTabProps
   }, [userId]);
 
   const handleDownload = async (material: AcademicMaterial) => {
-    if (!material.arquivo_url) return;
     setDownloadingId(material.id);
     try {
-      // Abre a URL do material em nova aba (pode ser arquivo no Supabase Storage)
-      window.open(material.arquivo_url, '_blank');
-      setDownloadSuccessMessage(`Sucesso! Iniciou o download de: "${material.titulo}"`);
+      const { data, error } = await supabase.functions.invoke('student-files?action=download-material', {
+        body: { materialId: material.id },
+      });
+      if (error || data?.error || !data?.url) throw new Error(error?.message || data?.error || 'Material indisponível.');
+      window.open(data.url, '_blank', 'noopener,noreferrer');
+      setDownloadSuccessMessage(`Download temporário autorizado: "${material.titulo}"`);
       setTimeout(() => setDownloadSuccessMessage(null), 4000);
     } catch (err) {
       console.error('Erro ao descarregar material:', err);
+      setDownloadSuccessMessage('Não foi possível descarregar este material nesta janela de acesso.');
+      setTimeout(() => setDownloadSuccessMessage(null), 4000);
     } finally {
       setDownloadingId(null);
     }
