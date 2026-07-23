@@ -19,6 +19,7 @@ import AdminUsersPage from './admin/AdminUsersPage';
 import AdminCoursesPage from './admin/AdminCoursesPage';
 import AdminCertificatesPage from './admin/AdminCertificatesPage';
 import AdminAuditLogPage from './admin/AdminAuditLogPage';
+import AdminOverview from './admin/AdminOverview';
 
 import { 
   Users, Settings, Activity, TrendingUp, DollarSign, MapPin, ShieldCheck, 
@@ -652,78 +653,9 @@ export default function AdminPortal({
           
           {/* VIEW 1: EXECUTIVE DASHBOARD TAB */}
           {activeTab === 'dashboard' && (
-              <div className="space-y-8 animate-fadeIn">
-                
-                {/* 4 Dynamic Real KPI Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[
-                    { title: "Total de Alunos", val: filteredStudents.length, icon: <Users className="text-blue-500" />, desc: "Matrículas Activas", onClick: () => { setActiveTab('utilizadores'); setRoleFilter('ALUNO'); } },
-                    { title: "Total de Professores", val: filteredInstructors.length, icon: <Award className="text-amber-500" />, desc: "Docentes Titulares", onClick: () => { setActiveTab('utilizadores'); setRoleFilter('PROFESSOR'); } },
-                    { title: "Cursos Ativos", val: courses.length, icon: <BookOpen className="text-indigo-500" />, desc: "Programas no Ar", onClick: () => { setActiveTab('cursos'); } },
-                    { title: "Certificados Emitidos", val: certificates.length, icon: <QrCode className="text-danger-700" />, desc: "Assinaturas Gravadas", onClick: () => { setActiveTab('certificados'); } }
-                  ].map((card, idx) => (
-                    <div 
-                      key={idx} 
-                      onClick={card.onClick}
-                      className="bg-cream-100 dark:bg-ink-800 p-4 rounded-2xl border border-gray-150 dark:border-ink-800 flex flex-col justify-between shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300 cursor-pointer text-[#1C1C1C] dark:text-cream-100"
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-mono text-gray-450 dark:text-neutral-400 uppercase font-black">{card.title}</span>
-                        {card.icon}
-                      </div>
-                      <div className="mt-2.5">
-                        <span className="text-lg sm:text-xl font-serif font-black text-ink-900 dark:text-gold-600">{card.val}</span>
-                        <span className="text-[9px] font-mono text-gray-450 dark:text-neutral-400 block mt-0.5">{card.desc}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            <AdminOverview users={dbUsers} courses={courses} enrollments={enrollments} certificates={certificates} onNavigate={setActiveTab} />
+          )}
 
-                {/* Analytical charts & popular courses */}
-                <div className="max-w-3xl">
-                  {/* Popular courses list */}
-                  <div className="bg-cream-100 dark:bg-ink-800 p-6 rounded-3xl border border-gray-150 dark:border-ink-800 space-y-4 text-left text-slate-900 dark:text-cream-100 shadow-sm">
-                    <div className="border-b dark:border-ink-800 pb-3">
-                      <h4 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base m-0">Cursos mais populares</h4>
-                      <p className="text-[10px] text-gray-450 dark:text-neutral-400 font-mono uppercase mt-1">Ranking de adesão baseado em matrículas reais no Supabase</p>
-                    </div>
-                    <div className="space-y-4">
-                      {popularCoursesList.length === 0 ? (
-                        <p className="text-xs text-neutral-400 dark:text-neutral-400 font-mono py-4 text-center">Nenhuma matrícula registrada para os cursos ativos.</p>
-                      ) : (
-                        popularCoursesList.map((item, idx) => {
-                          const maxCount = Math.max(...popularCoursesList.map(c => c.enrollmentCount), 1);
-                          const percentage = Math.round((item.enrollmentCount / maxCount) * 100);
-                          return (
-                            <div 
-                              key={idx} 
-                              onClick={() => setActiveTab('cursos')}
-                              className="space-y-2 cursor-pointer hover:bg-gray-100/10 p-1.5 rounded-lg transition-all duration-200"
-                            >
-                              <div className="flex justify-between items-center text-xs font-semibold">
-                                <span className="font-serif">{item.title}</span>
-                                <span className="font-mono text-gold-600 text-3xs font-extrabold uppercase">
-                                  {item.enrollmentCount} {item.enrollmentCount === 1 ? 'Matrícula' : 'Matrículas'}
-                                </span>
-                              </div>
-                              <div className="w-full h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-gradient-to-r from-ink-900 to-gold-600 transition-all duration-500" 
-                                  style={{ width: `${percentage}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            )}
-
-            {/* VIEW 2: UTILIZADORES TAB (Full administration panel) */}
             {activeTab === 'utilizadores' && (
               <AdminUsersPage users={dbUsers} onRefresh={loadDatabase} />
             )}

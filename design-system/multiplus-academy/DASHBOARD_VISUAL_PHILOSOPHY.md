@@ -1,0 +1,11 @@
+# Ledger Light
+
+Ledger Light treats an interface as a carefully bound academic ledger: information is never ornamental, but every fact earns a place through rhythm, weight, and measured silence. Panels are arranged as calm fields rather than floating widgets. Large intervals create room for decisions; compact, precise labels anchor the detail. The work should feel meticulously crafted, as if every edge, interval, and alignment had been refined through countless patient revisions by a master-level editor.
+
+Space is architectural. A deep ink spine holds navigation at the edge of the composition, while the working surface is warm mineral white, not sterile white. Information advances from broad institutional context to a specific action in a controlled sequence. Rectangles are softened only enough to feel contemporary; hierarchy comes from proportion and contrast, never from decoration. This restraint must look painstakingly calibrated, the product of deep expertise rather than a generic dashboard template.
+
+Color acts as a signaling material: midnight ink establishes authority, antique gold identifies intentional action, and quiet mineral neutrals leave room for status colors to speak only when needed. Green, amber, and red are reserved for meaningful academic or operational state and are always paired with words or icons. Dark mode is not an inversion; it is an equally deliberate night edition, with every surface and border rebalanced through painstaking attention to contrast.
+
+Typography is editorial and technical at once. Display moments are sparse and purposeful; the operational voice stays direct, readable, and human. Small mono labels behave like catalog marks, while body text guides decisions without ceremony. There are no marketing flourishes inside workflows: words name the thing a person controls, and every sentence exists to reduce uncertainty.
+
+Motion is almost invisible. A section may settle into place, a state may acknowledge an action, and a drawer may reveal its depth, but the interface never performs for its own sake. Reduced motion preserves the same hierarchy without movement. The final composition must appear labored over with care—an instrument of academic coordination made with master-level execution, where precision itself becomes the visual signature.
