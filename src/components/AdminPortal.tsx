@@ -12,7 +12,6 @@ import CertificateIssueModal from './certificates/CertificateIssueModal';
 import AdminShell from './admin/AdminShell';
 import AdminSidebar, { AdminTab } from './admin/AdminSidebar';
 import AdminTopbar from './admin/AdminTopbar';
-import AvatarUpload from './AvatarUpload';
 import AdminProfilePage from './admin/AdminProfilePage';
 import AdminSettingsPage from './admin/AdminSettingsPage';
 import NotificationCenter from './admin/NotificationCenter';
@@ -95,7 +94,6 @@ export default function AdminPortal({
   const [adminName, setAdminName] = useState('');
 
   // Preference Settings
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   
   // Quick access unread messages count
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
@@ -543,64 +541,6 @@ export default function AdminPortal({
     addAuditLog("ENVIO COMUNICAÇÃO", `Disparo de mensagem de marketing/aviso para: ${messageTarget}`);
     setMessageContent('');
     alert('Mensagem enviada com sucesso para toda a árvore de utilizadores correspondente!');
-  };
-
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !currentUser?.id) return;
-
-    // Validate size (2MB = 2 * 1024 * 1024 bytes)
-    if (file.size > 2 * 1024 * 1024) {
-      alert("Erro: O tamanho da imagem excede o limite máximo de 2MB.");
-      return;
-    }
-
-    // Validate extension
-    const ext = file.name.split('.').pop()?.toLowerCase();
-    if (!ext || !['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
-      alert("Erro: Formato de arquivo inválido. Apenas JPG, PNG e WEBP são permitidos.");
-      return;
-    }
-
-    setUploadingAvatar(true);
-    try {
-      const filePath = `${currentUser.id}/${Date.now()}.${ext}`;
-      
-      // Upload file to 'avatars' bucket
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { cacheControl: '3600', upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      // Update public.users.foto_perfil
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ foto_perfil: publicUrl })
-        .eq('id', currentUser.id);
-
-      if (updateError) throw updateError;
-
-      // Update local state for current user
-      const updatedUser = { ...currentUser, avatarUrl: publicUrl };
-      setCurrentUser(updatedUser);
-
-      // Update dbUsers state as well so lists reflect the change
-      setDbUsers(prev => prev.map(u => u.id === currentUser.id ? { ...u, avatarUrl: publicUrl } : u));
-
-      addAuditLog("PERFIL FOTO UPDATE", "Alterou com sucesso a foto de perfil do administrador.");
-      alert("Foto de perfil atualizada com sucesso!");
-    } catch (err: any) {
-      console.error("Erro no upload da foto de perfil:", err);
-      alert(`Erro no upload da foto de perfil: ${err.message || err}`);
-    } finally {
-      setUploadingAvatar(false);
-    }
   };
 
   // Filtered lists

@@ -13,6 +13,8 @@ export default tseslint.config(
       'apps/**',
       'packages/**',
       'supabase/functions/**',
+      'scripts/**',
+      'e2e/**',
     ],
   },
   js.configs.recommended,
