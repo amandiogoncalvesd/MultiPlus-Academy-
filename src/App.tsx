@@ -179,7 +179,7 @@ export default function App() {
 
   return (
     <ToastProvider>
-      <div id="multiplus-portal-root" className="min-h-screen bg-[#F8F8F6] text-[#1C1C1C] flex flex-col font-sans select-none antialiased">
+      <div id="multiplus-portal-root" className="min-h-screen bg-background text-foreground flex flex-col font-sans antialiased">
       
       {/* Premium Luxury Splash Screen on First Visit */}
       <AnimatePresence>

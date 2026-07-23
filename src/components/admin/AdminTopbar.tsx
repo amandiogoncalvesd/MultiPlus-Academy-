@@ -2,6 +2,105 @@ import { Bell, Menu, MessageSquare, Moon, Search, Sun } from 'lucide-react';
 import { User } from '../../types';
 import { AdminTab } from './AdminSidebar';
 import ProfileMenu from './ProfileMenu';
-interface Props { activeTab:AdminTab; user:User|null; isDarkMode:boolean; unreadMessages:number; unreadNotifications:number; search:string; onSearchChange:(v:string)=>void; onOpenSidebar:()=>void; onToggleTheme:()=>void; onMessages:()=>void; onNotifications:()=>void; onProfile:()=>void; onSettings:()=>void; onSignOut:()=>void; }
-const labels:Record<AdminTab,string>={dashboard:'Visão geral',utilizadores:'Pessoas',cursos:'Cursos',certificados:'Certificados',notificacoes:'Avisos',auditoria:'Histórico',integracoes:'Integrações',configuracoes:'Configurações',perfil:'Meu perfil'};
-export default function AdminTopbar(p:Props){return <header className="sticky top-0 z-30 flex h-[78px] items-center justify-between gap-4 border-b border-[#E4E0D7] bg-[#F7F6F2]/92 px-4 backdrop-blur-xl dark:border-[#273244] dark:bg-[#0B111C]/92 sm:px-7"><div className="flex min-w-0 items-center gap-3"><button onClick={p.onOpenSidebar} className="rounded-lg p-2 text-[#1C1917] hover:bg-white lg:hidden dark:text-white dark:hover:bg-[#18263A]" aria-label="Abrir navegação"><Menu size={20}/></button><div className="min-w-0"><p className="font-mono text-[9px] font-bold uppercase tracking-[.16em] text-[#A16207]">Centro de operação</p><h1 className="truncate font-serif text-lg font-black text-[#1C1917] dark:text-white">{labels[p.activeTab]}</h1></div></div><label className="relative hidden flex-1 md:block md:max-w-[360px]"><span className="sr-only">Pesquisar registros</span><Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#78716C]"/><input value={p.search} onChange={e=>p.onSearchChange(e.target.value)} placeholder="Pesquisar pessoas ou cursos" className="h-10 w-full rounded-lg border border-[#DED9CD] bg-white pl-9 pr-3 text-xs text-[#1C1917] outline-none focus:border-[#A16207] focus:ring-2 focus:ring-[#A16207]/15 dark:border-[#273244] dark:bg-[#101827] dark:text-white"/></label><div className="flex items-center gap-1"><button onClick={p.onToggleTheme} className="relative rounded-lg p-2 text-[#80510A] hover:bg-white dark:hover:bg-[#18263A]" aria-label="Alternar tema">{p.isDarkMode?<Sun size={17}/>:<Moon size={17}/>}</button><button onClick={p.onMessages} className="relative rounded-lg p-2 text-[#1C1917] hover:bg-white dark:text-white dark:hover:bg-[#18263A]" aria-label="Abrir mensagens"><MessageSquare size={17}/>{p.unreadMessages>0&&<span className="absolute -right-1 -top-1 min-w-4 rounded-full bg-[#B42318] px-1 text-center text-[9px] font-bold text-white">{p.unreadMessages>9?'9+':p.unreadMessages}</span>}</button><button onClick={p.onNotifications} className="relative rounded-lg p-2 text-[#1C1917] hover:bg-white dark:text-white dark:hover:bg-[#18263A]" aria-label="Abrir avisos"><Bell size={17}/>{p.unreadNotifications>0&&<span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#A16207]"/>}</button><ProfileMenu user={p.user} onProfile={p.onProfile} onSettings={p.onSettings} onSignOut={p.onSignOut}/></div></header>}
+
+interface Props {
+  activeTab: AdminTab;
+  user: User | null;
+  isDarkMode: boolean;
+  unreadMessages: number;
+  unreadNotifications: number;
+  search: string;
+  onSearchChange: (v: string) => void;
+  onOpenSidebar: () => void;
+  onToggleTheme: () => void;
+  onMessages: () => void;
+  onNotifications: () => void;
+  onProfile: () => void;
+  onSettings: () => void;
+  onSignOut: () => void;
+}
+
+const labels: Record<AdminTab, string> = {
+  dashboard: 'Visão geral',
+  utilizadores: 'Pessoas',
+  cursos: 'Cursos',
+  certificados: 'Certificados',
+  notificacoes: 'Avisos',
+  auditoria: 'Histórico',
+  integracoes: 'Integrações',
+  configuracoes: 'Configurações',
+  perfil: 'Meu perfil',
+};
+
+export default function AdminTopbar(p: Props) {
+  return (
+    <header className={`sticky top-0 z-30 flex h-[64px] items-center justify-between gap-4 border-b px-4 sm:px-7 backdrop-blur-md transition-colors ${
+      p.isDarkMode
+        ? 'border-ink-800 bg-ink-900/92 text-cream-100'
+        : 'border-border bg-background/92 text-foreground'
+    }`}>
+      {/* Left — hamburger + label */}
+      <div className="flex min-w-0 items-center gap-3">
+        <button
+          onClick={p.onOpenSidebar}
+          className="rounded-lg p-2 hover:bg-white/[0.06] lg:hidden transition-colors"
+          aria-label="Abrir navegação"
+        >
+          <Menu size={20} />
+        </button>
+        <div className="min-w-0">
+          <p className="ledger-eyebrow">Centro de operação</p>
+          <h1 className="truncate font-serif text-[17px] font-black">
+            {labels[p.activeTab]}
+          </h1>
+        </div>
+      </div>
+
+      {/* Search */}
+      <label className="relative hidden flex-1 md:block md:max-w-[320px]">
+        <span className="sr-only">Pesquisar</span>
+        <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+        <input
+          value={p.search}
+          onChange={(e) => p.onSearchChange(e.target.value)}
+          placeholder="Pesquisar pessoas ou cursos"
+          className="ledger-input h-10 pl-9 pr-3 text-[13px]"
+        />
+      </label>
+
+      {/* Right — actions */}
+      <div className="flex items-center gap-1">
+        <button
+          onClick={p.onToggleTheme}
+          className="rounded-lg p-2 text-accent hover:bg-accent/10 transition-colors"
+          aria-label="Alternar tema"
+        >
+          {p.isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
+        </button>
+        <button
+          onClick={p.onMessages}
+          className="relative rounded-lg p-2 hover:bg-white/[0.06] transition-colors"
+          aria-label="Abrir mensagens"
+        >
+          <MessageSquare size={17} />
+          {p.unreadMessages > 0 && (
+            <span className="absolute -right-1 -top-1 min-w-[16px] rounded-full bg-danger-700 px-1 text-center text-[9px] font-bold text-white">
+              {p.unreadMessages > 9 ? '9+' : p.unreadMessages}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={p.onNotifications}
+          className="relative rounded-lg p-2 hover:bg-white/[0.06] transition-colors"
+          aria-label="Abrir avisos"
+        >
+          <Bell size={17} />
+          {p.unreadNotifications > 0 && (
+            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-accent" />
+          )}
+        </button>
+        <ProfileMenu user={p.user} onProfile={p.onProfile} onSettings={p.onSettings} onSignOut={p.onSignOut} />
+      </div>
+    </header>
+  );
+}

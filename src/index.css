@@ -4,34 +4,59 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
+  /* ===== Typography ===== */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  --color-ink-900: #151D29;      /* Principal - fundo escuro base */
-  --color-ink-800: #1B222E;      /* Principal - fundo escuro secundario/cartoes */
-  --color-gold-600: #BB8533;     /* Principal - dourado de destaque (CTAs, acentos) */
-  --color-cream-100: #FFFFFF;    /* Principal - fundo claro base (White) */
-  --color-cream-200: #F8FAFC;    /* Principal - fundo claro secundario/cartoes (Slate 50) */
-  --color-danger-700: #AF251D;   /* Secundaria - erro, exclusao, alerta */
-  --color-espresso-900: #221F17; /* Secundaria - tom mais escuro alternativo */
-  --color-espresso-700: #573521; /* Secundaria - acento marrom secundario */
-  --color-neutral-400: #A1A4AC;  /* Secundaria - cinza neutro (texto/bordas discretas) */
+  /* ===== Primary Palette — Premium Black + Gold ===== */
+  --color-ink-900: #151D29;      /* Primary dark — sidebar bg, hero bg, headings */
+  --color-ink-800: #1B222E;      /* Dark secondary — card bg dark, borders dark */
+  --color-ink-750: #1E2736;      /* Intermediário — hover bg dark */
+  --color-ink-850: #192030;      /* Cards dark mode */
+  --color-ink-950: #0F1520;      /* Deep dark — accent surface */
 
+  --color-accent: #A16207;       /* Gold accent — CTAs, badges, highlights (WCAG 3:1) */
+  --color-gold-600: #BB8533;     /* Legacy gold — being phased out, use accent */
+  --color-gold-400: #C99A47;     /* Light gold — hover accents dark mode */
+
+  --color-cream-100: #FFFFFF;    /* White — base light bg */
+  --color-cream-200: #F8FAFC;    /* Off-white — card bg light, secondary bg */
+  --color-cream-150: #F5F0EA;    /* Warm cream — hover bg light */
+  --color-cream-250: #EDE5DA;    /* Deeper cream — borders, separators */
+
+  --color-danger-700: #AF251D;   /* Error red — destructive actions */
+  --color-danger-600: #DC2626;   /* Bright error — badges, alerts */
+
+  --color-neutral-400: #A1A4AC;  /* Mid gray — placeholder, muted text */
+  --color-neutral-450: #8B8F98;  /* Slightly darker gray */
+
+  --color-gray-150: #E8E8E8;    /* Subtle border light */
+  --color-gray-250: #D1D5DB;    /* Medium border light (slate-300) */
+  --color-slate-850: #172033;   /* Text dark mode */
+
+  /* Angola flag colors — decorative only */
   --color-flag-red: #CE1126;
   --color-flag-black: #000000;
   --color-flag-gold: #F7CE00;
 
-  --color-ink-750: #1E2736;     /* Intermediário entre ink-800 e ink-900 */
-  --color-ink-850: #192030;     /* Intermediário para cards dark mode */
-  --color-ink-950: #0F1520;     /* Mais escuro que ink-900 — fundo profundo */
-  --color-cream-150: #F5F0EA;   /* Intermediário entre cream-100 e cream-200 */
-  --color-cream-250: #EDE5DA;   /* Um tom acima de cream-200 para hover */
-  --color-gray-150: #E8E8E8;    /* Borda sutil clara */
-  --color-gray-250: #D1D5DB;    /* Borda média clara (equivale a slate-300) */
-  --color-neutral-450: #8B8F98; /* Placeholder intermediário */
-  --color-slate-850: #172033;   /* Texto dark mode (equivale a ink-850) */
+  /* Semantic aliases for design system tokens */
+  --color-primary: #1C1917;
+  --color-on-primary: #FFFFFF;
+  --color-secondary: #44403C;
+  --color-on-secondary: #FFFFFF;
+  --color-background: #FAFAF9;
+  --color-foreground: #0C0A09;
+  --color-muted: #E8ECF0;
+  --color-muted-foreground: #64748B;
+  --color-border: #D6D3D1;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #0C0A09;
+  --color-destructive: #DC2626;
+  --color-on-destructive: #FFFFFF;
+  --color-ring: #1C1917;
 
+  /* Star border animations */
   --animate-star-movement-bottom: star-movement-bottom linear infinite alternate;
   --animate-star-movement-top: star-movement-top linear infinite alternate;
 
@@ -45,56 +70,97 @@
   }
 }
 
-/* Base custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #F8F8F6;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(10, 46, 93, 0.2);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(10, 46, 93, 0.4);
-}
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(28,25,23,0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(28,25,23,0.3); }
+.dark ::-webkit-scrollbar-thumb { background: rgba(200,155,60,0.3); }
+.dark ::-webkit-scrollbar-thumb:hover { background: rgba(200,155,60,0.5); }
 
-.dark ::-webkit-scrollbar-track {
-  background: #151D29;
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(200, 155, 60, 0.3);
-}
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(200, 155, 60, 0.5);
-}
-
-/* Application shells: prevent nested flex layouts from pushing fixed controls below the viewport. */
+/* ===== Shell foundations ===== */
 html, body, #root { min-height: 100%; }
-@supports (height: 100dvh) {
-  .min-h-screen { min-height: 100dvh; }
-}
+@supports (height: 100dvh) { .min-h-screen { min-height: 100dvh; } }
 
-@media (max-width: 639px) {
-  input, textarea, select { font-size: 16px; }
-}
+@media (max-width: 639px) { input, textarea, select { font-size: 16px; } }
 
-/* Ledger Light — shared operations surfaces for the three LMS dashboards. */
-.ledger-panel { border: 1px solid #D6D3D1; border-radius: 24px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(12,10,9,.05); }
+/* ===== Ledger Light — shared dashboard surface system ===== */
+.ledger-panel {
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-card);
+  box-shadow: 0 1px 2px rgba(12,10,9,.04);
+  transition: box-shadow 0.2s ease;
+}
+.ledger-panel:hover { box-shadow: 0 2px 8px rgba(12,10,9,.08); }
 .dark .ledger-panel { border-color: #273244; background: #101827; }
-.ledger-eyebrow { border-left: 2px solid #A16207; padding-left: 8px; color: #A16207; font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
-.ledger-input { min-height: 44px; width: 100%; border: 1px solid #D6D3D1; border-radius: 12px; background: #FAFAF9; padding: 0 12px; color: #0C0A09; outline: none; }
-.ledger-input:focus { border-color: #A16207; box-shadow: 0 0 0 3px rgba(161,98,7,.14); }
+
+.ledger-eyebrow {
+  border-left: 2px solid var(--color-accent);
+  padding-left: 8px;
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ledger-input {
+  min-height: 44px;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-background);
+  padding: 0 12px;
+  color: var(--color-foreground);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.ledger-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(161,98,7,.14);
+}
 .dark .ledger-input { border-color: #273244; background: #0B1629; color: #FFFFFF; }
-.ledger-primary { min-height: 44px; border-radius: 12px; background: #0B1629; padding: 0 16px; color: #FFFFFF; font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-transform: uppercase; transition: background .18s ease, color .18s ease, box-shadow .18s ease; }
-.ledger-primary:hover { background: #A16207; color: #FFFFFF; box-shadow: 0 6px 18px rgba(161,98,7,.18); }
+
+.ledger-primary {
+  min-height: 44px;
+  border-radius: 12px;
+  background: var(--color-primary);
+  padding: 0 16px;
+  color: var(--color-on-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: background 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer;
+}
+.ledger-primary:hover {
+  background: var(--color-accent);
+  box-shadow: 0 4px 12px rgba(161,98,7,.18);
+}
 .dark .ledger-primary { background: #C99A47; color: #0B1629; }
-.ledger-secondary { min-height: 44px; border: 1px solid #D6D3D1; border-radius: 12px; background: transparent; padding: 0 14px; color: #0C0A09; font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-transform: uppercase; }
+
+.ledger-secondary {
+  min-height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: transparent;
+  padding: 0 14px;
+  color: var(--color-foreground);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+.ledger-secondary:hover { background: var(--color-background); }
 .dark .ledger-secondary { border-color: #273244; color: #FFFFFF; }
 
+/* ===== Focus states — WCAG-compliant ===== */
 :focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--color-gold-600) 70%, white);
+  outline: 3px solid color-mix(in srgb, var(--color-accent) 70%, white);
   outline-offset: 2px;
 }
