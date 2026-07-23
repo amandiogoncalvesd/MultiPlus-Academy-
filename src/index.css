@@ -164,3 +164,7 @@ html, body, #root { min-height: 100%; }
   outline: 3px solid color-mix(in srgb, var(--color-accent) 70%, white);
   outline-offset: 2px;
 }
+
+.skip-link { position: fixed; z-index: 10000; left: 16px; top: -64px; border-radius: 8px; background: #0B1629; padding: 10px 14px; color: #fff; font-size: 14px; font-weight: 700; transition: top 150ms ease; }
+.skip-link:focus { top: 16px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }

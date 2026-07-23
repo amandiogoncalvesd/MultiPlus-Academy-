@@ -15,7 +15,7 @@ import { X, GraduationCap, CheckCircle2, Phone, Award, Scale } from 'lucide-reac
 import { useAuth } from './components/auth/AuthProvider';
 import { supabase } from './lib/supabase/client';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import { ToastProvider } from './components/ui/Toast';
+import { useToast } from './components/ui/Toast';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 
 const StudentPortal = lazy(() => import('./components/StudentPortal'));
@@ -25,6 +25,7 @@ const MessagesPage = lazy(() => import('./components/MessagesPage'));
 
 export default function App() {
   const { user: currentUser } = useAuth();
+  const toast = useToast();
   const [currentPage, setCurrentPage] = useState<PageId>('home');
   const [previousDashboardPage, setPreviousDashboardPage] = useState<PageId>('admin-dashboard');
   const [courses, setCourses] = useState<any[]>([]);
@@ -103,7 +104,7 @@ export default function App() {
       setSignUpSuccess(true);
     } catch (err: any) {
       console.error('Erro ao submeter candidatura:', err);
-      alert(`Erro ao enviar candidatura: ${err.message || 'Falha de rede.'}`);
+      toast.error(`Não foi possível enviar a candidatura: ${err.message || 'falha de rede.'}`);
     } finally {
       setLoading(false);
     }
@@ -178,7 +179,8 @@ export default function App() {
   };
 
   return (
-    <ToastProvider>
+    <>
+      <a href="#main-content" className="skip-link">Saltar para o conteúdo principal</a>
       <div id="multiplus-portal-root" className="min-h-screen bg-background text-foreground flex flex-col font-sans antialiased">
       
       {/* Premium Luxury Splash Screen on First Visit */}
@@ -266,8 +268,8 @@ export default function App() {
         />
       )}
 
-      {/* 2. Main Visual Body — add top padding when Navbar is visible */}
-      <main className={`flex-grow flex flex-col ${!['student-dashboard', 'instructor-dashboard', 'admin-dashboard', 'messages'].includes(currentPage) ? 'pt-[64px]' : ''}`}>
+      {/* 2. Main Visual Body */}
+      <main id="main-content" tabIndex={-1} className={`flex-grow flex flex-col ${!['student-dashboard', 'instructor-dashboard', 'admin-dashboard', 'messages'].includes(currentPage) ? 'pt-[64px]' : ''}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={currentPage}
@@ -532,6 +534,6 @@ export default function App() {
       </AnimatePresence>
 
     </div>
-    </ToastProvider>
+    </>
   );
 }
