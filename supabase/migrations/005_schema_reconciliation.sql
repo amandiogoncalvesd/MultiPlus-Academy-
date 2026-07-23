@@ -278,7 +278,7 @@ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'legacy_media_owner_delete') THEN
     CREATE POLICY legacy_media_owner_delete ON storage.objects FOR DELETE TO authenticated
-    USING (bucket_id IN ('media', 'avatars', 'chat-media') AND owner_id = auth.uid());
+    USING (bucket_id IN ('media', 'avatars', 'chat-media') AND owner_id = auth.uid()::text);
   END IF;
 END $$;
 
