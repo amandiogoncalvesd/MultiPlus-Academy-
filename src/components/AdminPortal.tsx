@@ -9,6 +9,10 @@ import { useTheme } from '../contexts/ThemeContext';
 import CourseEditorModal from './course/CourseEditorModal';
 import { messageService } from '../services/supabase/messageService';
 import CertificateIssueModal from './certificates/CertificateIssueModal';
+import AdminShell from './admin/AdminShell';
+import AdminSidebar, { AdminTab } from './admin/AdminSidebar';
+import AdminTopbar from './admin/AdminTopbar';
+import AvatarUpload from './AvatarUpload';
 
 import { 
   Users, Settings, Activity, TrendingUp, DollarSign, MapPin, ShieldCheck, 
@@ -638,216 +642,43 @@ export default function AdminPortal({
       : 'bg-white border border-slate-200/80 shadow-xs text-slate-800';
 
   return (
-    <div id="multiplus-admin-portal" className={`min-h-screen flex items-stretch transition-colors duration-200 ${containerThemeClass}`}>
-      
-      {/* Backdrop overlay for mobile devices */}
-      {mobileSidebarOpen && (
-        <div 
-          className="fixed inset-0 z-30 bg-slate-900/60 backdrop-blur-xs lg:hidden transition-opacity"
-          onClick={() => setMobileSidebarOpen(false)}
-        />
-      )}
-
-      {/* 1. SIDEBAR (Collapsible on Mobile, Fixed on Desktop) */}
-      <aside 
-        className={`fixed inset-y-0 left-0 z-40 w-64 ${
-          highContrast ? 'bg-black border-r-4 border-yellow-500' : isDarkMode ? 'bg-ink-900 border-ink-800' : 'bg-ink-900 text-white border-r border-ink-800/10'
-        } transition-transform duration-300 transform lg:translate-x-0 ${
-          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } flex flex-col justify-between`}
-      >
-        <div className="flex flex-col h-full">
-          {/* Superior Header Logo Brand */}
-          <div className="p-6 border-b border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img
-                src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png"
-                alt="MultiPlus Logo"
-                className="h-9 w-auto object-contain shrink-0"
-              />
-              <div className="text-left">
-                <h1 className="text-sm font-serif font-black m-0 tracking-wide text-cream-100">MultiPlus</h1>
-                <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block font-bold">Super Admin</span>
-              </div>
-            </div>
-            
-            {/* Mobile close button */}
-            <button 
-              onClick={() => setMobileSidebarOpen(false)}
-              className="lg:hidden p-1.5 text-cream-100/70 hover:text-cream-100 rounded bg-transparent border-0 cursor-pointer"
-              aria-label="Fechar lateral"
-            >
-              <X size={18} />
-            </button>
-          </div>
-
-          {/* Navigation Links List */}
-          <nav className="flex-grow p-4 space-y-1 overflow-y-auto max-h-[64vh]">
-            {[
-              { id: 'dashboard', name: 'Dashboard', icon: <Activity className="w-4 h-4" /> },
-              { id: 'utilizadores', name: 'Utilizadores', icon: <UserIcon className="w-4 h-4" /> },
-              { id: 'cursos', name: 'Cursos', icon: <BookOpen className="w-4 h-4" /> },
-              { id: 'certificados', name: 'Certificados', icon: <QrCode className="w-4 h-4" /> },
-              { id: 'mensagens', name: 'Mensagens', icon: <MessageSquare className="w-4 h-4" /> },
-              { id: 'notificacoes', name: 'Notificações', icon: <Bell className="w-4 h-4" /> },
-              { id: 'integracoes', name: 'Integrações', icon: <Network className="w-4 h-4" /> },
-              { id: 'configuracoes', name: 'Configurações', icon: <Settings className="w-4 h-4" /> },
-              { id: 'perfil', name: 'Perfil', icon: <UserIcon className="w-4 h-4" /> },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (item.id === 'mensagens') {
-                    setCurrentPage('messages');
-                  } else {
-                    setActiveTab(item.id);
-                  }
-                  setMobileSidebarOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wider text-left transition-all cursor-pointer border-0 ${
-                  activeTab === item.id
-                    ? 'bg-gold-600 text-ink-900 shadow-sm font-bold'
-                    : 'text-cream-100/80 hover:text-cream-100 hover:bg-cream-100/10'
-                }`}
-              >
-                {item.icon}
-                <span>{item.name}</span>
-              </button>
-            ))}
-          </nav>
-
-          {/* Sidebar Footer */}
-          <div className="p-4 border-t border-white/10 space-y-3.5">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gold-600 text-ink-900 rounded-full flex items-center justify-center font-bold text-xs shadow-sm capitalize">
-                {currentUser?.firstName?.[0] || 'A'}
-              </div>
-              <div className="text-left truncate max-w-[130px]">
-                <h4 className="text-xs font-bold text-cream-100 m-0 tracking-wide truncate">
-                  {currentUser?.firstName || 'Admin'} {currentUser?.lastName || 'MultiPlus'}
-                </h4>
-                <span className="text-[10px] font-mono text-gold-600 font-semibold uppercase">ADMINISTRADOR</span>
-              </div>
-            </div>
-
-            <button
-              onClick={async () => {
-                try {
-                  await signOut();
-                } catch (e) {}
-                setCurrentUser(null);
-                setCurrentPage('login');
-              }}
-              className="w-full py-2 bg-danger-700 hover:bg-red-700 text-cream-100 text-[10px] font-mono font-bold uppercase rounded-lg border-0 cursor-pointer transition-colors flex items-center justify-center gap-1.5"
-            >
-              <LogOut size={11} />
-              <span>Sair do Portal</span>
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main outer shell (adjusted for fixed sidebar space) */}
-      <div className="flex-grow flex flex-col overflow-hidden lg:pl-64 relative">
-        {/* Subtle premium background glow effects matching the Home page layout */}
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[60%] bg-gradient-to-br from-[#C89B3C]/5 to-transparent rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[50%] bg-slate-200/10 dark:bg-slate-800/5 rounded-full blur-[120px] pointer-events-none" />
-        
-        {/* 2. TOPBAR HEADER FIXA */}
-        <header className={`h-16 px-6 border-b flex items-center justify-between sticky top-0 z-30 transition-colors ${
-          highContrast ? 'bg-black border-yellow-500 text-yellow-300' : isDarkMode ? 'bg-ink-900 border-ink-800 text-cream-100' : 'bg-white border-slate-200/60 text-slate-800'
-        }`}>
-          {/* Left Side */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-all bg-transparent border-0 cursor-pointer text-current"
-              aria-label="Abrir lateral"
-            >
-              <Menu size={20} />
-            </button>
-            <div className="hidden sm:block text-left">
-              <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block">MultiPlus LMS</span>
-              <h2 className="text-sm font-serif font-black tracking-wide m-0 capitalize">{activeTab} • Portal de Administração</h2>
-            </div>
-          </div>
-
-          {/* Center Search bar */}
-          <div className="hidden md:flex relative w-64">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
-              <Search size={14} />
-            </span>
-            <input
-              type="text"
-              placeholder="Pesquisar registros..."
-              value={globalSearch}
-              onChange={(e) => setGlobalSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 placeholder:text-neutral-400 text-slate-800 dark:text-cream-100 focus:outline-none focus:border-gold-600 dark:bg-slate-800/50 dark:border-ink-800"
-            />
-          </div>
-
-          {/* Right actions */}
-          <div className="flex items-center gap-4 text-xs">
-            {/* Critical Alert Bar indicator */}
-            <div className="bg-red-50 dark:bg-danger-700/40 text-red-700 dark:text-danger-700 px-2.5 py-1 rounded-full border border-red-150 dark:border-red-900/45 text-[10px] font-mono font-bold uppercase tracking-wider hidden md:flex items-center gap-1.5 animate-pulse">
-              <span className="w-1.5 h-1.5 bg-danger-700 rounded-full"></span>
-              ⚠️ {activeAlerts.length} ALERTA(S) ATIVOS
-            </div>
-
-            {/* Accessibility swift switch */}
-            <button 
-              onClick={toggleTheme}
-              className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-gold-600 border-0 cursor-pointer"
-              title="Mudar visual cor"
-            >
-              {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
-            </button>
-
-            {/* Quick Access Messages Page icon with unread badge */}
-            <button
-              onClick={() => setCurrentPage('messages')}
-              className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
-              title="Abrir Mensagens"
-            >
-              <MessageSquare size={14} className="text-gold-600" />
-              {unreadMessagesCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white flex items-center justify-center text-[8px] font-bold">
-                  {unreadMessagesCount}
-                </span>
-              )}
-            </button>
-
-            {/* Notification Bell toggle menu */}
-            <button 
-              onClick={() => { setActiveTab('notificacoes'); }}
-              className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
-              title="Aceder a Notificações"
-            >
-              <Bell size={14} />
-              {activeAlerts.filter(a => !a.read).length > 0 && (
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-danger-700" />
-              )}
-            </button>
-
-            {/* Profile menu widget */}
-            <div className="flex items-center gap-2.5 border-l pl-4">
-              <div className="w-8 h-8 rounded-full bg-gold-600 text-slate-950 font-bold flex items-center justify-center text-xs shadow-sm">
-                {currentUser?.firstName?.[0] || 'A'}
-              </div>
-              <div className="hidden sm:block text-left">
-                <span className="text-[10px] font-mono font-bold text-gold-600 block leading-tight">ADMIN</span>
-                {currentUser?.email ? (
-                  <span className="text-3xs text-slate-500 font-semibold uppercase block truncate max-w-[100px]">{currentUser.email}</span>
-                ) : (
-                  <span className="text-3xs text-slate-500 font-semibold uppercase block truncate max-w-[100px]">Sem email</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* 3. DYNAMIC CENTER CONTROLLER AREA */}
-        <main className="flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+    <AdminShell
+      isDarkMode={isDarkMode}
+      highContrast={highContrast}
+      sidebar={<AdminSidebar
+        activeTab={activeTab as AdminTab}
+        isOpen={mobileSidebarOpen}
+        user={currentUser}
+        onClose={() => setMobileSidebarOpen(false)}
+        onNavigate={(tab) => setActiveTab(tab)}
+        onMessages={() => setCurrentPage('messages')}
+        onSignOut={async () => {
+          await signOut().catch(() => undefined);
+          setCurrentUser(null);
+          setCurrentPage('login');
+        }}
+      />}
+      topbar={<AdminTopbar
+        activeTab={activeTab as AdminTab}
+        user={currentUser}
+        isDarkMode={isDarkMode}
+        unreadMessages={unreadMessagesCount}
+        unreadNotifications={activeAlerts.filter((alert) => !alert.read).length}
+        search={globalSearch}
+        onSearchChange={setGlobalSearch}
+        onOpenSidebar={() => setMobileSidebarOpen(true)}
+        onToggleTheme={toggleTheme}
+        onMessages={() => setCurrentPage('messages')}
+        onNotifications={() => setActiveTab('notificacoes')}
+        onProfile={() => setActiveTab('perfil')}
+        onSettings={() => setActiveTab('configuracoes')}
+        onSignOut={async () => {
+          await signOut().catch(() => undefined);
+          setCurrentUser(null);
+          setCurrentPage('login');
+        }}
+      />}
+    >
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -1598,24 +1429,19 @@ export default function AdminPortal({
             {activeTab === 'perfil' && (
               <div className={`p-6 rounded-3xl space-y-6 text-left ${cardThemeClass}`}>
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                  <div className="relative shrink-0">
-                    {currentUser?.avatarUrl ? (
-                      <img 
-                        src={currentUser.avatarUrl} 
-                        alt="Foto de Perfil" 
-                        className="w-16 h-16 rounded-full border-2 border-gold-600 shadow-md object-cover" 
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 rounded-full bg-gold-600 text-slate-950 font-black flex items-center justify-center text-xl border-2 border-gold-600 shadow-md uppercase">
-                        {adminName?.[0] || currentUser?.firstName?.[0] || 'A'}
-                      </div>
-                    )}
-                    {uploadingAvatar && (
-                      <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center">
-                        <span className="text-[10px] text-cream-100 font-mono font-bold animate-pulse">...</span>
-                      </div>
-                    )}
+                  <div className="shrink-0">
+                    <AvatarUpload
+                      userId={currentUser?.id || ''}
+                      currentAvatarUrl={currentUser?.avatarUrl}
+                      userName={adminName || currentUser?.firstName}
+                      size="xl"
+                      onAvatarUpdated={(avatarUrl) => {
+                        if (!currentUser) return;
+                        setCurrentUser({ ...currentUser, avatarUrl });
+                        setDbUsers((previous) => previous.map((entry) => entry.id === currentUser.id ? { ...entry, avatarUrl } : entry));
+                        addAuditLog('PERFIL FOTO UPDATE', 'Foto de perfil do administrador atualizada.');
+                      }}
+                    />
                   </div>
                   <div className="space-y-1">
                     <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-lg m-0">{adminName || 'Administrador'}</h3>
@@ -1760,10 +1586,6 @@ export default function AdminPortal({
 
             </motion.div>
           </AnimatePresence>
-        </main>
-
-      </div>
-
-    </div>
+    </AdminShell>
   );
 }

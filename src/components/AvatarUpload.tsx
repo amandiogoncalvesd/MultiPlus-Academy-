@@ -69,7 +69,13 @@ export default function AvatarUpload({
     : '?';
 
   return (
-    <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+    <button
+      type="button"
+      className="relative group cursor-pointer rounded-full border-0 bg-transparent p-0"
+      onClick={() => fileInputRef.current?.click()}
+      aria-label="Alterar foto de perfil"
+      disabled={uploading}
+    >
       {avatarUrl ? (
         <img 
           src={avatarUrl} 
@@ -98,7 +104,9 @@ export default function AvatarUpload({
         accept="image/jpeg,image/png,image/webp"
         onChange={handleUpload}
         className="hidden"
+        aria-hidden="true"
+        tabIndex={-1}
       />
-    </div>
+    </button>
   );
 }
