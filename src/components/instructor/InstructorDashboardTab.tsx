@@ -63,7 +63,7 @@ export default function InstructorDashboardTab({
             Centro de Gestão Académica • Direção de Curso
           </span>
           <h2 className="text-2xl sm:text-3xl font-serif font-black m-0 text-cream-100">
-            Olá, Professor(a) {currentUser?.firstName || 'Esmeralda'} {currentUser?.lastName || 'Sumbelelo'}! 🏛️
+            Olá, Professor(a) {currentUser?.firstName || ''} {currentUser?.lastName || ''}! 🏛️
           </h2>
           <p className="text-xs text-cream-100/70 mt-1 max-w-xl">
             Bem-vindo ao Centro de Gestão Académica da MultiPlus Academy. Acompanhe abaixo o rendimento escolar dos juristas em Angola, configure ementas síncronas e emita diplomas certificados com autenticação criptográfica rigorosa.

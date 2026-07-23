@@ -62,7 +62,12 @@ import InstructorCalendarTab from './instructor/InstructorCalendarTab';
 import InstructorProgressTab from './instructor/InstructorProgressTab';
 import InstructorMessagesTab from './instructor/InstructorMessagesTab';
 import { courseService } from '../services/supabase/courseService';
+import { useTeacherEvaluations } from '../hooks/useTeacherEvaluations';
 import CertificateIssueModal from './certificates/CertificateIssueModal';
+import InstructorShell from './instructor/InstructorShell';
+import InstructorSidebar, { InstructorTab } from './instructor/InstructorSidebar';
+import InstructorTopbar from './instructor/InstructorTopbar';
+import InstructorProfilePage from './instructor/InstructorProfilePage';
 
 interface InstructorPortalProps {
   setCurrentPage: (page: PageId) => void;
@@ -228,60 +233,41 @@ export default function InstructorPortal({
         category: c.category || 'Geral'
       })));
 
-      // 2. Load Students (ALUNO role)
-      const { data: usersData } = await supabase
-        .from('users')
-        .select('*')
-        .eq('role', 'ALUNO');
-      
-      if (usersData && usersData.length > 0) {
-        const studentList = usersData.map((u: any) => ({
-          id: u.id,
-          email: u.email,
-          firstName: u.nome_completo?.split(' ')[0] || '',
-          lastName: u.nome_completo?.split(' ').slice(1).join(' ') || '',
-          role: 'ALUNO' as const,
-          status: u.status || 'ACTIVE',
-          streak: 0,
-          longestStreak: 0,
-          totalHoursLearned: 0,
-          avatarUrl: u.foto_perfil || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150',
-          phone: u.telefone || ''
-        }));
-        setStudents(studentList);
+      // 2. Load only enrollments and students from the teacher's own courses.
+      const courseIds = liveCourses.map((course: any) => course.id);
+      if (courseIds.length) {
+        const { data: enrollData } = await supabase
+          .from('enrollments')
+          .select('student_id, course_id, progress_percent, status, data_inicio, student:users(id, email, nome_completo, foto_perfil, telefone, status)')
+          .in('course_id', courseIds);
+        const uniqueStudents = new Map<string, User>();
+        (enrollData || []).forEach((enrollment: any) => {
+          const student = enrollment.student;
+          if (student && !uniqueStudents.has(student.id)) uniqueStudents.set(student.id, {
+            id: student.id, email: student.email, firstName: student.nome_completo?.split(' ')[0] || '', lastName: student.nome_completo?.split(' ').slice(1).join(' ') || '', role: 'ALUNO', status: student.status || 'ACTIVE', streak: 0, longestStreak: 0, totalHoursLearned: 0, avatarUrl: student.foto_perfil || '', phone: student.telefone || ''
+          });
+        });
+        setStudents([...uniqueStudents.values()]);
+        setEnrollments((enrollData || []).map((enrollment: any) => ({ userId: enrollment.student_id, courseId: enrollment.course_id, progressPercent: enrollment.progress_percent || 0, status: enrollment.status, enrolledAt: enrollment.data_inicio?.slice(0, 10) || '' })));
       } else {
         setStudents([]);
-      }
-
-      // 3. Load Enrollments
-      const { data: enrollData } = await supabase
-        .from('enrollments')
-        .select('*');
-      
-      if (enrollData) {
-        setEnrollments(enrollData.map((e: any) => ({
-          userId: e.student_id,
-          courseId: e.course_id,
-          progressPercent: e.progress_percent || 0,
-          status: e.status,
-          enrolledAt: e.data_inicio?.slice(0, 10) || ''
-        })));
-      } else {
         setEnrollments([]);
       }
 
       // 4. Load certificates count
-      const { count: certsCount, error: certsErr } = await supabase
+      const { count: certsCount, error: certsErr } = courseIds.length ? await supabase
         .from('certificates')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .in('course_id', courseIds) : { count: 0, error: null };
       if (!certsErr && certsCount !== null) {
         setCertificatesCount(certsCount);
       }
 
       // 5. Load lessons count
-      const { count: totalLessons, error: lessonsErr } = await supabase
+      const { count: totalLessons, error: lessonsErr } = courseIds.length ? await supabase
         .from('lessons')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .in('course_id', courseIds) : { count: 0, error: null };
       if (!lessonsErr && totalLessons !== null) {
         setLessonsCount(totalLessons);
       } else {
@@ -440,7 +426,8 @@ export default function InstructorPortal({
   };
 
   // Derived variables
-  const pendingGreads = 3;
+  const { pendingCount: pendingGreads } = useTeacherEvaluations(currentUser?.id);
+  const completionRate = enrollments.length ? Math.round(enrollments.reduce((sum: number, enrollment: any) => sum + (Number(enrollment.progressPercent) || 0), 0) / enrollments.length) : 0;
 
   // Accessibility theme class selections
   const containerThemeClass = highContrast 
@@ -456,248 +443,34 @@ export default function InstructorPortal({
       : 'bg-white border border-slate-200/80 shadow-xs text-slate-800';
 
   return (
-    <div id="multiplus-instructor-portal" className={`min-h-screen flex items-stretch transition-colors duration-200 ${containerThemeClass}`}>
-      
-      {/* Backdrop overlay for mobile devices */}
-      {mobileSidebarOpen && (
-        <div 
-          className="fixed inset-0 z-30 bg-slate-900/60 backdrop-blur-xs lg:hidden transition-opacity"
-          onClick={() => setMobileSidebarOpen(false)}
-        />
-      )}
-
-      {/* 1. SIDEBAR (Collapsible on Mobile, Fixed on Desktop) */}
-      <aside 
-        className={`fixed inset-y-0 left-0 z-40 w-64 ${
-          highContrast ? 'bg-black border-r-4 border-yellow-500' : isDarkMode ? 'bg-ink-900 border-ink-800' : 'bg-ink-900 text-white border-r border-ink-800/10'
-        } transition-transform duration-300 transform lg:translate-x-0 ${
-          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } flex flex-col justify-between`}
-      >
-        <div className="flex flex-col h-full">
-          {/* Superior Header Logo Brand */}
-          <div className="p-6 border-b border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img
-                src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png"
-                alt="MultiPlus Logo"
-                className="h-9 w-auto object-contain shrink-0"
-              />
-              <div className="text-left">
-                <h1 className="text-sm font-serif font-black m-0 tracking-wide text-cream-100">MultiPlus</h1>
-                <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block font-bold">Teacher Portal</span>
-              </div>
-            </div>
-            
-            {/* Mobile close button */}
-            <button 
-              onClick={() => setMobileSidebarOpen(false)}
-              className="lg:hidden p-1.5 text-cream-100/70 hover:text-cream-100 rounded bg-transparent border-0 cursor-pointer"
-              aria-label="Fechar lateral"
-            >
-              <X size={18} />
-            </button>
-          </div>
-
-          {/* Navigation Links List */}
-          <nav className="flex-grow p-4 space-y-1 overflow-y-auto max-h-[64vh]">
-            {[
-              { id: 'dashboard', name: 'Dashboard', icon: <Activity size={15} /> },
-              { id: 'cursos', name: 'Meus Cursos', icon: <BookOpen size={15} /> },
-              { id: 'criar-curso', name: 'Criar Curso', icon: <Plus size={15} /> },
-              { id: 'alunos', name: 'Diretório Alunos', icon: <Users size={15} /> },
-              { id: 'avaliacoes', name: 'Correção & Provas', icon: <ClipboardList size={15} /> },
-              { id: 'certificados', name: 'Emissão Diplomas', icon: <Award size={15} /> },
-              { id: 'calendario', name: 'Agenda Letiva', icon: <Calendar size={15} /> },
-              { id: 'mensagens', name: 'Chat & Mural', icon: <MessageSquare size={15} /> },
-              { id: 'relatorios', name: 'Métricas & SVGs', icon: <BarChart2 size={15} /> },
-              { id: 'perfil', name: 'Curriculum Vitae', icon: <UserIcon size={15} /> },
-              { id: 'configuracoes', name: 'Configurações', icon: <Settings size={15} /> },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (item.id === 'mensagens') {
-                    setCurrentPage('messages');
-                  } else {
-                    setActiveTab(item.id);
-                  }
-                  setMobileSidebarOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wider text-left transition-all cursor-pointer border-0 ${
-                  activeTab === item.id
-                    ? 'bg-gold-600 text-ink-900 shadow-sm font-bold'
-                    : 'text-cream-100/80 hover:text-cream-100 hover:bg-cream-100/10'
-                }`}
-              >
-                {item.icon}
-                <span>{item.name}</span>
-              </button>
-            ))}
-          </nav>
-
-          {/* Sidebar Footer */}
-          <div className="p-4 border-t border-white/10 space-y-3.5">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gold-600 text-ink-900 rounded-full flex items-center justify-center font-bold text-xs shadow-sm capitalize">
-                {currentUser?.firstName?.[0] || 'E'}
-              </div>
-              <div className="text-left truncate max-w-[130px]">
-                <h4 className="text-xs font-bold text-cream-100 m-0 tracking-wide truncate">
-                  {currentUser?.firstName || 'Esmeralda'} {currentUser?.lastName || 'Sumbelelo'}
-                </h4>
-                <span className="text-[10px] font-mono text-gold-600 font-semibold uppercase">Professor</span>
-              </div>
-            </div>
-
-            <button
-              onClick={async () => {
-                try {
-                  await signOut();
-                } catch (e) {}
-                setCurrentUser(null);
-                setCurrentPage('login');
-              }}
-              className="w-full py-2 bg-danger-700 hover:bg-red-700 text-cream-100 text-[10px] font-mono font-bold uppercase rounded-lg border-0 cursor-pointer transition-colors flex items-center justify-center gap-1.5"
-            >
-              <LogOut size={11} />
-              <span>Sair do Portal</span>
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main outer shell (adjusted for fixed sidebar space) */}
-      <div className="flex-grow flex flex-col overflow-hidden lg:pl-64 relative">
-        {/* Subtle premium background glow effects matching the Home page layout */}
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[60%] bg-gradient-to-br from-[#C89B3C]/5 to-transparent rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[50%] bg-slate-200/10 dark:bg-slate-800/5 rounded-full blur-[120px] pointer-events-none" />
-        
-        {/* 2. TOPBAR HEADER FIXA */}
-        <header className={`h-16 px-6 border-b flex items-center justify-between sticky top-0 z-30 transition-colors ${
-          highContrast ? 'bg-black border-yellow-500 text-yellow-300' : isDarkMode ? 'bg-ink-900 border-ink-800 text-cream-100' : 'bg-white border-slate-200/60 text-slate-800'
-        }`}>
-          {/* Left Side */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-all bg-transparent border-0 cursor-pointer text-current"
-              aria-label="Abrir lateral"
-            >
-              <Menu size={20} />
-            </button>
-            <div className="hidden sm:block text-left">
-              <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block">MultiPlus LMS</span>
-              <h2 className="text-sm font-serif font-black tracking-wide m-0 capitalize">{activeTab} • Portal do Professor</h2>
-            </div>
-          </div>
-
-          {/* Center Search bar */}
-          <div className="hidden md:flex relative w-64">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
-              <Search size={14} />
-            </span>
-            <input
-              type="text"
-              placeholder="Pesquisar arquivos..."
-              value={globalSearchTerm}
-              onChange={(e) => setGlobalSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 placeholder:text-neutral-400 text-slate-800 dark:text-cream-100 focus:outline-none focus:border-gold-600 dark:bg-slate-800/50 dark:border-ink-800"
-            />
-          </div>
-
-          {/* Right actions */}
-          <div className="flex items-center gap-4 text-xs">
-            {/* Accessibility swift switch */}
-            <button 
-              onClick={toggleTheme}
-              className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-gold-600 border-0 cursor-pointer"
-              title="Mudar visual cor"
-            >
-              {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
-            </button>
-
-            {/* Quick Access Messages Page icon with unread badge */}
-            <button
-              onClick={() => setCurrentPage('messages')}
-              className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
-              title="Abrir Mensagens"
-            >
-              <MessageSquare size={14} className="text-gold-600" />
-              {unreadMessagesCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white flex items-center justify-center text-[8px] font-bold">
-                  {unreadMessagesCount}
-                </span>
-              )}
-            </button>
-
-            {/* Notification Bell toggle menu */}
-            <div className="relative">
-              <button 
-                onClick={() => setShowNotificationsMenu(!showNotificationsMenu)}
-                aria-label="Abrir notificações da turma"
-                aria-expanded={showNotificationsMenu}
-                className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
-              >
-                <Bell size={14} />
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-danger-700" />
-              </button>
-
-              <AnimatePresence>
-                {showNotificationsMenu && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    role="dialog" aria-label="Notificações da turma" className={`fixed inset-x-3 top-[4.5rem] max-h-[70dvh] overflow-hidden sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 rounded-2xl p-4 shadow-2xl text-left ${cardThemeClass} z-50`}
-                  >
-                    <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                      <span className="font-mono text-2xs font-bold text-neutral-400">NOTIFICAÇÕES DA TURMA</span>
-                    </div>
-                    <div className="mt-2 max-h-[52dvh] space-y-1 divide-y divide-gray-100 overflow-y-auto pr-1">
-                      {notifications.length === 0 ? (
-                        <p className="text-2xs text-neutral-400 m-0 py-2">Sem novas notificações.</p>
-                      ) : (
-                        notifications.map(n => (
-                          <div key={n.id} className="pt-2 text-2xs text-neutral-400 dark:text-gray-300">
-                            <p className="m-0 leading-snug">{n.text}</p>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Tutor Assistant info help icon */}
-            <button
-              onClick={() => {
-                toast.info('Tutor assistente MultiPlus: Por favor envie um e-mail para: suporte@multiplus.ao com a sua credencial Huambo.');
-              }}
-              className="p-2 bg-cream-200 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-neutral-400 border-0 cursor-pointer"
-              title="Ajuda ao Docente"
-            >
-              <HelpCircle size={14} />
-            </button>
-
-            {/* Profile menu widget */}
-            <div className="flex items-center gap-2.5 border-l pl-4">
-              <img
-                src={currentUser?.avatarUrl || "https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg"}
-                alt="Formadora Avatar"
-                className="w-8 h-8 rounded-full border border-gray-200 object-cover"
-              />
-              <div className="hidden sm:block text-left">
-                <span className="text-[10px] font-mono font-bold text-blue-900 dark:text-blue-300 block leading-tight">PROFESSOR</span>
-                <span className="text-3xs text-slate-500 font-semibold uppercase block truncate max-w-[100px]">{currentUser?.email}</span>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* 3. DYNAMIC CONTENT AREA BLOCK */}
-        <main className="flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+    <>
+    <InstructorShell
+      isDarkMode={isDarkMode}
+      highContrast={highContrast}
+      sidebar={<InstructorSidebar
+        activeTab={activeTab as InstructorTab}
+        open={mobileSidebarOpen}
+        user={currentUser}
+        onClose={() => setMobileSidebarOpen(false)}
+        onNavigate={(tab) => setActiveTab(tab)}
+        onMessages={() => setCurrentPage('messages')}
+        onSignOut={async () => { await signOut().catch(() => undefined); setCurrentUser(null); setCurrentPage('login'); }}
+      />}
+      topbar={<InstructorTopbar
+        activeTab={activeTab as InstructorTab}
+        user={currentUser}
+        isDark={isDarkMode}
+        search={globalSearchTerm}
+        unreadMessages={unreadMessagesCount}
+        notificationCount={notifications.filter((notification) => !notification.read).length}
+        onSearch={setGlobalSearchTerm}
+        onMenu={() => setMobileSidebarOpen(true)}
+        onTheme={toggleTheme}
+        onMessages={() => setCurrentPage('messages')}
+        onNotifications={() => setShowNotificationsMenu(true)}
+        onProfile={() => setActiveTab('perfil')}
+      />}
+    >
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -718,7 +491,7 @@ export default function InstructorPortal({
               students={students}
               evaluationsPendingCount={pendingGreads}
               certificatesIssuedCount={certificatesCount}
-              completionRate={95}
+              completionRate={completionRate}
               onNavigate={(tab) => setActiveTab(tab)}
               lessonsCount={lessonsCount}
             />
@@ -950,58 +723,7 @@ export default function InstructorPortal({
 
           {/* TAB 13: PERFIL DO DOCENTE CP */}
           {activeTab === 'perfil' && (
-            <div className={`p-6 rounded-3xl text-left space-y-6 ${cardThemeClass}`}>
-              
-              <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-gray-100 dark:border-ink-800/60">
-                <img
-                  src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg"
-                  alt="Esmeralda Foto"
-                  className="w-24 h-24 rounded-full object-cover border-4 border-gold-600"
-                />
-                <div className="text-center sm:text-left">
-                  <span className="text-[10px] font-mono tracking-widest text-gold-600 uppercase block">Docente Titular</span>
-                  <h3 className="font-serif font-black text-slate-805 dark:text-cream-100 text-xl m-0 leading-tight">Drª. Esmeralda Bruno Sumbelelo</h3>
-                  <span className="text-2xs font-mono text-neutral-400 block mt-1">Diretora da Cadeia de Inglês Jurídico • Huambo, Angola</span>
-                </div>
-              </div>
-
-              {/* CV bio form edits */}
-              <div className="space-y-4">
-                <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest font-black block">Resumo do Currículo Vitae (Exposto no site)</span>
-                
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[8px] font-mono text-neutral-400 uppercase mb-1">Apresentação Curta (Bio)</label>
-                    <textarea
-                      rows={3}
-                      value={profileBio}
-                      onChange={(e) => setProfileBio(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl text-slate-800 dark:text-cream-100 focus:outline-none focus:border-gold-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[8px] font-mono text-neutral-400 uppercase mb-1">Instruções de Credenciamento</label>
-                    <input
-                      type="text"
-                      value={profileCredentials}
-                      onChange={(e) => setProfileCredentials(e.target.value)}
-                      className="w-full p-2.5 text-xs bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl text-slate-800 dark:text-cream-100 focus:outline-none focus:border-gold-600"
-                    />
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      toast.success('O seu currículo e perfil de oradora titular foram guardados. O site institucional atualizará as informações na próxima sincronização pública.');
-                    }}
-                    className="px-4 py-2 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 hover:bg-gold-600 hover:text-slate-900 border-0 text-xs font-mono font-bold uppercase rounded-xl transition-colors cursor-pointer"
-                  >
-                    Guardar Currículo
-                  </button>
-                </div>
-              </div>
-
-            </div>
+            <InstructorProfilePage user={currentUser} onUpdated={setCurrentUser} />
           )}
 
           {/* TAB 14: CONFIGURAÇÕES ACCESSIBILITY */}
@@ -1076,9 +798,7 @@ export default function InstructorPortal({
 
             </motion.div>
           </AnimatePresence>
-        </main>
-
-      </div>
+    </InstructorShell>
 
       {showCertificateIssueModal && (
         <CertificateIssueModal
@@ -1095,6 +815,6 @@ export default function InstructorPortal({
         />
       )}
 
-    </div>
+    </>
   );
 }
