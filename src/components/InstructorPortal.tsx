@@ -489,6 +489,8 @@ export default function InstructorPortal({
               currentUser={currentUser}
               courses={courses}
               students={students}
+              enrollments={enrollments}
+              recentNotifications={notifications}
               evaluationsPendingCount={pendingGreads}
               certificatesIssuedCount={certificatesCount}
               completionRate={completionRate}

@@ -1,7 +1,3 @@
 import { ReactNode } from 'react';
-
 interface Props { sidebar: ReactNode; topbar: ReactNode; children: ReactNode; isDarkMode: boolean; highContrast: boolean; }
-export default function InstructorShell({ sidebar, topbar, children, isDarkMode, highContrast }: Props) {
-  const surface = highContrast ? 'bg-black text-cream-100' : isDarkMode ? 'bg-ink-950 text-cream-100' : 'bg-slate-50 text-slate-800';
-  return <div id="multiplus-instructor-portal" className={`flex min-h-[100dvh] ${surface}`}>{sidebar}<div className="flex min-h-[100dvh] min-w-0 flex-1 flex-col lg:pl-[280px]">{topbar}<main className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8"><div className="mx-auto w-full max-w-7xl">{children}</div></main></div></div>;
-}
+export default function InstructorShell({sidebar,topbar,children,isDarkMode,highContrast}:Props){const surface=highContrast?'bg-black text-white':isDarkMode?'bg-[#0B111C] text-white':'bg-[#F7F6F2] text-[#1C1917]';return <div id="multiplus-instructor-portal" className={`min-h-[100dvh] ${surface}`}>{sidebar}<div className="min-h-[100dvh] lg:pl-[240px]"><div className="flex min-h-[100dvh] min-w-0 flex-col">{topbar}<main id="instructor-main-content" tabIndex={-1} className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-7 sm:py-7 xl:px-10"><div className="mx-auto w-full max-w-[1320px]">{children}</div></main></div></div></div>}
