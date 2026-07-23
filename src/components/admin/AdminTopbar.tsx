@@ -20,7 +20,7 @@ interface AdminTopbarProps {
   onSignOut: () => void;
 }
 
-const labels: Record<AdminTab, string> = { dashboard: 'Visão geral', utilizadores: 'Utilizadores', cursos: 'Cursos e turmas', certificados: 'Certificados', notificacoes: 'Notificações', integracoes: 'Integrações', configuracoes: 'Configurações', perfil: 'Meu perfil' };
+const labels: Record<AdminTab, string> = { dashboard: 'Visão geral', utilizadores: 'Utilizadores', cursos: 'Cursos e turmas', certificados: 'Certificados', notificacoes: 'Notificações', auditoria: 'Auditoria', integracoes: 'Integrações', configuracoes: 'Configurações', perfil: 'Meu perfil' };
 
 export default function AdminTopbar(props: AdminTopbarProps) {
   return <header className="sticky top-0 z-30 flex min-h-16 shrink-0 items-center justify-between gap-3 border-b border-gray-150 bg-white/90 px-3 py-2 backdrop-blur-xl dark:border-ink-800 dark:bg-ink-900/90 sm:px-5">

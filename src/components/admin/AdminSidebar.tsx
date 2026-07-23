@@ -1,7 +1,7 @@
 import { Activity, Bell, BookOpen, MessageSquare, Network, QrCode, Settings, User as UserIcon, Users, X } from 'lucide-react';
 import { User } from '../../types';
 
-export type AdminTab = 'dashboard' | 'utilizadores' | 'cursos' | 'certificados' | 'notificacoes' | 'integracoes' | 'configuracoes' | 'perfil';
+export type AdminTab = 'dashboard' | 'utilizadores' | 'cursos' | 'certificados' | 'notificacoes' | 'auditoria' | 'integracoes' | 'configuracoes' | 'perfil';
 
 interface AdminSidebarProps {
   activeTab: AdminTab;
@@ -20,6 +20,7 @@ const items: Array<{ id: AdminTab | 'messages'; label: string; icon: React.React
   { id: 'certificados', label: 'Certificados', icon: <QrCode size={17} /> },
   { id: 'messages', label: 'Mensagens', icon: <MessageSquare size={17} /> },
   { id: 'notificacoes', label: 'Notificações', icon: <Bell size={17} /> },
+  { id: 'auditoria', label: 'Auditoria', icon: <Activity size={17} /> },
   { id: 'integracoes', label: 'Integrações', icon: <Network size={17} /> },
   { id: 'configuracoes', label: 'Configurações', icon: <Settings size={17} /> },
 ];

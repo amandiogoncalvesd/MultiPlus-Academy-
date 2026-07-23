@@ -47,7 +47,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { action, email, password, nome_completo, role, id } = await req.json()
+    const { action, email, password, nome_completo, role, id, status } = await req.json()
 
     if (action === 'create') {
       const { data, error } = await supabaseAdmin.auth.admin.createUser({
@@ -58,6 +58,32 @@ serve(async (req) => {
       })
 
       if (error) throw error
+      await supabaseAdmin.from('audit_logs').insert({
+        actor_id: user.id,
+        action: 'USER_CREATED',
+        entity_type: 'user',
+        entity_id: data.user.id,
+        metadata: { role, email }
+      })
+      return new Response(JSON.stringify({ data }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    } else if (action === 'update-status') {
+      if (!id || !['ACTIVE', 'SUSPENDED'].includes(status)) throw new Error('ID e estado válido são obrigatórios')
+      const { data, error } = await supabaseAdmin
+        .from('users')
+        .update({ status })
+        .eq('id', id)
+        .select('id, status')
+        .single()
+      if (error) throw error
+      await supabaseAdmin.from('audit_logs').insert({
+        actor_id: user.id,
+        action: 'USER_STATUS_UPDATED',
+        entity_type: 'user',
+        entity_id: id,
+        metadata: { status }
+      })
       return new Response(JSON.stringify({ data }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
@@ -66,6 +92,13 @@ serve(async (req) => {
       const { data, error } = await supabaseAdmin.auth.admin.deleteUser(id)
 
       if (error) throw error
+      await supabaseAdmin.from('audit_logs').insert({
+        actor_id: user.id,
+        action: 'USER_DELETED',
+        entity_type: 'user',
+        entity_id: id,
+        metadata: {}
+      })
       return new Response(JSON.stringify({ data }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
