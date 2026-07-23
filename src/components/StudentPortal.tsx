@@ -573,9 +573,13 @@ export default function StudentPortal({
   // Encontrar a próxima aula agendada futura síncrona real
   const nextScheduledLesson = scheduledLessons && scheduledLessons.length > 0
     ? scheduledLessons
-        .filter(l => l.lesson?.scheduled_at && new Date(l.lesson.scheduled_at) > new Date())
-        .sort((a, b) => new Date(a.lesson!.access_starts_at || a.lesson!.scheduled_at!).getTime() - new Date(b.lesson!.access_starts_at || b.lesson!.scheduled_at!).getTime())[0]
+        .filter((item) => {
+          const startsAt = item.lesson?.access_starts_at || item.lesson?.scheduled_at;
+          return startsAt && new Date(startsAt) > new Date();
+        })
+        .sort((a, b) => new Date(a.lesson!.access_starts_at || a.lesson!.scheduled_at!).getTime() - new Date(b.lesson!.access_starts_at || b.lesson!.scheduled_at!).getTime())[0]?.lesson || null
     : null;
+  const selectedCourseTitle = enrollments.find((enrollment: any) => enrollment.course_id === selectedCourseId)?.course?.title;
 
   return (
     <div id="multiplus-student-lms-portal" className={`min-h-screen flex items-stretch transition-colors duration-200 ${containerThemeClass}`}>
@@ -666,6 +670,8 @@ export default function StudentPortal({
                   realLessons={realLessons}
                   certificates={certificates}
                   currentLecture={currentLecture}
+                  selectedCourseTitle={selectedCourseTitle}
+                  totalHoursLearned={currentUser?.totalHoursLearned || 0}
                   setActiveTab={setActiveTab}
                   cardThemeClass={cardThemeClass}
                   isHighContrast={isHighContrast}
