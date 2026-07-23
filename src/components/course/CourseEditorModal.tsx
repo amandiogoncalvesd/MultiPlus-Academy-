@@ -10,6 +10,7 @@ import { lessonService, SupabaseLesson } from '../../services/supabase/lessonSer
 import { enrollmentService } from '../../services/supabase/enrollmentService';
 import StudentSelector from '../instructor/StudentSelector';
 import { useAuth } from '../auth/AuthProvider';
+import { useToast } from '../ui/Toast';
 
 interface CourseEditorModalProps {
   courseId?: string; // If undefined, we are creating a new course
@@ -25,8 +26,9 @@ export default function CourseEditorModal({
   onSave
 }: CourseEditorModalProps) {
   const { role: userRole, user } = useAuth();
+  const toast = useToast();
   const [courseId, setCourseId] = useState<string | undefined>(initialCourseId);
-  const [activeTab, setActiveTab] = useState<'details' | 'lessons' | 'students'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'lessons' | 'students' | 'materials'>('details');
   const [isSaving, setIsSaving] = useState(false);
 
   // Selected teacher ID state and teachers list
@@ -35,6 +37,12 @@ export default function CourseEditorModal({
   const [loadingTeachers, setLoadingTeachers] = useState(false);
 
   const isAdmin = userRole === 'ADMIN';
+
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [onClose]);
 
   // Fetch instructors if user is Admin
   useEffect(() => {
@@ -100,6 +108,10 @@ export default function CourseEditorModal({
   const [enrolledStudents, setEnrolledStudents] = useState<any[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [showStudentSelector, setShowStudentSelector] = useState(false);
+  const [materialLessonId, setMaterialLessonId] = useState('');
+  const [materialTitle, setMaterialTitle] = useState('');
+  const [materialFile, setMaterialFile] = useState<File | null>(null);
+  const [uploadingMaterial, setUploadingMaterial] = useState(false);
 
   // Cloudinary URL warning state
   const [cloudinaryWarning, setCloudinaryWarning] = useState(false);
@@ -139,6 +151,7 @@ export default function CourseEditorModal({
       setLoadingLessons(true);
       const list = await lessonService.getLessons(id);
       setLessons(list);
+      if (!materialLessonId && list[0]?.id) setMaterialLessonId(list[0].id);
     } catch (err) {
       console.error('Error loading lessons:', err);
     } finally {
@@ -377,6 +390,25 @@ export default function CourseEditorModal({
     }
   };
 
+  const handleMaterialUpload = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!materialLessonId || !materialTitle.trim() || !materialFile) return;
+    setUploadingMaterial(true);
+    try {
+      const formData = new FormData();
+      formData.append('lessonId', materialLessonId);
+      formData.append('title', materialTitle.trim());
+      formData.append('type', materialFile.name.split('.').pop()?.toUpperCase() || 'FILE');
+      formData.append('file', materialFile);
+      const { data, error } = await supabase.functions.invoke('student-files?action=upload-material', { body: formData });
+      if (error || data?.error) throw new Error(error?.message || data?.error || 'Falha ao enviar material.');
+      setMaterialTitle(''); setMaterialFile(null);
+      toast.success('Material privado enviado para a aula selecionada.');
+    } catch (err: any) {
+      toast.error(`Erro ao enviar material: ${err.message || err}`);
+    } finally { setUploadingMaterial(false); }
+  };
+
   // Delete Lesson
   const handleDeleteLesson = async (lessonId: string) => {
     if (!courseId) return;
@@ -454,7 +486,7 @@ export default function CourseEditorModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 dark:bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 z-40 animate-fadeIn overflow-y-auto">
+    <div role="dialog" aria-modal="true" aria-labelledby="course-editor-title" className="fixed inset-0 bg-black/60 dark:bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 z-40 animate-fadeIn overflow-y-auto">
       <div className="bg-cream-100 dark:bg-ink-900 rounded-3xl max-w-4xl w-full overflow-hidden border border-gray-150 dark:border-ink-800/60 shadow-2xl flex flex-col max-h-[90vh] relative my-8">
 
         {/* Header decoration */}
@@ -463,7 +495,7 @@ export default function CourseEditorModal({
         {/* Modal Header */}
         <div className="p-6 border-b border-gray-150 dark:border-ink-800/60 flex justify-between items-center bg-cream-200 dark:bg-ink-950/40 relative z-10">
           <div>
-            <h3 className="text-lg font-serif font-black text-ink-900 dark:text-cream-100 m-0">
+            <h3 id="course-editor-title" className="text-lg font-serif font-black text-ink-900 dark:text-cream-100 m-0">
               {courseId ? `Editor do Programa: ${title}` : 'Criar Nova Especialização'}
             </h3>
             <p className="text-2xs font-mono text-gold-600 tracking-wide uppercase mt-1">
@@ -472,6 +504,7 @@ export default function CourseEditorModal({
           </div>
           <button
             onClick={onClose}
+            aria-label="Fechar editor de curso"
             className="p-1.5 hover:bg-cream-250 dark:hover:bg-ink-800 rounded-full text-neutral-400 hover:text-gray-650 dark:hover:text-cream-100 transition-colors border-0 bg-transparent cursor-pointer"
           >
             <X size={18} />
@@ -484,7 +517,8 @@ export default function CourseEditorModal({
             {[
               { id: 'details', label: '1. Detalhes Base', icon: <FileText size={13} /> },
               { id: 'lessons', label: '2. Grade de Aulas', icon: <BookOpen size={13} /> },
-              { id: 'students', label: '3. Alunos Inscritos', icon: <Users size={13} /> }
+              { id: 'students', label: '3. Alunos Inscritos', icon: <Users size={13} /> },
+              { id: 'materials', label: '4. Materiais Privados', icon: <FileText size={13} /> }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -1083,6 +1117,16 @@ export default function CourseEditorModal({
                 </form>
               )}
             </div>
+          )}
+
+          {activeTab === 'materials' && (
+            <form onSubmit={handleMaterialUpload} className="mx-auto max-w-2xl space-y-5 text-left">
+              <div><span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gold-600">Biblioteca privada</span><h4 className="mt-1 font-serif text-lg font-black text-ink-900 dark:text-cream-100">Adicionar material à aula</h4><p className="mt-1 text-xs text-neutral-400">O aluno recebe URL temporária apenas quando estiver matriculado e a aula estiver na janela de acesso.</p></div>
+              <label className="block text-xs font-semibold text-ink-900 dark:text-cream-100">Aula<select value={materialLessonId} onChange={(event) => setMaterialLessonId(event.target.value)} className="mt-2 min-h-11 w-full rounded-xl border border-gray-250 bg-cream-200 px-3 dark:border-ink-800 dark:bg-ink-950 dark:text-cream-100">{lessons.map((lesson) => <option key={lesson.id} value={lesson.id}>{lesson.titulo}</option>)}</select></label>
+              <label className="block text-xs font-semibold text-ink-900 dark:text-cream-100">Título do material<input required value={materialTitle} onChange={(event) => setMaterialTitle(event.target.value)} className="mt-2 min-h-11 w-full rounded-xl border border-gray-250 bg-cream-200 px-3 dark:border-ink-800 dark:bg-ink-950 dark:text-cream-100" placeholder="Ex.: Guia de revisão" /></label>
+              <label className="block text-xs font-semibold text-ink-900 dark:text-cream-100">Ficheiro<input required type="file" onChange={(event) => setMaterialFile(event.target.files?.[0] || null)} className="mt-2 block w-full text-sm" /></label>
+              <button disabled={uploadingMaterial || !lessons.length} className="min-h-11 rounded-xl bg-ink-900 px-5 text-xs font-mono font-bold uppercase text-white hover:bg-gold-600 hover:text-ink-900 disabled:opacity-50 dark:bg-gold-600 dark:text-ink-900">{uploadingMaterial ? 'A enviar…' : 'Enviar material privado'}</button>
+            </form>
           )}
 
           {/* TAB 3: STUDENTS MANAGEMENT */}

@@ -27,6 +27,22 @@ serve(async (request) => {
       if (error) { await admin.storage.from('student-submissions').remove([path]); throw error; }
       return json({ data }, 201);
     }
+    if (action === 'upload-material') {
+      const form = await request.formData(); const lessonId = String(form.get('lessonId') || ''); const title = String(form.get('title') || ''); const type = String(form.get('type') || 'FILE'); const file = form.get('file');
+      if (!lessonId || !title || !(file instanceof File)) return json({ error: 'Aula, título e ficheiro são obrigatórios.' }, 422);
+      if (file.size > 50 * 1024 * 1024) return json({ error: 'O ficheiro deve ter no máximo 50 MB.' }, 422);
+      const { data: account } = await admin.from('users').select('role').eq('id', user.id).maybeSingle();
+      const { data: lesson } = await admin.from('lessons').select('id, course_id').eq('id', lessonId).maybeSingle();
+      const { data: course } = lesson ? await admin.from('courses').select('teacher_id').eq('id', lesson.course_id).maybeSingle() : { data: null };
+      if (!lesson || !(account?.role === 'ADMIN' || (account?.role === 'PROFESSOR' && course?.teacher_id === user.id))) return json({ error: 'Sem permissão para adicionar material nesta aula.' }, 403);
+      const name = file.name.replace(/[^a-zA-Z0-9._-]/g, '_'); const path = `${lesson.course_id}/${lessonId}/${Date.now()}-${name}`;
+      const { error: uploadError } = await admin.storage.from('course-materials').upload(path, file, { contentType: file.type || 'application/octet-stream', upsert: false });
+      if (uploadError) throw uploadError;
+      const { data, error } = await admin.from('materials').insert({ lesson_id: lessonId, titulo: title, tipo: type, arquivo_url: null, storage_path: path, file_name: file.name, file_size: file.size, mime_type: file.type || null }).select().single();
+      if (error) { await admin.storage.from('course-materials').remove([path]); throw error; }
+      await admin.from('audit_logs').insert({ actor_id: user.id, action: 'COURSE_MATERIAL_UPLOADED', entity_type: 'material', entity_id: data.id, metadata: { lessonId, fileName: file.name } });
+      return json({ data }, 201);
+    }
     if (action === 'download-material') {
       const { materialId } = await request.json();
       const { data: material } = await admin.from('materials').select('id, storage_path, arquivo_url, lesson:lessons!inner(course_id, access_starts_at, access_ends_at)').eq('id', materialId).maybeSingle();
