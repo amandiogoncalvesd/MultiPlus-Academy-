@@ -1,22 +1,18 @@
 import { ReactNode } from 'react';
 
-interface AdminShellProps {
-  sidebar: ReactNode;
-  topbar: ReactNode;
-  children: ReactNode;
-  isDarkMode: boolean;
-  highContrast: boolean;
-}
+interface Props { sidebar: ReactNode; topbar: ReactNode; children: ReactNode; isDarkMode: boolean; highContrast: boolean; }
 
-export default function AdminShell({ sidebar, topbar, children, isDarkMode, highContrast }: AdminShellProps) {
-  const surface = highContrast ? 'bg-black text-cream-100' : isDarkMode ? 'bg-ink-950 text-cream-100' : 'bg-slate-50 text-slate-800';
-  return <div id="multiplus-admin-portal" className={`flex min-h-[100dvh] ${surface}`}>
+export default function AdminShell({ sidebar, topbar, children, isDarkMode, highContrast }: Props) {
+  const theme = highContrast ? 'bg-black text-white' : isDarkMode ? 'bg-[#0B111C] text-white' : 'bg-[#F7F6F2] text-[#1C1917]';
+  return <div id="multiplus-admin-portal" className={`min-h-[100dvh] ${theme}`}>
     {sidebar}
-    <div className="flex min-h-[100dvh] min-w-0 flex-1 flex-col lg:pl-[280px]">
-      {topbar}
-      <main id="admin-main-content" className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8">
-        <div className="mx-auto w-full max-w-7xl">{children}</div>
-      </main>
+    <div className="min-h-[100dvh] lg:pl-[232px]">
+      <div className="flex min-h-[100dvh] min-w-0 flex-col">
+        {topbar}
+        <main id="admin-main-content" tabIndex={-1} className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-7 sm:py-7 xl:px-10">
+          <div className="mx-auto w-full max-w-[1440px]">{children}</div>
+        </main>
+      </div>
     </div>
   </div>;
 }
