@@ -90,7 +90,8 @@ export default function StudentSidebar({
               { id: 'tasks', label: 'Minhas Tarefas', icon: <CheckCircle size={15} /> },
               { id: 'messages', label: 'Advisories de Tutor', icon: <MessageSquare size={15} /> },
               { id: 'certificates', label: 'Meus Certificados', icon: <Award size={15} /> },
-              { id: 'progress', label: 'Meu Progresso', icon: <Bell size={15} /> },
+              { id: 'progress', label: 'Meu Progresso', icon: <TrendingUp size={15} /> },
+              { id: 'notifications', label: 'Notificações', icon: <Bell size={15} /> },
               { id: 'profile', label: 'Coordenadas de Perfil', icon: <UserIcon size={15} /> },
               { id: 'settings', label: 'Acessibilidade & Ajustes', icon: <Settings size={15} /> }
             ].map((link) => (

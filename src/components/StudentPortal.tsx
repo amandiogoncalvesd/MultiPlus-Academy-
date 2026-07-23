@@ -58,6 +58,8 @@ import StudentProgressTab from './portal/StudentProgressTab';
 import StudentLessonsPage from './portal/StudentLessonsPage';
 import StudentCalendarPage from './portal/StudentCalendarPage';
 import StudentProfilePage from './portal/StudentProfilePage';
+import StudentNotificationCenter from './portal/StudentNotificationCenter';
+import { useToast } from './ui/Toast';
 
 interface StudentPortalProps {
   setCurrentPage: (page: PageId) => void;
@@ -69,8 +71,9 @@ export default function StudentPortal({
   setVerificationCode
 }: StudentPortalProps) {
   const { user: currentUser, updateUser: setCurrentUser } = useAuth();
+  const toast = useToast();
   // Navigation Tabs state
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'courses' | 'calendar' | 'materials' | 'tasks' | 'messages' | 'certificates' | 'progress' | 'profile' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'courses' | 'calendar' | 'materials' | 'tasks' | 'messages' | 'certificates' | 'progress' | 'notifications' | 'profile' | 'settings'>('dashboard');
   
   // Mobile UI controls
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -209,10 +212,10 @@ export default function StudentPortal({
       });
 
       setCurrentUser(updatedUser);
-      alert('As coordenadas do seu perfil académico foram sincronizadas e salvas com integridade no Supabase.');
+      toast.success('Perfil acadêmico sincronizado com sucesso.');
     } catch (err: any) {
       console.error('Erro ao atualizar perfil no Supabase:', err);
-      alert(`Falha ao sincronizar perfil: ${err.message || 'Erro desconhecido'}`);
+      toast.error(`Falha ao sincronizar perfil: ${err.message || 'Erro desconhecido'}`);
     }
   };
 
@@ -513,7 +516,7 @@ export default function StudentPortal({
     );
 
     if (lessonsWithDate.length === 0) {
-      alert('Nenhuma aula agendada encontrada para exportação.');
+      toast.info('Nenhuma aula agendada encontrada para exportação.');
       return;
     }
 
@@ -741,6 +744,10 @@ export default function StudentPortal({
               {/* 8. DETAILED PROGRESS ANALYTICS GRAPH */}
               {activeTab === 'progress' && (
                 <StudentProgressTab currentUser={currentUser} />
+              )}
+
+              {activeTab === 'notifications' && (
+                <StudentNotificationCenter notifications={notifications} setNotifications={setNotifications} setActiveTab={setActiveTab} setCurrentPage={setCurrentPage} />
               )}
 
               {/* 9. DETAILED PROFILE EDITABLE COORDINATES FORM */}
