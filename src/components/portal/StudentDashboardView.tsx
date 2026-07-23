@@ -12,6 +12,7 @@ interface StudentDashboardViewProps {
   currentLecture: any;
   selectedCourseTitle?: string;
   totalHoursLearned?: number;
+  notifications?: any[];
   setActiveTab: (tab: any) => void;
   cardThemeClass: string;
   isHighContrast: boolean;
@@ -20,7 +21,7 @@ interface StudentDashboardViewProps {
 export default function StudentDashboardView({
   enrollments, currentTime, profileForm, nextScheduledLesson, streakCount,
   completedLessons, realLessons, certificates, currentLecture,
-  selectedCourseTitle, totalHoursLearned = 0, setActiveTab, cardThemeClass, isHighContrast
+  selectedCourseTitle, totalHoursLearned = 0, notifications = [], setActiveTab, cardThemeClass, isHighContrast
 }: StudentDashboardViewProps) {
   if (!enrollments.length) {
     return (
@@ -152,6 +153,22 @@ export default function StudentDashboardView({
               </button>
             </div>
           )}
+        </article>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+        <article className={`ledger-panel p-6 ${cardThemeClass}`}>
+          <div className="flex items-center justify-between">
+            <div><p className="ledger-eyebrow">Próximos passos</p><h2 className="mt-2 font-serif text-[17px] font-black text-ink-900 dark:text-cream-100">Organize seu estudo</h2></div>
+            <button onClick={() => setActiveTab('tasks')} className="text-[11px] font-mono font-bold uppercase text-accent hover:underline">Ver tarefas</button>
+          </div>
+          <div className="mt-5 rounded-xl border border-[#E7E5E4] p-4 text-[13px] text-neutral-500 dark:border-[#273244] dark:text-cream-100/70">
+            <CheckCircle2 className="mr-2 inline text-accent" size={16}/>Consulte suas tarefas antes do prazo e retome aulas que estejam disponíveis nesta janela.
+          </div>
+        </article>
+        <article className={`ledger-panel p-6 ${cardThemeClass}`}>
+          <div className="flex items-center justify-between"><div><p className="ledger-eyebrow">Atividade recente</p><h2 className="mt-2 font-serif text-[17px] font-black text-ink-900 dark:text-cream-100">Avisos acadêmicos</h2></div><button onClick={() => setActiveTab('notifications')} className="text-[11px] font-mono font-bold uppercase text-accent hover:underline">Ver avisos</button></div>
+          <div className="mt-4 space-y-2">{notifications.slice(0, 3).map((notification) => <div key={notification.id} className="flex gap-3 rounded-xl bg-[#F7F6F2] p-3 dark:bg-[#0B1629]"><span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${notification.read ? 'bg-[#D6D3D1]' : 'bg-accent'}`}/><div><p className="text-[12px] text-ink-900 dark:text-cream-100">{notification.text}</p><time className="mt-1 block text-[10px] text-neutral-400">{notification.created_at ? new Date(notification.created_at).toLocaleString('pt-AO') : 'Agora'}</time></div></div>)}{!notifications.length && <p className="rounded-xl bg-[#F7F6F2] p-4 text-[13px] text-neutral-400 dark:bg-[#0B1629]">Nenhum aviso recente.</p>}</div>
         </article>
       </section>
     </div>

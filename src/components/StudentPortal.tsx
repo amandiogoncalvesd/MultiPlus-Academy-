@@ -59,6 +59,7 @@ import StudentLessonsPage from './portal/StudentLessonsPage';
 import StudentCalendarPage from './portal/StudentCalendarPage';
 import StudentProfilePage from './portal/StudentProfilePage';
 import StudentNotificationCenter from './portal/StudentNotificationCenter';
+import StudentShell from './portal/StudentShell';
 import { useToast } from './ui/Toast';
 import ConfirmDialog from './admin/ConfirmDialog';
 
@@ -588,74 +589,47 @@ export default function StudentPortal({
   const selectedCourseTitle = enrollments.find((enrollment: any) => enrollment.course_id === selectedCourseId)?.course?.title;
 
   return (
-    <div id="multiplus-student-lms-portal" className={`min-h-screen flex items-stretch transition-colors duration-200 ${containerThemeClass}`}>
-      
-      {/* SIDEBAR NAVIGATION - Collapsible on Mobile, Fixed on Desktop */}
-      <StudentSidebar
+    <>
+    <StudentShell
+      isDark={isDarkMode}
+      highContrast={isHighContrast}
+      sidebar={<StudentSidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         setCurrentPage={setCurrentPage}
         currentUser={currentUser}
-        onSignOut={async () => {
-          try {
-            await signOut();
-          } catch (e) {}
-          setCurrentUser(null);
-          setCurrentPage('login');
-        }}
+        onSignOut={async () => { await signOut().catch(() => undefined); setCurrentUser(null); setCurrentPage('login'); }}
         isMobileSidebarOpen={isMobileSidebarOpen}
         setIsMobileSidebarOpen={setIsMobileSidebarOpen}
         isHighContrast={isHighContrast}
         themeMode={themeMode}
-      />
-
-      {/* CENTRAL DISPLAY PANEL (RIGHT WORKSPACE) */}
-      <div className="flex-grow flex flex-col overflow-hidden lg:pl-64 relative">
-        {/* Subtle premium background glow effects matching the Home page layout */}
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[60%] bg-gradient-to-br from-[#C89B3C]/5 to-transparent rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[50%] bg-slate-200/10 dark:bg-slate-800/5 rounded-full blur-[120px] pointer-events-none" />
-        
-        {/* TOPBAR HEADER ACTIONS */}
-        <StudentTopbar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          setCurrentPage={setCurrentPage}
-          currentUser={currentUser}
-          onSignOut={async () => {
-            try {
-              await signOut();
-            } catch (e) {}
-            setCurrentUser(null);
-            setCurrentPage('login');
-          }}
-          isMobileSidebarOpen={isMobileSidebarOpen}
-          setIsMobileSidebarOpen={setIsMobileSidebarOpen}
-          isHighContrast={isHighContrast}
-          themeMode={themeMode}
-          toggleTheme={toggleTheme}
-          streakCount={streakCount}
-          unreadMessagesCount={unreadMessagesCount}
-          notifications={notifications}
-          setNotifications={setNotifications}
-          isNotificationsOpen={isNotificationsOpen}
-          setIsNotificationsOpen={setIsNotificationsOpen}
-          isUserMenuOpen={isUserMenuOpen}
-          setIsUserMenuOpen={setIsUserMenuOpen}
-          globalSearch={globalSearch}
-          setGlobalSearch={setGlobalSearch}
-          handleGlobalSearchSubmit={handleGlobalSearchSubmit}
-          cardThemeClass={cardThemeClass}
-        />
-
-        {/* Global Lookup feed search warning feedbacks notification banner */}
-        {searchFeedback && (
-          <div className="mx-6 mt-4 p-3.5 bg-ink-900/10 border border-gold-600 text-ink-900 text-xs font-semibold rounded-xl text-left">
-            <span>🔎 {searchFeedback}</span>
-          </div>
-        )}
-
-        {/* MAIN DISPLAY AREA COMPONENT WORKSPACE GRID */}
-        <main className="flex-grow p-6 overflow-y-auto w-full max-w-7xl mx-auto space-y-6">
+      />}
+      topbar={<StudentTopbar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        setCurrentPage={setCurrentPage}
+        currentUser={currentUser}
+        onSignOut={async () => { await signOut().catch(() => undefined); setCurrentUser(null); setCurrentPage('login'); }}
+        isMobileSidebarOpen={isMobileSidebarOpen}
+        setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+        isHighContrast={isHighContrast}
+        themeMode={themeMode}
+        toggleTheme={toggleTheme}
+        streakCount={streakCount}
+        unreadMessagesCount={unreadMessagesCount}
+        notifications={notifications}
+        setNotifications={setNotifications}
+        isNotificationsOpen={isNotificationsOpen}
+        setIsNotificationsOpen={setIsNotificationsOpen}
+        isUserMenuOpen={isUserMenuOpen}
+        setIsUserMenuOpen={setIsUserMenuOpen}
+        globalSearch={globalSearch}
+        setGlobalSearch={setGlobalSearch}
+        handleGlobalSearchSubmit={handleGlobalSearchSubmit}
+        cardThemeClass={cardThemeClass}
+      />}
+    >
+      {searchFeedback && <div className="mb-5 rounded-xl border border-[#A16207]/30 bg-[#F5F0E8] px-4 py-3 text-sm text-[#5F3A08] dark:bg-[#A16207]/10 dark:text-[#E8C77C]">{searchFeedback}</div>}
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -678,6 +652,7 @@ export default function StudentPortal({
                   currentLecture={currentLecture}
                   selectedCourseTitle={selectedCourseTitle}
                   totalHoursLearned={currentUser?.totalHoursLearned || 0}
+                  notifications={notifications}
                   setActiveTab={setActiveTab}
                   cardThemeClass={cardThemeClass}
                   isHighContrast={isHighContrast}
@@ -828,9 +803,7 @@ export default function StudentPortal({
 
             </motion.div>
           </AnimatePresence>
-        </main>
-
-      </div>
+    </StudentShell>
 
       <ConfirmDialog
         open={isCompleteModalOpen && Boolean(currentLecture)}
@@ -849,6 +822,6 @@ export default function StudentPortal({
           } finally { setIsCompleteModalOpen(false); }
         }}
       />
-    </div>
+    </>
   );
 }
