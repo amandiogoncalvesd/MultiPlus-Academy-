@@ -57,6 +57,7 @@ import StudentCertificatesTab from './portal/StudentCertificatesTab';
 import StudentProgressTab from './portal/StudentProgressTab';
 import StudentLessonsPage from './portal/StudentLessonsPage';
 import StudentCalendarPage from './portal/StudentCalendarPage';
+import StudentProfilePage from './portal/StudentProfilePage';
 
 interface StudentPortalProps {
   setCurrentPage: (page: PageId) => void;
@@ -744,141 +745,9 @@ export default function StudentPortal({
 
               {/* 9. DETAILED PROFILE EDITABLE COORDINATES FORM */}
               {activeTab === 'profile' && (
-                <div className="space-y-6 text-left">
-                  <div className={`p-6 rounded-3xl space-y-6 ${cardThemeClass}`}>
-                    <div>
-                      <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block mb-1">Identidade Académica</span>
-                      <h3 className="text-lg font-serif font-black text-ink-900 dark:text-cream-100 m-0">Meu Perfil de Aluno</h3>
-                      <p className="text-xs text-neutral-400 mt-1">Controle as informações cadastrais e canais de notificações preferidos.</p>
-                    </div>
-
-                    {/* NEW EXPORT PDF WIDGET */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-ink-900/5 dark:bg-slate-800/50 p-5 rounded-2xl border border-gold-600/35">
-                      <div className="space-y-1 text-left">
-                        <h4 className="text-sm font-serif font-black text-ink-900 dark:text-gold-600 m-0">Exportar Meu Registo Académico (PDF)</h4>
-                        <p className="text-2xs text-neutral-400 dark:text-neutral-400 m-0 leading-normal font-sans">
-                          Gere e descarrega um sumário oficial de aproveitamento de todos os cursos inscritos, carga horária e certificados obtidos com selo institucional de Angola.
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleExportPDF}
-                        id="export-academic-record-btn"
-                        className="px-5 py-3 bg-ink-900 hover:bg-gold-600 hover:text-slate-950 text-cream-100 rounded-xl text-3xs font-mono font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer border-0 shadow-sm transition-all shrink-0"
-                      >
-                        <Download size={13} />
-                        <span>Exportar Registo</span>
-                      </button>
-                    </div>
-
-                    {/* FOTOGRAFIA DE PERFIL ACADÉMICO */}
-                    <div className="flex flex-col items-center sm:items-start gap-3 bg-ink-900/5 dark:bg-slate-800/50 p-5 rounded-2xl border border-gold-600/10">
-                      <span className="text-[10px] font-mono text-neutral-400 uppercase block font-bold">Fotografia de Perfil Académico</span>
-                      {currentUser?.id && (
-                        <AvatarUpload
-                          userId={currentUser.id}
-                          currentAvatarUrl={currentUser.avatarUrl}
-                          userName={`${currentUser.firstName} ${currentUser.lastName}`}
-                          size="xl"
-                          onAvatarUpdated={(newUrl) => {
-                            if (currentUser) {
-                              setCurrentUser({
-                                ...currentUser,
-                                avatarUrl: newUrl
-                              });
-                            }
-                          }}
-                        />
-                      )}
-                      <p className="text-3xs text-neutral-400 m-0 leading-normal">
-                        Clique sobre o círculo acima para carregar ou atualizar a sua foto oficial de perfil académico (Formatos válidos: JPEG, PNG, WebP, máx. 5MB).
-                      </p>
-                    </div>
-
-                    <form onSubmit={handleSaveProfile} className="space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[10px] font-mono text-neutral-400 uppercase mb-1">Nome Próprio</label>
-                          <input
-                            type="text"
-                            required
-                            value={profileForm.firstName}
-                            onChange={(e) => setProfileForm({...profileForm, firstName: e.target.value})}
-                            className="w-full px-3 py-2 bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-850 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-mono text-neutral-400 uppercase mb-1">Apelido (Último nome)</label>
-                          <input
-                            type="text"
-                            required
-                            value={profileForm.lastName}
-                            onChange={(e) => setProfileForm({...profileForm, lastName: e.target.value})}
-                            className="w-full px-3 py-2 bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-850 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[10px] font-mono text-neutral-400 uppercase mb-1">Contacto Telefónico</label>
-                          <input
-                            type="text"
-                            value={profileForm.phone}
-                            onChange={(e) => setProfileForm({...profileForm, phone: e.target.value})}
-                            className="w-full px-3 py-2 bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-850 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-mono text-neutral-400 uppercase mb-1">E-mail Registado</label>
-                          <input
-                            type="email"
-                            required
-                            value={profileForm.email}
-                            onChange={(e) => setProfileForm({...profileForm, email: e.target.value})}
-                            className="w-full px-3 py-2 bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-850 text-[#1C1C1C] dark:text-cream-100 focus:outline-none rounded-xl text-xs placeholder:text-neutral-400"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-sans">
-                        <div>
-                          <label className="block text-[10px] font-mono text-neutral-400 uppercase mb-1">País</label>
-                          <span className="block px-3 py-2 bg-gray-100 dark:bg-slate-800 text-neutral-400 rounded-xl text-xs select-none">Angola</span>
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-mono text-neutral-400 uppercase mb-1">Fluência Base</label>
-                          <span className="block px-3 py-2 bg-gray-100 dark:bg-slate-800 text-neutral-400 rounded-xl text-xs select-none">Português / Inglês</span>
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-mono text-neutral-400 uppercase mb-1">Alertas Desejados</label>
-                          <select 
-                            value={profileForm.preference}
-                            onChange={(e) => setProfileForm({...profileForm, preference: e.target.value})}
-                            className="w-full px-3 py-1.5 bg-cream-200 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 text-xs text-neutral-400 dark:text-cream-100 rounded-xl focus:outline-none"
-                          >
-                            <option>SMS & E-mail Automático</option>
-                            <option>Somente E-mail</option>
-                            <option>Notificações Internas LMS</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div className="pt-2 border-t border-gray-100 dark:border-ink-800 flex justify-end">
-                        <button
-                          type="submit"
-                          className="px-6 py-2.5 bg-gold-600 text-cream-100 hover:bg-[#b08530] text-3xs font-mono font-bold uppercase rounded-xl tracking-wider transition-colors cursor-pointer border-0"
-                        >
-                          Guardar Coordenadas
-                        </button>
-                      </div>
-                    </form>
-
-                  </div>
-                </div>
+                <StudentProfilePage user={currentUser} onUpdated={setCurrentUser} />
               )}
 
-              {/* 10. ACCESSIBILITY ADJUST PANEL */}
               {activeTab === 'settings' && (
                 <div className="space-y-6 text-left">
                   <div className={`p-6 rounded-3xl space-y-6 ${cardThemeClass}`}>

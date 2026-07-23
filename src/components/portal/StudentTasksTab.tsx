@@ -15,6 +15,7 @@ import {
 import { academicService } from '../../services/supabase/academicService';
 import { supabase } from '../../lib/supabase/client';
 import { Assignment, AssignmentSubmission } from '../../types';
+import { useToast } from '../ui/Toast';
 
 interface StudentTasksTabProps {
   userId?: string;
@@ -35,6 +36,7 @@ interface TaskItem {
 }
 
 export default function StudentTasksTab({ userId }: StudentTasksTabProps) {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'PENDING' | 'COMPLETED' | 'OVERDUE'>('PENDING');
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -189,7 +191,7 @@ export default function StudentTasksTab({ userId }: StudentTasksTabProps) {
       
     } catch (err) {
       console.error('Erro ao submeter tarefa para o Supabase:', err);
-      alert('Erro ao submeter arquivo: ' + (err as any).message);
+      toast.error(`Erro ao submeter arquivo: ${(err as any).message || 'falha desconhecida'}`);
       setSuccessAnimation(false);
     }
   };

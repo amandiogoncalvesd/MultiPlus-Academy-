@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase/client';
+import { isLessonActive } from '../../lib/academic/lessonAccess';
 
 export const materialService = {
   async getStudentMaterials(studentId: string): Promise<any[]> {
@@ -14,12 +15,16 @@ export const materialService = {
 
     const { data: lessons } = await supabase
       .from('lessons')
-      .select('id, course_id, titulo')
-      .in('course_id', courseIds);
+      .select('id, course_id, titulo, access_starts_at, access_ends_at, scheduled_at, status')
+      .in('course_id', courseIds)
+      .eq('status', 'PUBLISHED');
 
     if (!lessons || lessons.length === 0) return [];
 
-    const lessonIds = lessons.map(l => l.id);
+    // Materials follow the same availability window as their lesson.
+    const availableLessons = lessons.filter((lesson: any) => isLessonActive(lesson));
+    if (availableLessons.length === 0) return [];
+    const lessonIds = availableLessons.map(l => l.id);
 
     const { data: materials, error } = await supabase
       .from('materials')
@@ -53,7 +58,15 @@ export const materialService = {
       .eq('status', 'PUBLISHED');
 
     if (aError) { console.error('Erro ao buscar tarefas:', aError); return []; }
-    return assignments || [];
+    const lessonIds = (assignments || []).map((assignment: any) => assignment.lesson_id).filter(Boolean);
+    if (!lessonIds.length) return assignments || [];
+    const { data: linkedLessons } = await supabase
+      .from('lessons')
+      .select('id, access_starts_at, access_ends_at, scheduled_at')
+      .in('id', lessonIds);
+    const lessonMap = new Map((linkedLessons || []).map((lesson: any) => [lesson.id, lesson]));
+    // A course-level task remains available; a lesson-linked task follows the lesson window.
+    return (assignments || []).filter((assignment: any) => !assignment.lesson_id || isLessonActive(lessonMap.get(assignment.lesson_id) || {}));
   },
 
   async submitAssignment(assignmentId: string, studentId: string, submission: { text?: string; url?: string }): Promise<any> {
