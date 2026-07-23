@@ -25,12 +25,14 @@ export default function Navbar({ currentPage, setCurrentPage, onOpenSignUp }: Na
   }, []);
 
   useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') { setIsMobileMenuOpen(false); setIsUserDropdownOpen(false); } };
+    window.addEventListener('keydown', closeOnEscape);
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-    return () => { document.body.style.overflow = ''; };
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', closeOnEscape); };
   }, [isMobileMenuOpen]);
 
   const navItems: Array<{ id: PageId; label: string }> = [
@@ -66,6 +68,7 @@ export default function Navbar({ currentPage, setCurrentPage, onOpenSignUp }: Na
 
   return (
     <nav
+      aria-label="Navegação pública"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
           ? 'bg-white/98 backdrop-blur-md shadow-[0_1px_3px_rgba(0,0,0,0.08)] border-b border-stone-200/60'
@@ -94,6 +97,7 @@ export default function Navbar({ currentPage, setCurrentPage, onOpenSignUp }: Na
               <button
                 key={item.id}
                 onClick={() => navigateTo(item.id)}
+                aria-current={currentPage === item.id ? 'page' : undefined}
                 className={`px-4 py-2 rounded-lg text-[13px] font-medium tracking-wide transition-all duration-200 cursor-pointer ${
                   currentPage === item.id
                     ? 'text-ink-900 font-semibold bg-stone-100'
@@ -131,6 +135,8 @@ export default function Navbar({ currentPage, setCurrentPage, onOpenSignUp }: Na
               <div className="relative">
                 <button
                   onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                  aria-expanded={isUserDropdownOpen}
+                  aria-haspopup="menu"
                   className="flex items-center gap-2 px-3 py-2 rounded-lg border border-stone-200 hover:border-stone-300 bg-white transition-all duration-200"
                 >
                   {currentUser.avatarUrl ? (
@@ -142,12 +148,12 @@ export default function Navbar({ currentPage, setCurrentPage, onOpenSignUp }: Na
                   <ChevronDown size={12} className="text-stone-400 transition-transform duration-200" style={{ transform: isUserDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                 </button>
                 {isUserDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-[200px] bg-white rounded-xl border border-stone-200 shadow-lg py-2 z-50">
-                    <button onClick={handlePortalRedirect} className="flex items-center gap-2 w-full px-4 py-2.5 text-[13px] font-medium text-ink-900 hover:bg-stone-50 transition-colors rounded-lg">
+                  <div role="menu" className="absolute right-0 mt-2 w-[200px] bg-white rounded-xl border border-stone-200 shadow-lg py-2 z-50">
+                    <button onClick={handlePortalRedirect} role="menuitem" className="flex items-center gap-2 w-full px-4 py-2.5 text-[13px] font-medium text-ink-900 hover:bg-stone-50 transition-colors rounded-lg">
                       <LayoutDashboard size={15} className="text-accent" />
                       Painel Académico
                     </button>
-                    <button onClick={handleLogout} className="flex items-center gap-2 w-full px-4 py-2.5 text-[13px] font-medium text-danger-700 hover:bg-red-50 transition-colors rounded-lg">
+                    <button onClick={handleLogout} role="menuitem" className="flex items-center gap-2 w-full px-4 py-2.5 text-[13px] font-medium text-danger-700 hover:bg-red-50 transition-colors rounded-lg">
                       <LogOut size={15} />
                       Terminar Sessão
                     </button>
@@ -169,6 +175,8 @@ export default function Navbar({ currentPage, setCurrentPage, onOpenSignUp }: Na
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden p-2 rounded-lg hover:bg-stone-100 transition-colors cursor-pointer"
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="public-mobile-navigation"
             aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
           >
             {isMobileMenuOpen ? <X size={22} className="text-ink-900" /> : <Menu size={22} className="text-ink-900" />}
@@ -178,7 +186,7 @@ export default function Navbar({ currentPage, setCurrentPage, onOpenSignUp }: Na
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 top-[64px] z-40 bg-white/98 backdrop-blur-md overflow-y-auto">
+        <div id="public-mobile-navigation" className="md:hidden fixed inset-0 top-[64px] z-40 bg-white/98 backdrop-blur-md overflow-y-auto">
           <div className="px-4 py-6 space-y-1">
             {navItems.map((item) => (
               <button
