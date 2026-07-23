@@ -3,6 +3,7 @@ import { PageId, User, UserRole } from '../types';
 import { ShieldCheck, Mail, Lock, UserCheck, Key, RefreshCw, GraduationCap, UserPlus, FileCheck } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 import StarBorder from './ui/StarBorder';
+import { leaveImmersiveMode, requestImmersiveMode } from '../lib/ui/immersive';
 
 interface LoginPanelProps {
   setCurrentPage: (page: PageId) => void;
@@ -47,10 +48,13 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
           setLoading(false);
           return;
         }
+        // Fullscreen must be requested synchronously while this submit is a user gesture.
+        requestImmersiveMode();
         const authUser = await signIn(email.trim(), password);
         routeAccordingToRole(authUser.role);
       }
     } catch (e: any) {
+      leaveImmersiveMode();
       setErrorMsg(e?.message || 'Erro inesperado durante a autenticação.');
     } finally {
       setLoading(false);
