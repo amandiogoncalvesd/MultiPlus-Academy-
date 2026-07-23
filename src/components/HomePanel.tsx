@@ -105,8 +105,8 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
   return (
     <div id="home-panel-root" className="bg-white text-[#1C1C1C] overflow-x-hidden font-sans">
       
-      {/* 1. HERO SECTION */}
-      <section className="relative min-h-screen bg-white text-slate-800 flex items-center pt-28 pb-20 overflow-hidden border-b border-slate-200/50">
+      {/* 1. HERO SECTION — pt reduced since App.tsx provides 64px for fixed navbar */}
+      <section className="relative min-h-[calc(100dvh-64px)] bg-white text-slate-800 flex items-center pt-16 pb-20 overflow-hidden border-b border-slate-200/50">
         
         {/* Subtle, luxurious ambient background gradients */}
         <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[70%] bg-gradient-to-br from-[#C89B3C]/10 to-transparent rounded-full blur-[160px] pointer-events-none" />

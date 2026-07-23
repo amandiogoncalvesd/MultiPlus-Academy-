@@ -56,7 +56,7 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
   const categoriesList = ['all', 'Setor de Petróleo e Gás', 'Redação de Contratos', 'Resolução de Conflitos'];
 
   return (
-    <div id="blog-panel-root" className="bg-white text-slate-800 pt-24 pb-16">
+    <div id="blog-panel-root" className="bg-white text-slate-800 pt-10 pb-16">
       
       <AnimatePresence mode="wait">
         {!selectedPost ? (

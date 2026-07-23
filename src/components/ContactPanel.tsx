@@ -47,7 +47,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
   };
 
   return (
-    <div id="contact-panel-root" className="bg-white text-slate-800 pt-24 pb-16">
+    <div id="contact-panel-root" className="bg-white text-slate-800 pt-10 pb-16">
       
       {/* Banner */}
       <section className="py-16 bg-slate-50 text-slate-900 text-center relative border-b border-slate-200">

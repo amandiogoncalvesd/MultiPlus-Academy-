@@ -65,7 +65,7 @@ export default function VerifyCertificatePanel({
   };
 
   return (
-    <div id="verify-certificate-root" className="bg-white text-slate-800 pt-28 pb-20 min-h-screen flex flex-col justify-center items-center">
+    <div id="verify-certificate-root" className="bg-white text-slate-800 pt-8 pb-20 min-h-[calc(100dvh-64px)] flex flex-col justify-center items-center">
       <div className="max-w-xl w-full px-4 text-left">
         
         {/* Navigation Indicator */}

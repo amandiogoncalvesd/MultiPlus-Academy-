@@ -266,8 +266,8 @@ export default function App() {
         />
       )}
 
-      {/* 2. Main Visual Body */}
-      <main className="flex-grow flex flex-col">
+      {/* 2. Main Visual Body — add top padding when Navbar is visible */}
+      <main className={`flex-grow flex flex-col ${!['student-dashboard', 'instructor-dashboard', 'admin-dashboard', 'messages'].includes(currentPage) ? 'pt-[64px]' : ''}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={currentPage}

@@ -44,7 +44,7 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
   ];
 
   return (
-    <div id="about-panel-root" className="bg-white text-slate-800 pt-24 pb-16">
+    <div id="about-panel-root" className="bg-white text-slate-800 pt-10 pb-16">
       
       {/* Editorial Header Section */}
       <section className="py-20 relative bg-slate-50 border-b border-slate-100 overflow-hidden">

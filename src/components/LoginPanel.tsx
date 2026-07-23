@@ -68,7 +68,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
   };
 
   return (
-    <div id="login-panel-root" className="bg-white text-slate-800 pt-28 pb-16 min-h-screen flex flex-col justify-center items-center">
+    <div id="login-panel-root" className="bg-white text-slate-800 pt-8 pb-16 min-h-[calc(100dvh-64px)] flex flex-col justify-center items-center">
       <div className="max-w-6xl w-full px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch text-left">
         
         {/* Left Column: Traditional Form */}

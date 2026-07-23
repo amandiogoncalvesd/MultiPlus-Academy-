@@ -97,7 +97,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
   });
 
   return (
-    <div id="courses-panel-root" className="bg-white text-slate-800 pt-24 pb-16">
+    <div id="courses-panel-root" className="bg-white text-slate-800 pt-10 pb-16">
       
       {/* Banner design */}
       <section className="py-16 bg-slate-50 text-slate-900 overflow-hidden relative border-b border-slate-200">

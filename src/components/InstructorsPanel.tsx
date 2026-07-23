@@ -37,7 +37,7 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
   const currentTeacher = MAIN_INSTRUCTOR;
 
   return (
-    <div id="instructors-panel-root" className="bg-white text-slate-800 pt-24 pb-16">
+    <div id="instructors-panel-root" className="bg-white text-slate-800 pt-10 pb-16">
       
       {/* Banner portion */}
       <section className="py-16 bg-slate-50 text-slate-900 text-center relative border-b border-slate-200">
