@@ -60,6 +60,7 @@ import StudentCalendarPage from './portal/StudentCalendarPage';
 import StudentProfilePage from './portal/StudentProfilePage';
 import StudentNotificationCenter from './portal/StudentNotificationCenter';
 import { useToast } from './ui/Toast';
+import ConfirmDialog from './admin/ConfirmDialog';
 
 interface StudentPortalProps {
   setCurrentPage: (page: PageId) => void;
@@ -831,74 +832,23 @@ export default function StudentPortal({
 
       </div>
 
-      {/* 1.16 - CONFIRMATION MODAL FOR LESSON COMPLETION */}
-      <AnimatePresence>
-        {isCompleteModalOpen && currentLecture && (
-          <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsCompleteModalOpen(false)}
-              className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
-            />
-
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.4 }}
-              className="relative w-full max-w-md bg-white dark:bg-ink-950 rounded-3xl overflow-hidden shadow-2xl border border-gold-600/30 p-6 space-y-6 text-left"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-gold-600/10 text-gold-600 rounded-xl border border-gold-600/20">
-                  <CheckCircle size={20} className="animate-pulse" />
-                </div>
-                <div>
-                  <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block font-semibold">Progresso Académico</span>
-                  <h3 className="text-sm font-serif font-black text-slate-900 dark:text-cream-100 m-0">Confirmar Conclusão de Aula</h3>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-xs text-slate-650 dark:text-gray-300 leading-relaxed m-0 font-medium">
-                  Tem a certeza que deseja marcar a aula <strong>{currentLecture.title}</strong> como concluída?
-                </p>
-                <p className="text-[10px] text-neutral-405 leading-relaxed m-0">
-                  Ao confirmar, esta aula será catalogada como concluída no seu histórico escolar do Supabase, contando positivamente para a emissão do seu certificado final.
-                </p>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => setIsCompleteModalOpen(false)}
-                  className="flex-1 py-3 border border-gray-200 dark:border-slate-800 text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900 font-mono text-3xs font-extrabold uppercase rounded-xl transition-all cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={async () => {
-                    if (currentUser?.id && selectedCourseId && currentLecture.id) {
-                      try {
-                        await academicService.markLessonComplete(currentUser.id, selectedCourseId, currentLecture.id, true);
-                        await fetchStudentData();
-                      } catch (err) {
-                        console.error('Erro ao marcar aula concluída:', err);
-                      } finally {
-                        setIsCompleteModalOpen(false);
-                      }
-                    }
-                  }}
-                  className="flex-1 py-3 bg-gold-600 hover:bg-[#b58b35] text-cream-100 font-mono text-3xs font-extrabold uppercase rounded-xl transition-all cursor-pointer border-0 shadow-sm"
-                >
-                  Confirmar Conclusão
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
+      <ConfirmDialog
+        open={isCompleteModalOpen && Boolean(currentLecture)}
+        title="Confirmar conclusão de aula"
+        description={currentLecture ? `Deseja marcar “${currentLecture.title}” como concluída? Esta ação entra no seu progresso acadêmico.` : ''}
+        confirmLabel="Concluir aula"
+        onCancel={() => setIsCompleteModalOpen(false)}
+        onConfirm={async () => {
+          if (!currentUser?.id || !selectedCourseId || !currentLecture?.id) return;
+          try {
+            await academicService.markLessonComplete(currentUser.id, selectedCourseId, currentLecture.id, true);
+            await fetchStudentData();
+            toast.success('Aula marcada como concluída.');
+          } catch (error: any) {
+            toast.error(error?.message || 'Não foi possível concluir a aula.');
+          } finally { setIsCompleteModalOpen(false); }
+        }}
+      />
     </div>
   );
 }

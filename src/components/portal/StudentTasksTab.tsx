@@ -125,6 +125,12 @@ export default function StudentTasksTab({ userId }: StudentTasksTabProps) {
     fetchTasksAndSubmissions();
   }, [userId]);
 
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') { setIsSubmitOpen(false); setFileToUpload(null); setUploadedFileName(null); } };
+    if (isSubmitOpen) window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [isSubmitOpen]);
+
   const filteredTasks = tasks.filter(t => t.status === activeTab);
 
   const handleDragOver = (e: any) => {
@@ -325,6 +331,7 @@ export default function StudentTasksTab({ userId }: StudentTasksTabProps) {
               <input
                 type="file"
                 id="file-task-upload"
+                aria-label="Selecionar ficheiro para submissão"
                 className="absolute inset-0 opacity-0 cursor-pointer"
                 onChange={handleFileChange}
                 accept=".pdf,.docx,.doc"

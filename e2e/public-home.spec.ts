@@ -19,3 +19,17 @@ test.describe('isolated staging administrator flow', () => {
     await expect(page.getByText(/command center|visão geral/i)).toBeVisible();
   });
 });
+
+test.describe('isolated staging student flow', () => {
+  test.skip(!process.env.E2E_STUDENT_EMAIL || !process.env.E2E_STUDENT_PASSWORD, 'requires isolated staging student credentials');
+  test('student can access the academic dashboard with no critical axe violations', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /aceder|iniciar sessão/i }).click();
+    await page.getByLabel(/correio eletrónico/i).fill(process.env.E2E_STUDENT_EMAIL!);
+    await page.getByLabel(/palavra-passe/i).fill(process.env.E2E_STUDENT_PASSWORD!);
+    await page.getByRole('button', { name: /aceder|iniciar sessão/i }).click();
+    await expect(page.locator('#multiplus-student-lms-portal')).toBeVisible();
+    const results = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
+    expect(results.violations.filter((violation) => violation.impact === 'critical')).toEqual([]);
+  });
+});

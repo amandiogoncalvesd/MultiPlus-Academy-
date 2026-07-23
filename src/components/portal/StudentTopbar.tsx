@@ -89,7 +89,9 @@ export default function StudentTopbar({
         <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
           <Search size={14} />
         </span>
+        <label htmlFor="student-global-search" className="sr-only">Pesquisar no portal do aluno</label>
         <input
+          id="student-global-search"
           type="text"
           placeholder="Pesquisar certificado, drafting..."
           value={globalSearch}
