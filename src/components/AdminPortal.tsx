@@ -13,6 +13,9 @@ import AdminShell from './admin/AdminShell';
 import AdminSidebar, { AdminTab } from './admin/AdminSidebar';
 import AdminTopbar from './admin/AdminTopbar';
 import AvatarUpload from './AvatarUpload';
+import AdminProfilePage from './admin/AdminProfilePage';
+import AdminSettingsPage from './admin/AdminSettingsPage';
+import NotificationCenter from './admin/NotificationCenter';
 
 import { 
   Users, Settings, Activity, TrendingUp, DollarSign, MapPin, ShieldCheck, 
@@ -1268,31 +1271,7 @@ export default function AdminPortal({
 
             {/* VIEW 13: NOTIFICAÇÕES */}
             {activeTab === 'notificacoes' && (
-              <div className={`p-6 rounded-3xl space-y-6 ${cardThemeClass}`}>
-                <div className="flex justify-between items-center border-b border-gray-150 dark:border-ink-800/60 pb-3">
-                  <div>
-                    <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Notificações e Alertas Urgentes</h3>
-                    <p className="text-xs text-neutral-400 mt-1">Centro de monitorização de falhas, reconciliação de guias e inscrições.</p>
-                  </div>
-                  <button onClick={handleClearAlerts} className="text-3xs font-mono text-blue-900 dark:text-gold-600 uppercase border-0 bg-transparent cursor-pointer hover:underline">Limpar Alertas</button>
-                </div>
-
-                <div className="space-y-3">
-                  {activeAlerts.map(alert => (
-                    <div key={alert.id} className="p-4 bg-red-50/50 dark:bg-danger-700/10 border border-red-200/50 dark:border-danger-700/30 rounded-2xl flex gap-3 text-left">
-                      <AlertTriangle className="text-red-650 shrink-0 mt-0.5" size={16} />
-                      <div>
-                        <span className="text-[8px] font-mono text-red-700 font-extrabold uppercase bg-red-100/50 px-2 py-0.5 rounded">{alert.type}</span>
-                        <p className="text-xs font-semibold text-slate-700 dark:text-cream-100 mt-1.5 leading-normal m-0">{alert.msg}</p>
-                      </div>
-                    </div>
-                  ))}
-                  {activeAlerts.length === 0 && (
-                    <div className="text-center py-6 text-neutral-400 text-xs">Nenhum alerta crítico ativo no painel MultiPlus.</div>
-                  )}
-                </div>
-
-              </div>
+              <NotificationCenter notifications={activeAlerts} onNotificationsChange={setActiveAlerts} />
             )}
 
             {/* VIEW 16: INTEGRAÇÕES */}
@@ -1327,261 +1306,12 @@ export default function AdminPortal({
               </div>
             )}
 
-            {/* VIEW 17: CONFIGURAÇÕES */}
             {activeTab === 'configuracoes' && (
-              <div className={`p-6 rounded-3xl space-y-6 ${cardThemeClass}`}>
-                <div>
-                  <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-base">Configurações Gerais de Operação</h3>
-                  <p className="text-xs text-neutral-400 mt-1">Definição dos parâmetros institucionais base, emails de tesouraria de Luanda e Huambo e taxas de câmbio.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-left">
-                  <div className="space-y-1">
-                    <label className="block text-[8px] font-mono text-neutral-400 uppercase font-black">Nome da Instituição</label>
-                    <input type="text" value={instName} onChange={(e) => setInstName(e.target.value)} className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 text-slate-850 dark:text-cream-100 rounded-xl font-serif font-extrabold focus:outline-none focus:border-gold-600" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="block text-[8px] font-mono text-neutral-400 uppercase font-black">Domínio de Internet</label>
-                    <input type="text" value={instDomain} onChange={(e) => setInstDomain(e.target.value)} className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 text-slate-850 dark:text-cream-100 rounded-xl font-mono focus:outline-none focus:border-gold-600" />
-                  </div>
-                  <div className="space-y-1 md:col-span-2">
-                    <label className="block text-[8px] font-mono text-neutral-400 uppercase font-black">Contacto de Emergência</label>
-                    <input type="text" value={instPhone} onChange={(e) => setInstPhone(e.target.value)} className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 text-slate-850 dark:text-cream-100 rounded-xl focus:outline-none focus:border-gold-600" />
-                  </div>
-                </div>
-
-                <div className="flex justify-end pt-3">
-                  <button onClick={async () => {
-                    const { error } = await supabase
-                      .from('institution_settings')
-                      .upsert({ id: 1, nome: instName, dominio: instDomain, contacto: instPhone });
-                    if (error) {
-                      await supabase
-                        .from('institution_settings')
-                        .update({ nome: instName, dominio: instDomain, contacto: instPhone })
-                        .eq('id', 1);
-                    }
-                    addAuditLog("CONFIG GERAL", "Atualizado informações da instituição pelo Admin");
-                    alert('As alterações da instituição foram salvas!');
-                  }} className="px-5 py-2.5 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 hover:bg-gold-600 hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer">
-                    Salvar Parâmetros
-                  </button>
-                </div>
-
-                <div className="border-t border-gray-150 dark:border-ink-800/60 pt-6 space-y-6">
-                  <div>
-                    <span className="text-[9px] font-mono tracking-widest text-gold-600 uppercase block mb-1">Métricas Globais</span>
-                    <h3 className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 m-0">Preferências de Interface</h3>
-                    <p className="text-[10px] text-neutral-400 mt-1">Personalize as métricas de contraste e o visual geral do painel administrativo.</p>
-                  </div>
-
-                  <div className="space-y-4 divide-y divide-gray-100 dark:divide-ink-800">
-                    {/* Theme colors toggler */}
-                    <div className="pt-2 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                      <div>
-                        <h4 className="text-xs font-serif font-black text-ink-900 dark:text-cream-100 m-0">Esquema de Cores do Painel</h4>
-                        <p className="text-[10px] text-neutral-400 m-0">Alternar entre telas claras e escuras anti-fadiga ocular.</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => { setThemeMode('light'); setHighContrast(false); }}
-                          className={`px-4 py-2 text-2xs font-mono font-bold uppercase rounded-xl border transition-all cursor-pointer ${
-                            !isDarkMode && !highContrast ? 'bg-ink-900 text-cream-100 border-ink-900' : 'bg-cream-100 text-neutral-400 hover:bg-cream-200'
-                          }`}
-                        >
-                          Light Mode
-                        </button>
-                        <button
-                          onClick={() => { setThemeMode('dark'); setHighContrast(false); }}
-                          className={`px-4 py-2 text-2xs font-mono font-bold uppercase rounded-xl border transition-all cursor-pointer ${
-                            isDarkMode && !highContrast ? 'bg-slate-800 text-cream-100 border-slate-800' : 'bg-cream-100 text-neutral-400 hover:bg-cream-200'
-                          }`}
-                        >
-                          Dark Mode
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* High Contrast Option */}
-                    <div className="pt-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                      <div>
-                        <h4 className="text-xs font-serif font-black text-danger-700 dark:text-danger-700 m-0">Ecrã de Alto Contraste</h4>
-                        <p className="text-[10px] text-neutral-400 m-0">Cores puras pretas e amarelas otimizadas para leitores de tela e deficiências visuais.</p>
-                      </div>
-                      <div>
-                        <button
-                          onClick={() => {
-                            setHighContrast(!highContrast);
-                          }}
-                          className={`px-4 py-2 text-2xs font-mono font-bold uppercase rounded-xl border transition-all cursor-pointer ${
-                            highContrast ? 'bg-yellow-500 text-black border-yellow-500 font-extrabold' : 'bg-cream-100 text-neutral-400 hover:bg-cream-200'
-                          }`}
-                        >
-                          {highContrast ? 'Ativado ✓' : 'Ativar Contraste'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
+              <AdminSettingsPage isDarkMode={isDarkMode} onThemeMode={setThemeMode} />
             )}
+
             {activeTab === 'perfil' && (
-              <div className={`p-6 rounded-3xl space-y-6 text-left ${cardThemeClass}`}>
-                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                  <div className="shrink-0">
-                    <AvatarUpload
-                      userId={currentUser?.id || ''}
-                      currentAvatarUrl={currentUser?.avatarUrl}
-                      userName={adminName || currentUser?.firstName}
-                      size="xl"
-                      onAvatarUpdated={(avatarUrl) => {
-                        if (!currentUser) return;
-                        setCurrentUser({ ...currentUser, avatarUrl });
-                        setDbUsers((previous) => previous.map((entry) => entry.id === currentUser.id ? { ...entry, avatarUrl } : entry));
-                        addAuditLog('PERFIL FOTO UPDATE', 'Foto de perfil do administrador atualizada.');
-                      }}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="font-serif font-black text-ink-900 dark:text-cream-100 text-lg m-0">{adminName || 'Administrador'}</h3>
-                    <p className="text-xs text-gold-600 font-mono tracking-wider uppercase m-0">ADMINISTRADOR GERAL • MULTIPLUS ACADEMY</p>
-                    <div className="pt-1.5 flex gap-2">
-                      <label 
-                        htmlFor="profile-avatar-file" 
-                        className="px-2.5 py-1 bg-cream-200 dark:bg-slate-800 hover:bg-gold-600 hover:text-slate-950 transition-all text-ink-900 dark:text-cream-100 rounded text-3xs font-mono font-bold uppercase cursor-pointer border border-gray-150 dark:border-ink-800"
-                      >
-                        {uploadingAvatar ? 'A carregar...' : 'Alterar Foto'}
-                      </label>
-                      <input 
-                        type="file" 
-                        id="profile-avatar-file" 
-                        accept="image/*" 
-                        onChange={handleAvatarUpload} 
-                        disabled={uploadingAvatar}
-                        className="hidden" 
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-cream-200 dark:bg-ink-950/40 border border-gray-200 dark:border-ink-800/60 rounded-2xl text-xs space-y-3 leading-normal">
-                  <p><strong>Cargo Hierárquico:</strong> Super Administrador</p>
-                  <p><strong>E-mail de Login:</strong> {currentUser?.email || 'admin@multiplus.ao'}</p>
-                  <p><strong>Permissão RBAC:</strong> Acesso Pleno de Administração (Gestão de utilizadores, emissão de certificados e auditoria completa do sistema).</p>
-                  <p className="text-amber-600 dark:text-amber-400 font-semibold">⚠️ Proteja bem as suas credenciais. Qualquer acção efetuada sob esta conta é registada nos logs de auditoria.</p>
-                </div>
-
-                <div className="space-y-4 border-t border-gray-150 dark:border-ink-800 pt-5">
-                  <h4 className="font-serif font-bold text-ink-900 dark:text-cream-100 text-sm">Editar Informações de Perfil</h4>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                    <div className="space-y-1">
-                      <label className="block text-[8px] font-mono text-gray-450 uppercase font-black">Nome Completo</label>
-                      <input 
-                        type="text" 
-                        value={adminName} 
-                        onChange={(e) => setAdminName(e.target.value)} 
-                        className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600" 
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="block text-[8px] font-mono text-neutral-400 uppercase font-black">Contacto de Telefone</label>
-                      <input 
-                        type="text" 
-                        value={adminPhone} 
-                        onChange={(e) => setAdminPhone(e.target.value)} 
-                        className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600" 
-                      />
-                    </div>
-                    <div className="space-y-1 md:col-span-2">
-                      <label className="block text-[8px] font-mono text-gray-450 uppercase font-black">Biografia Profissional</label>
-                      <textarea 
-                        value={adminBio} 
-                        onChange={(e) => setAdminBio(e.target.value)} 
-                        rows={3}
-                        className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border border-gray-250 dark:border-ink-800 rounded-xl text-current focus:outline-none focus:border-gold-600"
-                        placeholder="Escreva uma breve biografia ou introdução para o perfil do portal..."
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 pt-2 text-slate-800 dark:text-cream-100">
-                    <input 
-                      type="checkbox" 
-                      id="notif_certificados"
-                      checked={notifEmailCertificados}
-                      onChange={(e) => setNotifEmailCertificados(e.target.checked)}
-                      className="rounded border-gray-350 dark:border-ink-800 text-ink-900 focus:ring-[#BB8533] cursor-pointer"
-                    />
-                    <label htmlFor="notif_certificados" className="text-xs font-semibold cursor-pointer select-none">
-                      Receber notificações de novos certificados emitidos por e-mail
-                    </label>
-                  </div>
-
-                  <div className="flex justify-end pt-3">
-                    <button 
-                      onClick={async () => {
-                        if (!currentUser?.id) return;
-                        try {
-                          // Save to users table
-                          const { error: userErr } = await supabase
-                            .from('users')
-                            .update({
-                              nome_completo: adminName,
-                              telefone: adminPhone,
-                              notif_email_certificados: notifEmailCertificados
-                            })
-                            .eq('id', currentUser.id);
-                          if (userErr) throw userErr;
-
-                          // Save to profiles table (upsert based on user_id)
-                          // Check if profile exists first
-                          const { data: existingProf } = await supabase
-                            .from('profiles')
-                            .select('id')
-                            .eq('user_id', currentUser.id)
-                            .maybeSingle();
-
-                          if (existingProf) {
-                            const { error: profErr } = await supabase
-                              .from('profiles')
-                              .update({ biografia: adminBio })
-                              .eq('user_id', currentUser.id);
-                            if (profErr) throw profErr;
-                          } else {
-                            const { error: profErr } = await supabase
-                              .from('profiles')
-                              .insert({ user_id: currentUser.id, biografia: adminBio });
-                            if (profErr) throw profErr;
-                          }
-
-                          // Update dynamic current user state
-                          const split = adminName.split(' ');
-                          const first = split[0] || 'Admin';
-                          const last = split.slice(1).join(' ') || 'MultiPlus';
-                          setCurrentUser({
-                            ...currentUser,
-                            firstName: first,
-                            lastName: last,
-                            phone: adminPhone
-                          });
-
-                          addAuditLog("PERFIL UPDATE", `Perfil de ${adminName} atualizado com sucesso no Supabase.`);
-                          alert('As suas informações de perfil foram guardadas com sucesso no Supabase!');
-                        } catch (err: any) {
-                          console.error(err);
-                          alert(`Erro ao salvar perfil no Supabase: ${err.message || err}`);
-                        }
-                      }} 
-                      className="px-5 py-2.5 bg-ink-900 text-cream-100 hover:bg-gold-600 hover:text-slate-900 border-0 rounded-xl text-3xs font-mono font-bold uppercase cursor-pointer"
-                    >
-                      Guardar Alterações
-                    </button>
-                  </div>
-                </div>
-
-              </div>
+              <AdminProfilePage user={currentUser} onUserUpdated={setCurrentUser} />
             )}
 
             </motion.div>
