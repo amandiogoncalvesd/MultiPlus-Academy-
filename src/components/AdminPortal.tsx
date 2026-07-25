@@ -17,6 +17,7 @@ import AdminSettingsPage from './admin/AdminSettingsPage';
 import NotificationCenter from './admin/NotificationCenter';
 import AdminUsersPage from './admin/AdminUsersPage';
 import AdminCoursesPage from './admin/AdminCoursesPage';
+import AcademicStructurePage from './admin/AcademicStructurePage';
 import AdminCertificatesPage from './admin/AdminCertificatesPage';
 import AdminAuditLogPage from './admin/AdminAuditLogPage';
 import AdminOverview from './admin/AdminOverview';
@@ -637,19 +638,16 @@ export default function AdminPortal({
               className="space-y-6 sm:space-y-8"
             >
           
-          {/* Executive Top Banner */}
-          <div className="bg-ink-900 text-cream-100 p-6 sm:p-8 rounded-3xl border border-gold-600/30 relative overflow-hidden shadow-sm">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gold-600/5 rounded-bl-full pointer-events-none" />
-            <div className="relative z-10 space-y-1">
-              <span className="text-[10px] font-mono text-gold-600 font-black tracking-widest block uppercase">Centro de Controlo da MultiPlus Academy</span>
-              <h2 className="text-xl sm:text-2xl font-serif font-black m-0 tracking-wide text-cream-100">
-                Bem-vindo ao Centro de Gestão da MultiPlus Academy
-              </h2>
-              <p className="text-xs text-cream-100/70 max-w-2xl">
-                Autenticação RBAC activa. Administração global de formandos, registo fiscal de receitas, emissão e conferência de chaves de diploma, integradores de API e auditoria estruturada.
-              </p>
+          {activeTab === 'dashboard' && (
+            <div className="relative overflow-hidden rounded-2xl border border-gold-600/30 bg-ink-900 p-5 text-cream-100 shadow-sm sm:p-6">
+              <div className="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-bl-full bg-gold-600/5" />
+              <div className="relative space-y-1">
+                <span className="block font-mono text-[10px] font-black uppercase tracking-widest text-gold-600">Centro de controlo</span>
+                <h2 className="m-0 font-serif text-xl font-black tracking-wide text-cream-100">Operação institucional da MultiPlus Academy</h2>
+                <p className="max-w-2xl text-xs text-cream-100/70">Acompanhe pessoas, cursos, credenciais e saúde operacional sem perder o contexto acadêmico.</p>
+              </div>
             </div>
-          </div>
+          )}
           
           {/* VIEW 1: EXECUTIVE DASHBOARD TAB */}
           {activeTab === 'dashboard' && (
@@ -662,6 +660,10 @@ export default function AdminPortal({
 
             {activeTab === 'cursos' && (
               <AdminCoursesPage courses={courses} onRefresh={loadDatabase} />
+            )}
+
+            {activeTab === 'estrutura' && (
+              <AcademicStructurePage courses={courses} users={dbUsers} />
             )}
 
             {activeTab === 'certificados' && (

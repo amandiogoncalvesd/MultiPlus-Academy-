@@ -1,7 +1,7 @@
-import { Activity, Bell, BookOpen, ChevronRight, FileCheck2, MessageSquare, Network, Settings, Users, X, LogOut } from 'lucide-react';
+import { Activity, Bell, BookOpen, CalendarDays, ChevronRight, FileCheck2, MessageSquare, Network, Settings, Users, X, LogOut } from 'lucide-react';
 import { User } from '../../types';
 
-export type AdminTab = 'dashboard' | 'utilizadores' | 'cursos' | 'certificados' | 'notificacoes' | 'auditoria' | 'integracoes' | 'configuracoes' | 'perfil';
+export type AdminTab = 'dashboard' | 'utilizadores' | 'cursos' | 'estrutura' | 'certificados' | 'notificacoes' | 'auditoria' | 'integracoes' | 'configuracoes' | 'perfil';
 
 interface Props {
   activeTab: AdminTab;
@@ -17,6 +17,7 @@ const items: Array<{ id: AdminTab | 'messages'; label: string; icon: React.React
   { id: 'dashboard', label: 'Visão geral', icon: <Activity size={17} /> },
   { id: 'utilizadores', label: 'Pessoas', icon: <Users size={17} /> },
   { id: 'cursos', label: 'Cursos', icon: <BookOpen size={17} /> },
+  { id: 'estrutura', label: 'Estrutura acadêmica', icon: <CalendarDays size={17} /> },
   { id: 'certificados', label: 'Certificados', icon: <FileCheck2 size={17} /> },
   { id: 'messages', label: 'Mensagens', icon: <MessageSquare size={17} /> },
   { id: 'notificacoes', label: 'Avisos', icon: <Bell size={17} /> },

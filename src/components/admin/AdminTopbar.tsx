@@ -24,6 +24,7 @@ const labels: Record<AdminTab, string> = {
   dashboard: 'Visão geral',
   utilizadores: 'Pessoas',
   cursos: 'Cursos',
+  estrutura: 'Estrutura acadêmica',
   certificados: 'Certificados',
   notificacoes: 'Avisos',
   auditoria: 'Histórico',
