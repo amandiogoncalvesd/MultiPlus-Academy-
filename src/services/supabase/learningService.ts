@@ -7,7 +7,8 @@ export type AttendanceStatus = 'PRESENT' | 'LATE' | 'EXCUSED' | 'ABSENT';
 
 export interface LearningSection { id: string; course_id: string; code: string; name: string; course?: { title: string } | null; }
 export interface SectionStudent { id: string; student_id: string; student?: { nome_completo: string; email: string } | null; }
-export interface Assessment { id: string; section_id: string; title: string; points_possible: number; due_at: string | null; status: string; }
+export interface GradeCategory { id: string; section_id: string; name: string; weight: number; sort_order: number; }
+export interface Assessment { id: string; section_id: string; grade_category_id: string | null; title: string; points_possible: number; due_at: string | null; status: string; }
 export interface GradeEntry { id: string; assessment_id: string; student_id: string; score: number | null; feedback: string | null; status: GradeStatus; student?: { nome_completo: string; email: string } | null; }
 export interface AttendanceSession { id: string; section_id: string; title: string; occurred_at: string; }
 export interface AttendanceRecord { attendance_session_id: string; student_id: string; status: AttendanceStatus; note: string | null; }
@@ -28,11 +29,13 @@ export const learningService = {
     const { data, error } = await supabase.from('section_enrollments').select('id, student_id, student:users!section_enrollments_student_id_fkey(nome_completo,email)').eq('section_id', sectionId).eq('status', 'ACTIVE');
     fail(error); return (data || []) as unknown as SectionStudent[];
   },
+  async getCategories(sectionId: string): Promise<GradeCategory[]> { const { data, error } = await supabase.from('grade_categories').select('id,section_id,name,weight,sort_order').eq('section_id', sectionId).order('sort_order'); fail(error); return (data || []) as GradeCategory[]; },
+  async saveCategory(input: Omit<GradeCategory, 'id'> & { id?: string }): Promise<GradeCategory> { const query = input.id ? supabase.from('grade_categories').update(input).eq('id', input.id) : supabase.from('grade_categories').insert(input); const { data, error } = await query.select().single(); fail(error); return data as GradeCategory; },
   async getAssessments(sectionId: string): Promise<Assessment[]> {
-    const { data, error } = await supabase.from('assessments').select('id,section_id,title,points_possible,due_at,status').eq('section_id', sectionId).order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('assessments').select('id,section_id,grade_category_id,title,points_possible,due_at,status').eq('section_id', sectionId).order('created_at', { ascending: false });
     fail(error); return data || [];
   },
-  async createAssessment(input: Pick<Assessment, 'section_id' | 'title' | 'points_possible'> & { due_at?: string | null }): Promise<Assessment> {
+  async createAssessment(input: Pick<Assessment, 'section_id' | 'title' | 'points_possible'> & { grade_category_id?: string | null; due_at?: string | null }): Promise<Assessment> {
     const { data, error } = await supabase.from('assessments').insert({ ...input, status: 'PUBLISHED', published_at: new Date().toISOString() }).select().single();
     fail(error); return data;
   },
