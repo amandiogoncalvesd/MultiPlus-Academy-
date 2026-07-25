@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Course } from '../../types';
 import { academicService } from '../../services/supabase/academicService';
+import { InstitutionalCalendarEvent, institutionalService } from '../../services/supabase/institutionalService';
 import { useToast } from '../ui/Toast';
 
 interface InstructorCalendarTabProps {
@@ -29,6 +30,7 @@ export default function InstructorCalendarTab({ courses = [] }: InstructorCalend
   const [selectedLesson, setSelectedLesson] = useState('');
   const [dbLessons, setDbLessons] = useState<any[]>([]);
   const [scheduledLessons, setScheduledLessons] = useState<any[]>([]);
+  const [institutionalEvents, setInstitutionalEvents] = useState<InstitutionalCalendarEvent[]>([]);
   
   const [meetingDate, setMeetingDate] = useState(new Date().toISOString().slice(0, 10));
   const [meetingTime, setMeetingTime] = useState('18:30');
@@ -77,6 +79,7 @@ export default function InstructorCalendarTab({ courses = [] }: InstructorCalend
 
   useEffect(() => {
     loadAllScheduled();
+    institutionalService.getCalendarEvents().then(setInstitutionalEvents).catch((error) => console.warn('Não foi possível carregar eventos institucionais:', error));
   }, []);
 
   const handleCreateMeeting = async (e: React.FormEvent) => {
@@ -167,6 +170,11 @@ export default function InstructorCalendarTab({ courses = [] }: InstructorCalend
           ))}
         </div>
       </div>
+
+      <section className="relative z-10 rounded-2xl border border-gray-150 bg-cream-100 p-4 dark:border-ink-800 dark:bg-ink-900">
+        <div className="flex items-center justify-between"><div><span className="text-[9px] font-mono font-bold uppercase tracking-widest text-gold-600">Calendário institucional</span><h4 className="mt-1 font-serif text-sm font-black text-ink-900 dark:text-cream-100">Eventos dos seus períodos e turmas</h4></div><CalendarCheck size={18} className="text-gold-600"/></div>
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">{institutionalEvents.slice(0, 6).map(event => <article key={event.id} className="min-w-52 rounded-xl border border-gray-150 p-3 dark:border-ink-800"><p className="font-mono text-[9px] font-bold text-gold-600">{event.event_type}</p><p className="mt-1 text-xs font-semibold text-ink-900 dark:text-cream-100">{event.title}</p><p className="mt-1 text-[10px] text-neutral-400">{new Date(event.starts_at).toLocaleDateString('pt-AO', { dateStyle: 'medium' })}{event.section ? ` · ${event.section.code}` : ''}</p></article>)}{!institutionalEvents.length && <p className="text-xs text-neutral-400">Não há eventos institucionais publicados para seus vínculos.</p>}</div>
+      </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch relative z-10">
         

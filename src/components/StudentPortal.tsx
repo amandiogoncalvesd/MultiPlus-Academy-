@@ -6,6 +6,7 @@ import { useAuth } from './auth/AuthProvider';
 import { supabase } from '../lib/supabase/client';
 import { userService } from '../services/supabase/userService';
 import { academicService } from '../services/supabase/academicService';
+import { InstitutionalCalendarEvent, institutionalService } from '../services/supabase/institutionalService';
 import QuizArea from './portal/QuizArea';
 import VideoPlayer from './portal/VideoPlayer';
 import AvatarUpload from './AvatarUpload';
@@ -154,6 +155,7 @@ export default function StudentPortal({
 
   // Calendar toggle view (Month vs Week)
   const [calendarView, setCalendarView] = useState<'MONTH' | 'WEEK'>('MONTH');
+  const [institutionalEvents, setInstitutionalEvents] = useState<InstitutionalCalendarEvent[]>([]);
 
 
   // Update real-time clock every second
@@ -165,6 +167,13 @@ export default function StudentPortal({
   }, []);
 
   const { signOut } = useAuth();
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    institutionalService.getCalendarEvents().then(setInstitutionalEvents).catch((error) => {
+      console.warn('Não foi possível carregar o calendário institucional:', error);
+    });
+  }, [currentUser?.id]);
 
   // Sync profile edits dynamically with asynchronous auth session
   useEffect(() => {
@@ -674,7 +683,7 @@ export default function StudentPortal({
 
               {/* CALENDÁRIO LETIVO */}
               {activeTab === 'calendar' && (
-                <StudentCalendarPage timeline={scheduledLessons} onExport={handleExportICS} />
+                <StudentCalendarPage timeline={scheduledLessons} institutionalEvents={institutionalEvents} onExport={handleExportICS} />
               )}
 
               {/* 4. ACADEMIC MATERIALS FILTERABLE DIR */}
