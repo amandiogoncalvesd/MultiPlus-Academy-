@@ -59,6 +59,7 @@ import InstructorCoursesTab from './instructor/InstructorCoursesTab';
 import InstructorStudentsTab from './instructor/InstructorStudentsTab';
 import InstructorEvaluationsTab from './instructor/InstructorEvaluationsTab';
 import InstructorCalendarTab from './instructor/InstructorCalendarTab';
+import InstructorAcademicWorkspace from './instructor/InstructorAcademicWorkspace';
 import InstructorProgressTab from './instructor/InstructorProgressTab';
 import InstructorMessagesTab from './instructor/InstructorMessagesTab';
 import { courseService } from '../services/supabase/courseService';
@@ -613,6 +614,8 @@ export default function InstructorPortal({
               currentUser={currentUser}
             />
           )}
+
+          {activeTab === 'academico' && <InstructorAcademicWorkspace />}
 
           {/* TAB 9: EMISSÃO DIPLOMAS */}
           {activeTab === 'certificados' && (

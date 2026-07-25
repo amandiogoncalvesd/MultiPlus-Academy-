@@ -32,6 +32,7 @@ const navItems = [
   { id: 'calendar', label: 'Calendário', icon: CalendarIcon },
   { id: 'materials', label: 'Manuais', icon: Download },
   { id: 'tasks', label: 'Tarefas', icon: CheckCircle },
+  { id: 'academic', label: 'Minha turma', icon: BookOpen },
   { id: 'messages', label: 'Tutor', icon: MessageSquare },
   { id: 'certificates', label: 'Certificados', icon: Award },
   { id: 'progress', label: 'Progresso', icon: TrendingUp },

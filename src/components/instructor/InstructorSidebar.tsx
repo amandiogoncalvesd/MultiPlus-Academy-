@@ -1,10 +1,10 @@
 import { Award, BarChart3, BookOpen, CalendarDays, ClipboardCheck, MessageSquare, Plus, Settings, Users, X } from 'lucide-react';
 import { User } from '../../types';
-export type InstructorTab='dashboard'|'cursos'|'criar-curso'|'alunos'|'avaliacoes'|'certificados'|'calendario'|'mensagens'|'relatorios'|'perfil'|'configuracoes';
+export type InstructorTab='dashboard'|'cursos'|'criar-curso'|'alunos'|'avaliacoes'|'academico'|'certificados'|'calendario'|'mensagens'|'relatorios'|'perfil'|'configuracoes';
 interface Props{activeTab:InstructorTab;open:boolean;user:User|null;onClose:()=>void;onNavigate:(tab:InstructorTab)=>void;onMessages:()=>void;onSignOut:()=>void;}
 const groups:Array<{label:string;items:Array<{id:InstructorTab|'messages';label:string;icon:React.ReactNode}>}>=[
  {label:'Visão geral',items:[{id:'dashboard',label:'Dashboard',icon:<BarChart3 size={16}/>}]},
- {label:'Ensino',items:[{id:'cursos',label:'Meus cursos',icon:<BookOpen size={16}/>},{id:'criar-curso',label:'Criar curso',icon:<Plus size={16}/>},{id:'alunos',label:'Meus alunos',icon:<Users size={16}/>},{id:'avaliacoes',label:'Avaliações',icon:<ClipboardCheck size={16}/>},{id:'relatorios',label:'Progresso',icon:<BarChart3 size={16}/>}]},
+ {label:'Ensino',items:[{id:'cursos',label:'Meus cursos',icon:<BookOpen size={16}/>},{id:'criar-curso',label:'Criar curso',icon:<Plus size={16}/>},{id:'alunos',label:'Meus alunos',icon:<Users size={16}/>},{id:'avaliacoes',label:'Avaliações',icon:<ClipboardCheck size={16}/>},{id:'academico',label:'Turma e avaliação',icon:<BookOpen size={16}/>},{id:'relatorios',label:'Progresso',icon:<BarChart3 size={16}/>}]},
  {label:'Planejamento',items:[{id:'calendario',label:'Agenda letiva',icon:<CalendarDays size={16}/>}]},
  {label:'Comunicação',items:[{id:'messages',label:'Mensagens',icon:<MessageSquare size={16}/>},{id:'certificados',label:'Certificados',icon:<Award size={16}/>}]},
  {label:'Conta',items:[{id:'perfil',label:'Meu perfil',icon:<Users size={16}/>},{id:'configuracoes',label:'Configurações',icon:<Settings size={16}/>}]}
