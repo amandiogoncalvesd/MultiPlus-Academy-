@@ -45,7 +45,7 @@ export default function MessagesPage({ setCurrentPage, previousDashboardPage }: 
               <img
                 src={user.avatarUrl}
                 alt={`${user.firstName} ${user.lastName}`}
-                className="w-8 h-8 rounded-full object-cover border border-gold-600/30"
+                className="w-8 h-8 rounded-full object-cover"
                 referrerPolicy="no-referrer"
               />
             ) : (

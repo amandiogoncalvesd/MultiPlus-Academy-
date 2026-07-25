@@ -82,7 +82,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         </button>
         <div className="relative shrink-0">
           {activePartner.foto_perfil ? (
-            <img src={activePartner.foto_perfil} alt="" className="h-10 w-10 rounded-full border border-gold-600/25 object-cover" referrerPolicy="no-referrer" />
+            <img src={activePartner.foto_perfil} alt="" className="h-10 w-10 rounded-full object-cover" referrerPolicy="no-referrer" />
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-600/15 font-bold text-gold-600">{activePartner.nome_completo.charAt(0).toUpperCase()}</div>
           )}

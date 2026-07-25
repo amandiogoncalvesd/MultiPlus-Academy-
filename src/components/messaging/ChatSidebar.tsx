@@ -114,7 +114,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     <img
                       src={p.foto_perfil}
                       alt={p.nome_completo}
-                      className="w-10 h-10 rounded-full object-cover border border-white shadow-xs"
+                      className="w-10 h-10 rounded-full object-cover shadow-sm"
                       referrerPolicy="no-referrer"
                     />
                   ) : (

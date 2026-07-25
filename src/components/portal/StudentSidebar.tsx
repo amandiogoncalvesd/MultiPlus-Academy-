@@ -131,7 +131,7 @@ export default function StudentSidebar({
               <img
                 src={currentUser.avatarUrl}
                 alt={currentUser.firstName}
-                className="w-8 h-8 rounded-full object-cover ring-1 ring-gold-400/30"
+                className="w-8 h-8 rounded-full object-cover"
                 referrerPolicy="no-referrer"
               />
             ) : (

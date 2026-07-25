@@ -43,7 +43,7 @@ export default function AdminOverview({ users, courses, enrollments, certificate
         <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="ledger-eyebrow" style={{ color: '#C99A47', borderColor: '#C99A47' }}>Registro operacional</p>
-            <h1 className="mt-3 max-w-2xl font-serif text-3xl font-black tracking-tight sm:text-4xl">
+            <h1 className="mt-3 max-w-2xl font-serif text-xl font-black sm:text-2xl tracking-tight sm:text-4xl">
               A instituição em um relance.
             </h1>
             <p className="mt-3 max-w-xl text-[13px] leading-relaxed text-cream-100/65">
@@ -74,7 +74,7 @@ export default function AdminOverview({ users, courses, enrollments, certificate
                 {metric.icon}
               </span>
             </div>
-            <p className="mt-4 font-serif text-2xl font-black text-ink-900 dark:text-cream-100">{metric.value}</p>
+            <p className="mt-4 font-serif text-xl font-black sm:text-2xl text-ink-900 dark:text-cream-100">{metric.value}</p>
             <p className="mt-1 text-[11px] text-neutral-400">{metric.detail}</p>
           </button>
         ))}

@@ -201,7 +201,7 @@ export default function StudentTopbar({
               <img
                 src={currentUser.avatarUrl}
                 alt={currentUser.firstName}
-                className="h-6 w-6 rounded-full object-cover border border-gold-600/30"
+                className="h-6 w-6 rounded-full object-cover"
                 referrerPolicy="no-referrer"
               />
             ) : (

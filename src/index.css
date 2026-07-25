@@ -168,3 +168,14 @@ html, body, #root { min-height: 100%; }
 .skip-link { position: fixed; z-index: 10000; left: 16px; top: -64px; border-radius: 8px; background: #0B1629; padding: 10px 14px; color: #fff; font-size: 14px; font-weight: 700; transition: top 150ms ease; }
 .skip-link:focus { top: 16px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
+
+/* Shared avatar contract: a profile photo is always a clean circle. */
+.user-avatar { border-radius: 9999px; object-fit: cover; border: 0; box-shadow: none; }
+.avatar-status { position: absolute; right: 0; bottom: 0; border-radius: 9999px; background: #22C55E; box-shadow: 0 0 0 1px #FFFFFF; }
+.dark .avatar-status { box-shadow: 0 0 0 1px #101827; }
+
+/* Compact data values on narrow screens: hierarchy without billboard numbers. */
+@media (max-width: 639px) {
+  .ledger-panel { border-radius: 16px; }
+  .ledger-panel > * { min-width: 0; }
+}

@@ -24,10 +24,10 @@ export default function AvatarUpload({
   }, [currentAvatarUrl]);
 
   const sizeClasses = {
-    sm: 'w-8 h-8 text-xs',
-    md: 'w-12 h-12 text-sm',
-    lg: 'w-16 h-16 text-lg',
-    xl: 'w-24 h-24 text-2xl'
+    sm: 'w-6 h-6 text-[10px]',
+    md: 'w-8 h-8 text-xs',
+    lg: 'w-10 h-10 text-sm',
+    xl: 'w-14 h-14 text-lg'
   };
 
   const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -80,11 +80,11 @@ export default function AvatarUpload({
         <img 
           src={avatarUrl} 
           alt={userName || 'Avatar'} 
-          className={`${sizeClasses[size]} rounded-full object-cover border-2 border-gold-600/30 shadow-md`}
+          className={`${sizeClasses[size]} rounded-full object-cover shadow-sm`}
           referrerPolicy="no-referrer"
         />
       ) : (
-        <div className={`${sizeClasses[size]} rounded-full bg-gold-600/20 text-gold-600 flex items-center justify-center font-serif font-bold border-2 border-gold-600/30 shadow-md`}>
+        <div className={`${sizeClasses[size]} rounded-full bg-gold-600/20 text-gold-600 flex items-center justify-center font-serif font-bold shadow-sm`}>
           {initials}
         </div>
       )}

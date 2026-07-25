@@ -290,7 +290,7 @@ export default function InstructorStudentsTab({
                           <img
                             src={student.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256'}
                             alt={student.firstName}
-                            className="w-10 h-10 rounded-full object-cover border border-gray-150 dark:border-ink-750"
+                            className="w-10 h-10 rounded-full object-cover"
                           />
                           <div>
                             <span className="font-serif font-black text-sm text-ink-900 dark:text-cream-100 block">
@@ -431,7 +431,7 @@ export default function InstructorStudentsTab({
                       <img
                         src={student.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256'}
                         alt={student.firstName}
-                        className="w-10 h-10 rounded-full object-cover border border-gray-150 dark:border-ink-750"
+                        className="w-10 h-10 rounded-full object-cover"
                       />
                       <div className="min-w-0 flex-1">
                         <span className="font-serif font-black text-xs text-ink-900 dark:text-cream-100 block">

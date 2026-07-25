@@ -15,6 +15,7 @@ export default tseslint.config(
       'supabase/functions/**',
       'scripts/**',
       'e2e/**',
+      'public/sw.js',
     ],
   },
   js.configs.recommended,

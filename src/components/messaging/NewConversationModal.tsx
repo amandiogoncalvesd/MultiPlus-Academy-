@@ -63,7 +63,7 @@ export default function NewConversationModal({ contacts, onClose, onSelect }: Ne
                 className="w-full flex items-center gap-3 p-3 hover:bg-cream-200 dark:hover:bg-ink-900 rounded-xl transition-all text-left border-0 cursor-pointer"
               >
                 {c.foto_perfil ? (
-                  <img src={c.foto_perfil} alt={c.nome_completo} className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-ink-800" referrerPolicy="no-referrer" />
+                  <img src={c.foto_perfil} alt={c.nome_completo} className="w-10 h-10 rounded-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-cream-200 dark:bg-ink-900 flex items-center justify-center text-gold-600 border border-gold-600/20 font-bold">
                     {c.nome_completo.charAt(0).toUpperCase()}

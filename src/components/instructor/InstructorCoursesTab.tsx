@@ -277,7 +277,7 @@ export default function InstructorCoursesTab({
                         <img
                           src={student.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256'}
                           alt={student.firstName}
-                          className="w-8 h-8 rounded-full object-cover border border-gray-150 dark:border-ink-750"
+                          className="w-8 h-8 rounded-full object-cover"
                         />
                         <span className="font-semibold text-ink-900 dark:text-cream-100">
                           {student.firstName} {student.lastName}
