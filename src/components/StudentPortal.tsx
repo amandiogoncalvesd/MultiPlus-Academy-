@@ -61,6 +61,7 @@ import StudentCalendarPage from './portal/StudentCalendarPage';
 import StudentProfilePage from './portal/StudentProfilePage';
 import StudentNotificationCenter from './portal/StudentNotificationCenter';
 import StudentAcademicSpace from './portal/StudentAcademicSpace';
+import StudentGradebook from './portal/StudentGradebook';
 import StudentShell from './portal/StudentShell';
 import { useToast } from './ui/Toast';
 import ConfirmDialog from './admin/ConfirmDialog';
@@ -77,7 +78,7 @@ export default function StudentPortal({
   const { user: currentUser, updateUser: setCurrentUser } = useAuth();
   const toast = useToast();
   // Navigation Tabs state
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'courses' | 'calendar' | 'materials' | 'tasks' | 'academic' | 'messages' | 'certificates' | 'progress' | 'notifications' | 'profile' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'courses' | 'calendar' | 'materials' | 'tasks' | 'grades' | 'academic' | 'messages' | 'certificates' | 'progress' | 'notifications' | 'profile' | 'settings'>('dashboard');
   
   // Mobile UI controls
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -695,6 +696,10 @@ export default function StudentPortal({
               {/* 5. TASKS MANAGER AND FILE SUBMISSION */}
               {activeTab === 'tasks' && (
                 <StudentTasksTab userId={currentUser?.id} />
+              )}
+
+              {activeTab === 'grades' && currentUser?.id && (
+                <StudentGradebook userId={currentUser.id} />
               )}
 
               {activeTab === 'academic' && currentUser?.id && (
