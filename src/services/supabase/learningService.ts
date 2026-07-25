@@ -15,6 +15,8 @@ export interface SectionSyllabus { section_id: string; overview: string | null; 
 export interface LearningOutcome { id: string; course_id: string; code: string; title: string; description: string | null; }
 export interface DiscussionForum { id: string; section_id: string; title: string; description: string | null; is_locked: boolean; }
 export interface DiscussionThread { id: string; forum_id: string; author_id: string; title: string; body: string; created_at: string; author?: { nome_completo: string } | null; }
+export interface DiscussionPost { id: string; thread_id: string; author_id: string; body: string; created_at: string; author?: { nome_completo: string } | null; }
+export interface RubricCriterion { id: string; rubric_id: string; description: string; points_possible: number; sort_order: number; levels: Array<{ label: string; points: number; description?: string }>; }
 
 export const learningService = {
   async getSections(): Promise<LearningSection[]> {
@@ -67,4 +69,10 @@ export const learningService = {
   async createForum(sectionId: string, title: string, description: string): Promise<void> { const { error } = await supabase.from('discussion_forums').insert({ section_id: sectionId, title, description }); fail(error); },
   async getThreads(forumId: string): Promise<DiscussionThread[]> { const { data, error } = await supabase.from('discussion_threads').select('id,forum_id,author_id,title,body,created_at,author:users!discussion_threads_author_id_fkey(nome_completo)').eq('forum_id', forumId).order('created_at', { ascending: false }); fail(error); return (data || []) as unknown as DiscussionThread[]; },
   async createThread(forumId: string, authorId: string, title: string, body: string): Promise<void> { const { error } = await supabase.from('discussion_threads').insert({ forum_id: forumId, author_id: authorId, title, body }); fail(error); },
+  async getPosts(threadId: string): Promise<DiscussionPost[]> { const { data, error } = await supabase.from('discussion_posts').select('id,thread_id,author_id,body,created_at,author:users!discussion_posts_author_id_fkey(nome_completo)').eq('thread_id', threadId).order('created_at'); fail(error); return (data || []) as unknown as DiscussionPost[]; },
+  async createPost(threadId: string, authorId: string, body: string): Promise<void> { const { error } = await supabase.from('discussion_posts').insert({ thread_id: threadId, author_id: authorId, body }); fail(error); },
+  async getRubrics(sectionId: string): Promise<Array<{ id: string; name: string; description: string | null }>> { const { data, error } = await supabase.from('rubrics').select('id,name,description').eq('section_id', sectionId).order('created_at'); fail(error); return data || []; },
+  async getRubricCriteria(rubricId: string): Promise<RubricCriterion[]> { const { data, error } = await supabase.from('rubric_criteria').select('id,rubric_id,description,points_possible,sort_order,levels').eq('rubric_id', rubricId).order('sort_order'); fail(error); return (data || []) as unknown as RubricCriterion[]; },
+  async createRubric(sectionId: string, name: string, description: string): Promise<{ id: string }> { const { data, error } = await supabase.from('rubrics').insert({ section_id: sectionId, name, description }).select('id').single(); fail(error); return data!; },
+  async createRubricCriterion(input: Omit<RubricCriterion, 'id'>): Promise<void> { const { error } = await supabase.from('rubric_criteria').insert(input); fail(error); },
 };
