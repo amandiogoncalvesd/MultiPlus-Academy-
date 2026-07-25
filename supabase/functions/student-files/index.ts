@@ -43,6 +43,30 @@ serve(async (request) => {
       await admin.from('audit_logs').insert({ actor_id: user.id, action: 'COURSE_MATERIAL_UPLOADED', entity_type: 'material', entity_id: data.id, metadata: { lessonId, fileName: file.name } });
       return json({ data }, 201);
     }
+    if (action === 'upload-discussion-attachment') {
+      const form = await request.formData(); const threadId = String(form.get('threadId') || ''); const postId = String(form.get('postId') || ''); const file = form.get('file');
+      if ((!threadId && !postId) || (threadId && postId) || !(file instanceof File)) return json({ error: 'Informe um tópico ou resposta e um ficheiro.' }, 422);
+      if (file.size > 20 * 1024 * 1024) return json({ error: 'O ficheiro deve ter no máximo 20 MB.' }, 422);
+      const attachmentTarget = threadId
+        ? await client.from('discussion_threads').select('id').eq('id', threadId).maybeSingle()
+        : await client.from('discussion_posts').select('id').eq('id', postId).maybeSingle();
+      if (attachmentTarget.error || !attachmentTarget.data) return json({ error: 'Sem acesso à discussão selecionada.' }, 403);
+      const name = file.name.replace(/[^a-zA-Z0-9._-]/g, '_'); const parent = threadId || postId; const path = `${parent}/${user.id}/${Date.now()}-${name}`;
+      const { error: uploadError } = await admin.storage.from('discussion-attachments').upload(path, file, { contentType: file.type || 'application/octet-stream', upsert: false });
+      if (uploadError) throw uploadError;
+      const { data, error } = await admin.from('discussion_attachments').insert({ thread_id: threadId || null, post_id: postId || null, uploaded_by: user.id, storage_path: path, file_name: file.name, file_size: file.size, mime_type: file.type || null }).select().single();
+      if (error) { await admin.storage.from('discussion-attachments').remove([path]); throw error; }
+      await admin.from('audit_logs').insert({ actor_id: user.id, action: 'DISCUSSION_ATTACHMENT_UPLOADED', entity_type: 'discussion_attachment', entity_id: data.id, metadata: { threadId: threadId || null, postId: postId || null, fileName: file.name } });
+      return json({ data }, 201);
+    }
+    if (action === 'download-discussion-attachment') {
+      const { attachmentId } = await request.json();
+      const { data: attachment } = await client.from('discussion_attachments').select('id, storage_path').eq('id', attachmentId).maybeSingle();
+      if (!attachment) return json({ error: 'Anexo não encontrado ou sem acesso.' }, 404);
+      const { data: signed, error } = await admin.storage.from('discussion-attachments').createSignedUrl(attachment.storage_path, 60);
+      if (error || !signed) throw error ?? new Error('Não foi possível assinar o anexo.');
+      return json({ url: signed.signedUrl });
+    }
     if (action === 'download-material') {
       const { materialId } = await request.json();
       const { data: material } = await admin.from('materials').select('id, storage_path, arquivo_url, lesson:lessons!inner(course_id, access_starts_at, access_ends_at)').eq('id', materialId).maybeSingle();
