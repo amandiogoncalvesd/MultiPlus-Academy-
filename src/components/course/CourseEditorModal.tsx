@@ -11,6 +11,7 @@ import { enrollmentService } from '../../services/supabase/enrollmentService';
 import StudentSelector from '../instructor/StudentSelector';
 import { useAuth } from '../auth/AuthProvider';
 import { useToast } from '../ui/Toast';
+import ConfirmDialog from '../admin/ConfirmDialog';
 
 interface CourseEditorModalProps {
   courseId?: string; // If undefined, we are creating a new course
@@ -113,8 +114,9 @@ export default function CourseEditorModal({
   const [materialFile, setMaterialFile] = useState<File | null>(null);
   const [uploadingMaterial, setUploadingMaterial] = useState(false);
 
-  // Cloudinary URL warning state
+  // External video URL feedback (links from any supported provider are accepted).
   const [cloudinaryWarning, setCloudinaryWarning] = useState(false);
+  const [confirmation, setConfirmation] = useState<{ kind: 'remove-student' | 'delete-lesson' | 'discard-lesson'; id?: string } | null>(null);
 
   // Load course details if editing
   useEffect(() => {
@@ -204,7 +206,7 @@ export default function CourseEditorModal({
       await courseService.updateCourse(courseId, { thumbnail: publicUrl });
     } catch (err: any) {
       console.error('Error uploading cover:', err);
-      alert('Erro ao carregar imagem de capa: ' + (err.message || err));
+      toast.error(`Erro ao carregar imagem de capa: ${err.message || err}`);
     } finally {
       setUploadingCover(false);
     }
@@ -214,12 +216,12 @@ export default function CourseEditorModal({
   const handleSaveCourse = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) {
-      alert('Por favor, indique o nome do curso.');
+      toast.error('Indique o nome do curso antes de guardar.');
       return;
     }
 
     if (isAdmin && !selectedTeacherId) {
-      alert('Por favor, selecione e atribua este curso a um professor.');
+      toast.error('Selecione o professor responsável antes de guardar.');
       return;
     }
 
@@ -247,11 +249,11 @@ export default function CourseEditorModal({
       let savedCourse: any;
       if (courseId) {
         savedCourse = await courseService.updateCourse(courseId, payload as any);
-        alert('Curso atualizado com sucesso!');
+        toast.success('Curso atualizado com sucesso.');
       } else {
         savedCourse = await courseService.createCourse(payload as any);
         setCourseId(savedCourse.id);
-        alert('Curso criado com sucesso! Agora pode adicionar aulas e matricular alunos.');
+        toast.success('Curso criado. Agora você pode organizar aulas, materiais e matrículas.');
       }
 
       onSave({
@@ -261,24 +263,23 @@ export default function CourseEditorModal({
       });
     } catch (err: any) {
       console.error('Error saving course:', err);
-      alert('Erro ao salvar curso: ' + (err.message || err));
+      toast.error(`Erro ao guardar curso: ${err.message || err}`);
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Remove Enrolled student
-  const handleRemoveStudent = async (studentId: string) => {
+  // Remove an enrollment only after the accessible confirmation dialog is accepted.
+  const handleRemoveStudent = (studentId: string) => setConfirmation({ kind: 'remove-student', id: studentId });
+  const removeStudentConfirmed = async (studentId: string) => {
     if (!courseId) return;
-    if (confirm('Deseja realmente remover este formando deste curso? Ele perderá acesso imediatamente.')) {
-      try {
-        await enrollmentService.removeStudent(studentId, courseId);
-        alert('Matrícula removida com sucesso!');
-        loadEnrolledStudents(courseId);
-      } catch (err: any) {
-        console.error('Error removing enrollment:', err);
-        alert('Erro ao remover aluno: ' + (err.message || err));
-      }
+    try {
+      await enrollmentService.removeStudent(studentId, courseId);
+      toast.success('Matrícula removida com sucesso.');
+      await loadEnrolledStudents(courseId);
+    } catch (err: any) {
+      console.error('Error removing enrollment:', err);
+      toast.error(`Erro ao remover aluno: ${err.message || err}`);
     }
   };
 
@@ -289,24 +290,21 @@ export default function CourseEditorModal({
       for (const id of studentIds) {
         await enrollmentService.enrollStudent(id, courseId);
       }
-      alert('Estudante(s) matriculado(s) com sucesso!');
+      toast.success('Aluno(s) matriculado(s) com sucesso.');
       setShowStudentSelector(false);
       loadEnrolledStudents(courseId);
     } catch (err: any) {
       console.error('Error enrolling students:', err);
-      alert('Erro ao matricular alunos: ' + (err.message || err));
+      toast.error(`Erro ao matricular alunos: ${err.message || err}`);
     }
   };
 
-  // Validate Cloudinary Pattern
-  const validateCloudinaryUrl = (url: string) => {
+  // Accept any secure external provider; only warn for malformed URLs.
+  const validateVideoUrl = (url: string) => {
     setLessonVideo(url);
-    if (!url) {
-      setCloudinaryWarning(false);
-      return;
-    }
-    const isCloudinary = /^https?:\/\/(?:[a-z0-9-]+\.)?cloudinary\.com\/.*$/i.test(url);
-    setCloudinaryWarning(!isCloudinary);
+    if (!url) { setCloudinaryWarning(false); return; }
+    try { const parsed = new URL(url); setCloudinaryWarning(!['http:', 'https:'].includes(parsed.protocol)); }
+    catch { setCloudinaryWarning(true); }
   };
 
   // Save lesson (includes Quiz and Targets)
@@ -315,12 +313,12 @@ export default function CourseEditorModal({
     if (!lessonTitle || !courseId) return;
 
     if (lessonStatus === 'PUBLISHED' && (!lessonStartsAt || !lessonEndsAt)) {
-      alert('Defina o início e o fim da janela de acesso antes de publicar a aula.');
+      toast.error('Defina o início e o fim da janela de acesso antes de publicar a aula.');
       return;
     }
 
     if (lessonStartsAt && lessonEndsAt && new Date(lessonEndsAt) <= new Date(lessonStartsAt)) {
-      alert('O fim da aula deve ser posterior ao início.');
+      toast.error('O fim da aula deve ser posterior ao início.');
       return;
     }
 
@@ -379,12 +377,12 @@ export default function CourseEditorModal({
         }
       }
 
-      alert('Aula salva com sucesso!');
+      toast.success('Aula guardada com sucesso.');
       setEditingLesson(null);
       loadLessons(courseId);
     } catch (err: any) {
       console.error('Error saving lesson:', err);
-      alert('Erro ao salvar aula: ' + (err.message || err));
+      toast.error(`Erro ao guardar aula: ${err.message || err}`);
     } finally {
       setIsSaving(false);
     }
@@ -409,18 +407,17 @@ export default function CourseEditorModal({
     } finally { setUploadingMaterial(false); }
   };
 
-  // Delete Lesson
-  const handleDeleteLesson = async (lessonId: string) => {
+  // Delete a lesson only after the accessible confirmation dialog is accepted.
+  const handleDeleteLesson = (lessonId: string) => setConfirmation({ kind: 'delete-lesson', id: lessonId });
+  const deleteLessonConfirmed = async (lessonId: string) => {
     if (!courseId) return;
-    if (confirm('Tem a certeza de que deseja eliminar esta aula permanentemente do curso?')) {
-      try {
-        await lessonService.deleteLesson(lessonId);
-        alert('Aula eliminada com sucesso!');
-        loadLessons(courseId);
-      } catch (err: any) {
-        console.error('Error deleting lesson:', err);
-        alert('Erro ao eliminar aula: ' + (err.message || err));
-      }
+    try {
+      await lessonService.deleteLesson(lessonId);
+      toast.success('Aula eliminada com sucesso.');
+      await loadLessons(courseId);
+    } catch (err: any) {
+      console.error('Error deleting lesson:', err);
+      toast.error(`Erro ao eliminar aula: ${err.message || err}`);
     }
   };
 
@@ -496,7 +493,7 @@ export default function CourseEditorModal({
         <div className="p-6 border-b border-gray-150 dark:border-ink-800/60 flex justify-between items-center bg-cream-200 dark:bg-ink-950/40 relative z-10">
           <div>
             <h3 id="course-editor-title" className="text-lg font-serif font-black text-ink-900 dark:text-cream-100 m-0">
-              {courseId ? `Editor do Programa: ${title}` : 'Criar Nova Especialização'}
+              {courseId ? `Editor do Programa: ${title}` : 'Criar novo curso'}
             </h3>
             <p className="text-2xs font-mono text-gold-600 tracking-wide uppercase mt-1">
               {courseId ? `ID: ${courseId}` : 'Configuração do Rascunho Curricular'}
@@ -513,29 +510,26 @@ export default function CourseEditorModal({
 
         {/* Navigation Tabs (only shown if course was already created) */}
         {courseId && (
-          <div className="px-6 border-b border-gray-150 dark:border-ink-800/40 flex gap-4 bg-cream-150 dark:bg-ink-900/40 text-xs font-mono relative z-10">
+          <div className="flex gap-1 overflow-x-auto border-b border-gray-150 bg-cream-150 px-4 dark:border-ink-800/40 dark:bg-ink-900/40 sm:px-6 relative z-10">
             {[
-              { id: 'details', label: '1. Detalhes Base', icon: <FileText size={13} /> },
-              { id: 'lessons', label: '2. Grade de Aulas', icon: <BookOpen size={13} /> },
-              { id: 'students', label: '3. Alunos Inscritos', icon: <Users size={13} /> },
-              { id: 'materials', label: '4. Materiais Privados', icon: <FileText size={13} /> }
+              { id: 'details', label: 'Visão geral', icon: <FileText size={13} /> },
+              { id: 'lessons', label: `Aulas (${lessons.length})`, icon: <BookOpen size={13} /> },
+              { id: 'materials', label: 'Materiais', icon: <Upload size={13} /> },
+              { id: 'students', label: `Alunos (${enrolledStudents.length})`, icon: <Users size={13} /> }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => {
                   if (editingLesson) {
-                    if (confirm('Deseja sair do editor de aula? Alterações não salvas serão perdidas.')) {
-                      setEditingLesson(null);
-                    } else {
-                      return;
-                    }
+                    setConfirmation({ kind: 'discard-lesson', id: tab.id });
+                    return;
                   }
                   setActiveTab(tab.id as any);
                 }}
-                className={`py-3.5 flex items-center gap-1.5 font-bold uppercase border-b-2 transition-all cursor-pointer bg-transparent border-0 ${
+                className={`shrink-0 rounded-lg px-3 py-2.5 flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase transition-all cursor-pointer bg-transparent border-0 ${
                   activeTab === tab.id
-                    ? 'border-gold-600 text-gold-600'
-                    : 'border-transparent text-neutral-400 hover:text-gray-650 dark:hover:text-cream-200'
+                    ? 'bg-[#F5F0E8] text-gold-700 dark:bg-gold-600/15 dark:text-gold-400'
+                    : 'text-neutral-400 hover:bg-cream-200 hover:text-gray-650 dark:hover:bg-ink-800 dark:hover:text-cream-200'
                 }`}
               >
                 {tab.icon}
@@ -555,7 +549,7 @@ export default function CourseEditorModal({
 
                 {/* Column 1: Cover image */}
                 <div className="space-y-3">
-                  <span className="block text-[10px] font-mono text-neutral-400 uppercase tracking-widest font-black">Capa da Especialização</span>
+                  <span className="block text-[10px] font-mono text-neutral-400 uppercase tracking-widest font-black">Capa do curso</span>
                   <div className="relative group aspect-video rounded-2xl overflow-hidden bg-cream-200 dark:bg-ink-950 border border-gray-250 dark:border-ink-800 flex items-center justify-center">
                     {thumbnail ? (
                       <>
@@ -612,7 +606,7 @@ export default function CourseEditorModal({
                 <div className="md:col-span-2 space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Nome da Especialização</label>
+                      <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Nome do curso</label>
                       <input
                         type="text"
                         value={title}
@@ -929,19 +923,19 @@ export default function CourseEditorModal({
 
                       <div className="space-y-1">
                         <div className="flex justify-between items-center">
-                          <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Link de Vídeo (Cloudinary)</label>
+                          <label className="block text-[10px] font-mono text-neutral-400 uppercase font-black">Link do vídeo</label>
                           {cloudinaryWarning && (
-                            <span className="text-[9px] text-amber-500 font-mono font-semibold">⚠ Não é um link Cloudinary padrão</span>
+                            <span className="text-[9px] text-amber-500 font-mono font-semibold"><AlertCircle className="mr-1 inline" size={12}/>Use um link HTTP ou HTTPS válido</span>
                           )}
                         </div>
                         <input
                           type="text"
                           value={lessonVideo}
-                          onChange={(e) => validateCloudinaryUrl(e.target.value)}
-                          placeholder="Ex: https://res.cloudinary.com/multiplus/video/upload/aula1.mp4"
+                          onChange={(e) => validateVideoUrl(e.target.value)}
+                          placeholder="https://provedor.exemplo/video"
                           className="w-full p-2.5 bg-cream-150 dark:bg-ink-950 border border-gray-250 dark:border-ink-850 text-slate-850 dark:text-cream-100 rounded-xl text-xs focus:outline-none focus:border-gold-600"
                         />
-                        <p className="text-[10px] text-neutral-400 italic">Insira links otimizados na infraestrutura Cloudinary para execução síncrona sem buffer.</p>
+                        <p className="text-[10px] text-neutral-400 italic">Use um link de vídeo disponível para os alunos durante a janela de acesso.</p>
                       </div>
 
                       {/* Targets Audience checklist */}
@@ -1075,7 +1069,7 @@ export default function CourseEditorModal({
                             </div>
                           ))}
                           {quizQuestions.length === 0 && (
-                            <p className="text-[10px] text-neutral-400 text-center py-6">Este exame curricular não contém perguntas síncronas. Adicione uma pergunta acima.</p>
+                            <p className="text-[10px] text-neutral-400 text-center py-6">Este quiz ainda não possui perguntas. Adicione uma pergunta para disponibilizá-lo na aula.</p>
                           )}
                         </div>
                       </div>
@@ -1152,7 +1146,7 @@ export default function CourseEditorModal({
                 </div>
               ) : enrolledStudents.length === 0 ? (
                 <div className="py-12 text-center text-xs font-mono text-neutral-400 border border-dashed border-gray-250 dark:border-ink-800/60 rounded-2xl">
-                  Ainda não existem juristas matriculados nesta especialização. Matricule formandos acima!
+                  Ainda não há alunos matriculados neste curso. Use a ação acima para adicionar alunos.
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1200,6 +1194,24 @@ export default function CourseEditorModal({
             onClose={() => setShowStudentSelector(false)}
           />
         )}
+
+        <ConfirmDialog
+          open={Boolean(confirmation)}
+          busy={isSaving}
+          danger={confirmation?.kind !== 'discard-lesson'}
+          title={confirmation?.kind === 'remove-student' ? 'Remover matrícula?' : confirmation?.kind === 'delete-lesson' ? 'Eliminar aula?' : 'Descartar edição da aula?'}
+          description={confirmation?.kind === 'remove-student' ? 'O aluno perderá o acesso ao curso e aos materiais associados.' : confirmation?.kind === 'delete-lesson' ? 'Esta aula e os materiais vinculados serão removidos permanentemente.' : 'As alterações não guardadas da aula serão perdidas.'}
+          confirmLabel={confirmation?.kind === 'remove-student' ? 'Remover matrícula' : confirmation?.kind === 'delete-lesson' ? 'Eliminar aula' : 'Descartar alterações'}
+          onCancel={() => setConfirmation(null)}
+          onConfirm={async () => {
+            if (!confirmation) return;
+            const action = confirmation;
+            setConfirmation(null);
+            if (action.kind === 'remove-student' && action.id) await removeStudentConfirmed(action.id);
+            if (action.kind === 'delete-lesson' && action.id) await deleteLessonConfirmed(action.id);
+            if (action.kind === 'discard-lesson') { setEditingLesson(null); setActiveTab((action.id || 'details') as typeof activeTab); }
+          }}
+        />
 
       </div>
     </div>
