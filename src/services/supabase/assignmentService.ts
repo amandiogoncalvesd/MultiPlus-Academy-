@@ -53,11 +53,13 @@ export const assignmentService = {
     due_date?: string;
     lesson_id?: string;
     status?: 'DRAFT' | 'PUBLISHED';
+    target_student_ids?: string[];
   }): Promise<Assignment> {
+    const { target_student_ids = [], ...payload } = assignment;
     const { data, error } = await supabase
       .from('assignments')
       .insert({
-        ...assignment,
+        ...payload,
         status: assignment.status || 'PUBLISHED'
       })
       .select()
@@ -66,6 +68,13 @@ export const assignmentService = {
     if (error) {
       console.error('Error creating assignment:', error);
       throw error;
+    }
+    if (target_student_ids.length) {
+      const { error: targetError } = await supabase.from('assignment_targets').insert(target_student_ids.map((student_id) => ({ assignment_id: data.id, student_id })));
+      if (targetError) {
+        await supabase.from('assignments').delete().eq('id', data.id);
+        throw targetError;
+      }
     }
     return data;
   },

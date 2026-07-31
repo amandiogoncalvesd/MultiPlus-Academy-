@@ -14,6 +14,7 @@ import {
 import { User, Course } from '../../types';
 import { assignmentService } from '../../services/supabase/assignmentService';
 import { academicService } from '../../services/supabase/academicService';
+import { supabase } from '../../lib/supabase/client';
 import { useToast } from '../ui/Toast';
 
 interface InstructorEvaluationsTabProps {
@@ -36,6 +37,8 @@ export default function InstructorEvaluationsTab({
   const [newMinGrade, setNewMinGrade] = useState(70);
   const [selectedCourseId, setSelectedCourseId] = useState('');
   const [selectedModuleId, setSelectedModuleId] = useState('');
+  const [targetMode, setTargetMode] = useState<'ALL' | 'INDIVIDUAL'>('ALL');
+  const [targetStudentId, setTargetStudentId] = useState('');
   const [creatingAssignment, setCreatingAssignment] = useState(false);
 
   // ──────── DADOS REAIS DO SUPABASE ────────
@@ -115,6 +118,12 @@ export default function InstructorEvaluationsTab({
     e.preventDefault();
     if (!newTitle.trim() || !selectedCourseId || !currentUser?.id) return;
 
+    if (targetMode === 'INDIVIDUAL') {
+      if (!targetStudentId) { toast.error('Selecione o aluno que receberá esta avaliação.'); return; }
+      const { data: enrollment, error: enrollmentError } = await supabase.from('enrollments').select('id').eq('course_id', selectedCourseId).eq('student_id', targetStudentId).eq('status', 'ACTIVE').maybeSingle();
+      if (enrollmentError || !enrollment) { toast.error('O aluno selecionado não possui matrícula ativa neste curso.'); return; }
+    }
+
     setCreatingAssignment(true);
     try {
       await assignmentService.createAssignment({
@@ -124,11 +133,14 @@ export default function InstructorEvaluationsTab({
         descricao: `Tipo: ${newType} | Nota mínima: ${newMinGrade}/100`,
         due_date: undefined,
         lesson_id: selectedModuleId || undefined,
+        target_student_ids: targetMode === 'INDIVIDUAL' && targetStudentId ? [targetStudentId] : [],
         status: 'PUBLISHED'
       });
 
       toast.success(`Avaliação "${newTitle}" publicada com sucesso!`);
       setNewTitle('');
+      setTargetMode('ALL');
+      setTargetStudentId('');
       setActiveSubTab('grade');
       loadEvaluationData();
     } catch (err: any) {
@@ -456,6 +468,10 @@ export default function InstructorEvaluationsTab({
                       ))}
                     </select>
                   </div>
+                </div>
+
+                <div className="rounded-xl border border-gray-150 bg-cream-200 p-3 dark:border-ink-750 dark:bg-ink-800">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end"><label className="flex-1 text-[9px] font-mono font-bold uppercase tracking-wider text-neutral-400">Destinatários<select value={targetMode} onChange={(event) => setTargetMode(event.target.value as 'ALL' | 'INDIVIDUAL')} className="mt-1.5 w-full rounded-lg border border-gray-150 bg-white p-2 text-xs normal-case text-slate-800 dark:border-ink-750 dark:bg-ink-900 dark:text-cream-100"><option value="ALL">Toda a turma do curso</option><option value="INDIVIDUAL">Um aluno específico</option></select></label>{targetMode === 'INDIVIDUAL' && <label className="flex-1 text-[9px] font-mono font-bold uppercase tracking-wider text-neutral-400">Aluno<select required value={targetStudentId} onChange={(event) => setTargetStudentId(event.target.value)} className="mt-1.5 w-full rounded-lg border border-gray-150 bg-white p-2 text-xs normal-case text-slate-800 dark:border-ink-750 dark:bg-ink-900 dark:text-cream-100"><option value="">Selecionar aluno</option>{students.map(student => <option key={student.id} value={student.id}>{student.firstName} {student.lastName} · {student.email}</option>)}</select></label>}</div><p className="mt-2 text-[10px] leading-relaxed text-neutral-400">Avaliações individuais aparecem somente em Tarefas para o aluno selecionado; avaliações de turma são disponibilizadas aos alunos matriculados.</p>
                 </div>
 
                 <button
