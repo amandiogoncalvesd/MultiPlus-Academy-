@@ -69,6 +69,7 @@ import InstructorShell from './instructor/InstructorShell';
 import InstructorSidebar, { InstructorTab } from './instructor/InstructorSidebar';
 import InstructorTopbar from './instructor/InstructorTopbar';
 import InstructorProfilePage from './instructor/InstructorProfilePage';
+import InstructorNotificationPopover from './instructor/InstructorNotificationPopover';
 
 interface InstructorPortalProps {
   setCurrentPage: (page: PageId) => void;
@@ -619,92 +620,11 @@ export default function InstructorPortal({
 
           {/* TAB 9: EMISSÃO DIPLOMAS */}
           {activeTab === 'certificados' && (
-            <div className={`p-6 rounded-3xl text-left space-y-6 ${cardThemeClass}`}>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                
-                {/* Visual diploma view templates (Gold Styled, Neo-Skeuomorphic) */}
-                <div className="lg:col-span-8 p-6 sm:p-10 bg-cream-100 dark:bg-ink-900/60 border-8 border-double border-gold-600/80 rounded-3xl shadow-xl space-y-6 text-center select-none relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gold-600/5 rounded-bl-full pointer-events-none" />
-                  
-                  <div className="space-y-1.5">
-                    <img
-                      src="/brand/multiplus-academy-logo-original.png"
-                      alt="MultiPlus Logo"
-                      className="h-14 w-auto mx-auto object-contain"
-                    />
-                    <h5 className="font-mono text-4xs tracking-widest text-gold-600 font-bold">MULTIPLUS ACADEMY • ANGOLA</h5>
-                    <h3 className="font-serif font-black text-slate-800 dark:text-cream-100 text-lg sm:text-xl m-0">CERTIFICADO DE MÉRITO ACADÉMICO</h3>
-                  </div>
-
-                  <p className="text-2xs text-neutral-400 leading-relaxed font-serif italic max-w-lg mx-auto">
-                    Certificamos por via deste carimbo de modulação fiscal que o formando outorgado concluiu satisfatoriamente todas as 72 horas letivas teóricas e simulacros práticos orais correspondentes ao programa intensivo.
-                  </p>
-
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-mono text-neutral-400 block">NOME DO MERECEDOR JURISTA</span>
-                    <span className="font-serif font-black text-ink-900 dark:text-cream-100 text-md sm:text-lg block underline decoration-[#BB8533] decoration-2">
-                      Dr. António Ferreira Carvalho
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 pt-4 border-t border-gray-100 dark:border-ink-800 max-w-md mx-auto text-center font-mono">
-                    <div>
-                      <span className="text-[8px] text-neutral-400 block uppercase">Avaliação</span>
-                      <span className="font-extrabold text-slate-850 dark:text-cream-200 text-2xs block">92 / 100</span>
-                    </div>
-                    <div>
-                      <span className="text-[8px] text-neutral-400 block uppercase">Código Hash</span>
-                      <span className="font-extrabold text-slate-850 dark:text-cream-200 text-[9px] block text-gold-600">MPA-2026-UNLOCKED-PER_</span>
-                    </div>
-                    <div>
-                      <span className="text-[8px] text-neutral-400 block uppercase">Diretora</span>
-                      <span className="font-extrabold text-ink-900 dark:text-cream-100 text-3xs block">Esmeralda Sumbelelo</span>
-                    </div>
-                  </div>
-
-                  {/* Mock QR Code representation */}
-                  <div className="pt-2 flex flex-col items-center space-y-1.5">
-                    <div className="p-2 border border-gray-200 dark:border-ink-800 bg-cream-100 dark:bg-ink-950 inline-block rounded-xl shadow-inner">
-                      <QrCode className="text-slate-800 dark:text-cream-100" size={54} />
-                    </div>
-                    <span className="text-[8px] font-mono text-neutral-400 uppercase tracking-widest block font-black">Scan to Validate Registry Authenticity</span>
-                  </div>
-
-                </div>
-
-                {/* Validation verification center right column */}
-                <div className="lg:col-span-4 space-y-5">
-                  <div className="bg-gray-55 dark:bg-ink-900/40 p-5 rounded-3xl border border-gray-150 dark:border-ink-800/60 space-y-4">
-                    <h4 className="font-serif font-bold text-ink-900 dark:text-cream-100 text-xs m-0 border-b pb-2">Validação Fiscal de Chaves</h4>
-                    <form onSubmit={testValidateCertificate} className="space-y-3">
-                      <input
-                        type="text"
-                        required
-                        placeholder="Insira código hash (Ex: MPA-2026-UNLOCKED-PER_)..."
-                        value={inputHashVerify}
-                        onChange={(e) => setInputHashVerify(e.target.value)}
-                        className="w-full p-2.5 bg-cream-100 dark:bg-ink-900 border dark:border-ink-800 rounded text-xs select-text text-center text-slate-800 dark:text-cream-100 font-mono font-bold focus:outline-none focus:border-gold-600"
-                      />
-                      <button
-                        type="submit"
-                        className="w-full py-2 bg-ink-900 dark:bg-gold-600 text-cream-100 dark:text-slate-950 border-0 rounded text-3xs font-mono font-bold uppercase transition-all cursor-pointer"
-                      >
-                        Autenticar Código
-                      </button>
-                    </form>
-
-                    {hashResultText && (
-                      <div className="p-3 bg-cream-100 dark:bg-ink-900 border dark:border-ink-800 rounded text-2xs font-mono text-ink-900 dark:text-cream-100 font-bold leading-normal">
-                        {hashResultText}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
+            <section className={`mx-auto max-w-4xl rounded-2xl p-5 text-left sm:p-6 ${cardThemeClass}`}>
+              <p className="text-[9px] font-mono font-bold uppercase tracking-widest text-gold-600">Credenciais acadêmicas</p>
+              <div className="mt-2 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="font-serif text-xl font-black text-ink-900 dark:text-cream-100">Emitir certificado</h2><p className="mt-2 max-w-xl text-xs leading-relaxed text-neutral-400">Emita certificados a partir dos dados reais de aluno, curso e conclusão. Os PDFs são tratados pelo fluxo privado de documentos da MultiPlus.</p></div><button onClick={() => { setPreselectedStudentId(''); setShowCertificateIssueModal(true); }} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-gold-600 px-4 text-xs font-mono font-bold uppercase text-ink-900 hover:bg-[#E2B755]"><Award size={15}/>Emitir certificado</button></div>
+              <div className="mt-6 rounded-xl border border-dashed border-gray-150 p-6 text-center dark:border-ink-800"><QrCode className="mx-auto text-gold-600" size={22}/><h3 className="mt-3 text-sm font-semibold text-ink-900 dark:text-cream-100">Sem modelo fictício de certificado</h3><p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-neutral-400">Certificados emitidos aparecerão no registro institucional e poderão ser verificados pelo código oficial.</p></div>
+            </section>
           )}
 
           {/* TAB 10: AGENDA LETIVA */}
@@ -804,6 +724,8 @@ export default function InstructorPortal({
             </motion.div>
           </AnimatePresence>
     </InstructorShell>
+
+      {showNotificationsMenu && <InstructorNotificationPopover userId={currentUser?.id} notifications={notifications} onChange={setNotifications} onClose={() => setShowNotificationsMenu(false)} />}
 
       {showCertificateIssueModal && (
         <CertificateIssueModal
