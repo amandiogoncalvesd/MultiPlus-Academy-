@@ -45,7 +45,7 @@ export default function AdminSidebar({ activeTab, isOpen, user, onClose, onNavig
         <div className="flex h-[64px] items-center justify-between border-b border-white/[0.08] px-5">
           <div className="flex items-center gap-2.5">
             <img
-              src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fondo_ojals8.png"
+              src="/brand/multiplus-academy-logo-original.png"
               alt="MultiPlus Academy"
               className="h-8 w-auto object-contain"
             />

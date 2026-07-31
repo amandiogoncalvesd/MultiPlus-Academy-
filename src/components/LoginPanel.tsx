@@ -89,7 +89,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
             <div className="space-y-6 text-left">
               <div className="flex flex-col items-center text-center pb-4 border-b border-slate-100">
                 <img
-                  src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520965/multiplus-academy-logo-com-fundo-branco_wy9sw4.jpg"
+                  src="/brand/multiplus-academy-logo-original.png"
                   alt="MultiPlus Academy"
                   className="h-20 w-auto object-contain rounded-xl mb-4 p-1 border border-slate-200 bg-white"
                 />

@@ -354,7 +354,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-[#0A2E5D] border border-[#C89B3C]/30 rounded-lg flex items-center justify-center">
                         <img 
-                          src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png" 
+                          src="/brand/multiplus-academy-logo-original.png"
                           alt="Logo MultiPlus" 
                           className="h-8 w-auto object-contain block"
                         />

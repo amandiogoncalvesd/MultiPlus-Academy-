@@ -629,7 +629,7 @@ export default function InstructorPortal({
                   
                   <div className="space-y-1.5">
                     <img
-                      src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520970/multiplus-academy-logo-sem-fundo_d7gqbs.png"
+                      src="/brand/multiplus-academy-logo-original.png"
                       alt="MultiPlus Logo"
                       className="h-14 w-auto mx-auto object-contain"
                     />

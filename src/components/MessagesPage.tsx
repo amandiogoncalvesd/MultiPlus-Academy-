@@ -67,7 +67,7 @@ export default function MessagesPage({ setCurrentPage, previousDashboardPage }: 
         {/* Brand center label */}
         <div className="hidden md:flex items-center gap-2">
           <img
-            src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png"
+            src="/brand/multiplus-academy-logo-original.png"
             alt="MultiPlus Logo"
             className="h-6 w-auto object-contain"
           />

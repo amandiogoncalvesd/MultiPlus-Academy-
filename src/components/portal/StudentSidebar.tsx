@@ -78,7 +78,7 @@ export default function StudentSidebar({
         <div className="flex items-center justify-between px-5 h-[64px] border-b border-white/[0.08]">
           <button onClick={() => setActiveTab('dashboard')} className="flex items-center gap-2.5 group">
             <img
-              src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png"
+              src="/brand/multiplus-academy-logo-original.png"
               alt="MultiPlus Academy"
               className="h-8 w-auto object-contain"
             />

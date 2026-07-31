@@ -207,7 +207,7 @@ export default function App() {
                 {/* Visual shimmer background */}
                 <div className="absolute inset-0 bg-[#C89B3C]/10 rounded-full blur-xl animate-pulse" />
                 <img
-                  src="https://res.cloudinary.com/deeki0eou/image/upload/v1782520964/multiplus-academy-logotipo-dourado-sem-fundo_ojals8.png"
+                  src="/brand/multiplus-academy-logo-original.png"
                   alt="MultiPlus Academy"
                   className="h-28 w-auto object-contain relative z-10"
                 />
