@@ -195,25 +195,29 @@ export default function StudentTasksTab({ userId }: StudentTasksTabProps) {
             <h3 className="text-lg font-serif font-black text-ink-900 dark:text-cream-100 m-0">Minhas Tarefas Académicas</h3>
           </div>
 
-          <div className="flex gap-1 border border-gray-150 dark:border-ink-850 bg-cream-200 dark:bg-ink-800/60 p-1 rounded-xl relative z-10 shrink-0">
+          <div className="grid w-full grid-cols-3 gap-1 rounded-xl border border-gray-150 bg-cream-200 p-1 dark:border-ink-850 dark:bg-ink-800/60 sm:w-auto" role="tablist" aria-label="Estado das tarefas">
             {(['PENDING', 'COMPLETED', 'OVERDUE'] as const).map(tab => (
               <button
                 key={tab}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab}
+                aria-controls="student-tasks-list"
                 onClick={() => setActiveTab(tab)}
-                className={`px-3 py-1.5 rounded-lg text-3xs font-mono font-bold uppercase transition-all whitespace-nowrap border-0 cursor-pointer ${
-                  activeTab === tab 
-                    ? 'bg-gold-600 text-cream-100 shadow-xs' 
-                    : 'text-neutral-400 hover:text-neutral-500 dark:text-cream-200 dark:hover:text-cream-100'
+                className={`min-w-0 rounded-lg px-1.5 py-2 text-center text-[9px] font-mono font-bold uppercase leading-tight transition-all sm:px-3 sm:text-3xs ${
+                  activeTab === tab
+                    ? 'bg-gold-600 text-cream-100 shadow-xs'
+                    : 'text-neutral-500 hover:text-neutral-700 dark:text-cream-200 dark:hover:text-cream-100'
                 }`}
               >
-                {tab === 'PENDING' ? 'Pendentes' : tab === 'COMPLETED' ? 'Concluídas' : 'Em Atraso'}
+                {tab === 'PENDING' ? 'Pendentes' : tab === 'COMPLETED' ? 'Concluídas' : 'Em atraso'}
               </button>
             ))}
           </div>
         </div>
 
         {/* Display tasks mapping */}
-        <div className="space-y-3">
+        <div id="student-tasks-list" role="tabpanel" className="space-y-3">
           {loading ? (
             <div className="py-16 bg-cream-100 dark:bg-ink-900 rounded-3xl border border-gray-150 dark:border-ink-800/60 text-center text-neutral-400 font-mono text-xs flex flex-col items-center justify-center gap-2">
               <Loader2 className="w-6 h-6 animate-spin text-gold-600" />
@@ -244,7 +248,7 @@ export default function StudentTasksTab({ userId }: StudentTasksTabProps) {
                     </span>
                     {task.status === 'PENDING' && (
                       <span className="text-[9px] font-mono text-amber-600 dark:text-[#E2B755] font-bold">
-                        ⏱ {task.dueDate ? `EXPIRA EM: ${task.dueDate}` : 'Sem prazo definido'}
+                        {task.dueDate ? `PRAZO: ${task.dueDate}` : 'Sem prazo definido'}
                       </span>
                     )}
                   </div>
@@ -262,7 +266,7 @@ export default function StudentTasksTab({ userId }: StudentTasksTabProps) {
                   {task.feedback && (
                     <div className="mt-3 p-3 bg-cream-250 dark:bg-ink-800 border border-gray-150 dark:border-ink-750 rounded-xl space-y-1">
                       <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-cream-200/60">
-                        <span>AURA DE CORREÇÃO DOCENTE:</span>
+                        <span>FEEDBACK DO DOCENTE</span>
                         <span className="font-bold text-gold-600">{task.feedback.score} / 100</span>
                       </div>
                       <p className="text-2xs text-slate-600 dark:text-cream-100/70 italic m-0">"{task.feedback.text}"</p>

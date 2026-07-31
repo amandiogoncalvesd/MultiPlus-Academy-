@@ -64,6 +64,28 @@ export default function StudentTopbar({
   handleGlobalSearchSubmit,
   cardThemeClass
 }: StudentTopbarProps) {
+  const notificationRegionRef = React.useRef<HTMLDivElement>(null);
+  const profileRegionRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const dismissFloatingPanels = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (isNotificationsOpen && !notificationRegionRef.current?.contains(target)) setIsNotificationsOpen(false);
+      if (isUserMenuOpen && !profileRegionRef.current?.contains(target)) setIsUserMenuOpen(false);
+    };
+    const dismissWithEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setIsNotificationsOpen(false);
+      setIsUserMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', dismissFloatingPanels);
+    document.addEventListener('keydown', dismissWithEscape);
+    return () => {
+      document.removeEventListener('pointerdown', dismissFloatingPanels);
+      document.removeEventListener('keydown', dismissWithEscape);
+    };
+  }, [isNotificationsOpen, isUserMenuOpen, setIsNotificationsOpen, setIsUserMenuOpen]);
+
   return (
     <header className={`min-h-16 px-3 sm:px-6 border-b flex items-center justify-between sticky top-0 z-30 transition-colors ${
       isHighContrast ? 'bg-black border-yellow-500 text-yellow-300' : themeMode === 'dark' ? 'bg-ink-900 border-ink-800 text-cream-100' : 'bg-white border-slate-200/60 text-slate-800'
@@ -72,7 +94,7 @@ export default function StudentTopbar({
       <div className="flex items-center gap-4">
         <button 
           onClick={() => setIsMobileSidebarOpen(true)}
-          className="lg:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-all bg-transparent border-0 cursor-pointer text-current"
+          className="flex h-10 w-10 items-center justify-center rounded-lg bg-transparent text-current transition-all hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
           aria-label="Abrir lateral"
         >
           <Menu size={20} />
@@ -112,7 +134,7 @@ export default function StudentTopbar({
         {/* Accessibility swift switch */}
         <button 
           onClick={toggleTheme}
-          className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-gold-600 border-0 cursor-pointer"
+          className="flex h-10 w-10 items-center justify-center rounded-full border-0 bg-slate-100 text-gold-600 transition-all hover:bg-slate-200 dark:bg-slate-800"
           title="Mudar visual cor" aria-label="Alternar tema"
         >
           {themeMode === 'light' ? <Moon size={14} /> : <Sun size={14} />}
@@ -121,7 +143,7 @@ export default function StudentTopbar({
         {/* Quick Access Messages Page icon with unread badge */}
         <button
           onClick={() => setCurrentPage('messages')}
-          className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
+          className="relative flex h-10 w-10 items-center justify-center rounded-full border-0 bg-slate-100 text-ink-900 transition-all hover:bg-slate-200 dark:bg-slate-800 dark:text-blue-400"
           title="Abrir Mensagens" aria-label="Abrir mensagens"
         >
           <MessageSquare size={14} className="text-gold-600" />
@@ -133,14 +155,19 @@ export default function StudentTopbar({
         </button>
 
         {/* Notification Drawer controller */}
-        <div className="relative">
+        <div ref={notificationRegionRef} className="relative">
           <button 
+            type="button"
             onClick={() => { setIsNotificationsOpen(!isNotificationsOpen); setIsUserMenuOpen(false); }}
-            className="p-2 bg-cream-200 dark:bg-slate-800 rounded-full hover:bg-gray-100 transition-all text-ink-900 dark:text-blue-400 border-0 cursor-pointer relative"
+            aria-expanded={isNotificationsOpen}
+            aria-controls="student-notifications-popover"
+            aria-haspopup="dialog"
+            aria-label={`Notificações${notifications.filter(n => !n.read).length ? `, ${notifications.filter(n => !n.read).length} não lida(s)` : ''}`}
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border-0 bg-cream-200 text-ink-900 transition-all hover:bg-gray-100 dark:bg-slate-800 dark:text-blue-400"
           >
             <Bell size={14} />
             {notifications.filter(n => !n.read).length > 0 && (
-              <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-gold-600 animate-ping" />
+              <span className="absolute right-0 top-0 h-2 w-2 rounded-full bg-gold-600 ring-2 ring-white dark:ring-ink-900" />
             )}
             {notifications.filter(n => !n.read).length > 0 && (
               <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white flex items-center justify-center text-[8px] font-bold">
@@ -152,10 +179,12 @@ export default function StudentTopbar({
           <AnimatePresence>
             {isNotificationsOpen && (
               <motion.div 
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                role="dialog" aria-label="Notificações" className={`fixed inset-x-3 top-[4.5rem] max-h-[70dvh] overflow-hidden sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 rounded-2xl p-4 shadow-2xl text-left ${cardThemeClass} z-50`}
+                exit={{ opacity: 0, y: 4 }}
+                transition={{ duration: 0.15 }}
+                id="student-notifications-popover"
+                role="dialog" aria-label="Notificações" aria-modal="false" className={`fixed inset-x-3 top-[4.5rem] max-h-[70dvh] overflow-hidden sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 rounded-2xl p-4 shadow-2xl text-left ${cardThemeClass} z-50`}
               >
                 <div className="flex justify-between items-center pb-2 border-b border-gray-100">
                   <span className="font-mono text-2xs font-bold text-neutral-400">NOTIFICAÇÕES</span>
@@ -192,10 +221,15 @@ export default function StudentTopbar({
         </div>
 
         {/* Quick Profile Dropdown Menu */}
-        <div className="relative">
+        <div ref={profileRegionRef} className="relative">
           <button 
+            type="button"
             onClick={() => { setIsUserMenuOpen(!isUserMenuOpen); setIsNotificationsOpen(false); }}
-            className="flex items-center gap-1 text-ink-900 dark:text-cream-100 font-semibold cursor-pointer border-0 bg-transparent p-0"
+            aria-expanded={isUserMenuOpen}
+            aria-controls="student-profile-popover"
+            aria-haspopup="menu"
+            aria-label="Abrir menu do perfil"
+            className="flex min-h-10 items-center gap-1 rounded-lg border-0 bg-transparent px-1 text-ink-900 transition-colors hover:bg-slate-100 dark:text-cream-100 dark:hover:bg-slate-800"
           >
             {currentUser?.avatarUrl ? (
               <img
@@ -215,9 +249,13 @@ export default function StudentTopbar({
           <AnimatePresence>
             {isUserMenuOpen && (
               <motion.div 
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
+                exit={{ opacity: 0, y: 4 }}
+                transition={{ duration: 0.15 }}
+                id="student-profile-popover"
+                role="menu"
+                aria-label="Menu do perfil"
                 className={`absolute right-0 mt-2 w-48 rounded-xl p-2 shadow-xl text-left ${cardThemeClass} z-50`}
               >
                 {[
