@@ -22,7 +22,7 @@ interface Props {
 
 const labels: Record<AdminTab, string> = {
   dashboard: 'Visão geral',
-  utilizadores: 'Pessoas',
+  utilizadores: 'Usuários',
   cursos: 'Cursos',
   estrutura: 'Estrutura acadêmica',
   certificados: 'Certificados',
@@ -44,7 +44,7 @@ export default function AdminTopbar(p: Props) {
       <div className="flex min-w-0 items-center gap-3">
         <button
           onClick={p.onOpenSidebar}
-          className="rounded-lg p-2 hover:bg-white/[0.06] lg:hidden transition-colors"
+          className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.06] lg:hidden"
           aria-label="Abrir navegação"
         >
           <Menu size={20} />
@@ -73,14 +73,14 @@ export default function AdminTopbar(p: Props) {
       <div className="flex items-center gap-1">
         <button
           onClick={p.onToggleTheme}
-          className="rounded-lg p-2 text-accent hover:bg-accent/10 transition-colors"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-accent transition-colors hover:bg-accent/10"
           aria-label="Alternar tema"
         >
           {p.isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
         </button>
         <button
           onClick={p.onMessages}
-          className="relative rounded-lg p-2 hover:bg-white/[0.06] transition-colors"
+          className="relative flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-white/[0.06]"
           aria-label="Abrir mensagens"
         >
           <MessageSquare size={17} />
@@ -92,7 +92,7 @@ export default function AdminTopbar(p: Props) {
         </button>
         <button
           onClick={p.onNotifications}
-          className="relative rounded-lg p-2 hover:bg-white/[0.06] transition-colors"
+          className="relative flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-white/[0.06]"
           aria-label="Abrir avisos"
         >
           <Bell size={17} />

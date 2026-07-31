@@ -47,7 +47,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { action, email, password, nome_completo, role, id, status } = await req.json()
+    const { action, email, password, nome_completo, telefone, biografia, role, id, status } = await req.json()
 
     if (action === 'create') {
       const { data, error } = await supabaseAdmin.auth.admin.createUser({
@@ -58,12 +58,20 @@ serve(async (req) => {
       })
 
       if (error) throw error
+      // The public registration trigger defaults every account to ALUNO.
+      // Only this admin-only function may assign an institutional role.
+      const { error: accountError } = await supabaseAdmin.from('users').update({ role, telefone: telefone || null }).eq('id', data.user.id)
+      if (accountError) throw accountError
+      if (biografia) {
+        const { error: profileError } = await supabaseAdmin.from('profiles').upsert({ user_id: data.user.id, biografia }, { onConflict: 'user_id' })
+        if (profileError) throw profileError
+      }
       await supabaseAdmin.from('audit_logs').insert({
         actor_id: user.id,
         action: 'USER_CREATED',
         entity_type: 'user',
         entity_id: data.user.id,
-        metadata: { role, email }
+        metadata: { role, email, hasPhone: Boolean(telefone), hasBio: Boolean(biografia) }
       })
       return new Response(JSON.stringify({ data }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

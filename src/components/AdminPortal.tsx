@@ -181,6 +181,8 @@ export default function AdminPortal({
     try {
       // 1. Fetch Users
       const { data: uData } = await supabase.from('users').select('*');
+      const { data: profileData } = await supabase.from('profiles').select('user_id, biografia');
+      const bios = new Map((profileData || []).map((profile: any) => [profile.user_id, profile.biografia || '']));
       if (uData && uData.length > 0) {
         const mappedUsers = uData.map((u: any) => ({
           id: u.id,
@@ -190,6 +192,8 @@ export default function AdminPortal({
           role: (u.role || 'ALUNO') as UserRole,
           status: u.status || 'ACTIVE',
           phone: u.telefone || '',
+          bio: bios.get(u.id) || '',
+          createdAt: u.created_at || '',
           streak: 0,
           longestStreak: 0,
           totalHoursLearned: 0,

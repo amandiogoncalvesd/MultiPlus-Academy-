@@ -15,7 +15,7 @@ interface Props {
 
 const items: Array<{ id: AdminTab | 'messages'; label: string; icon: React.ReactNode }> = [
   { id: 'dashboard', label: 'Visão geral', icon: <Activity size={17} /> },
-  { id: 'utilizadores', label: 'Pessoas', icon: <Users size={17} /> },
+  { id: 'utilizadores', label: 'Usuários', icon: <Users size={17} /> },
   { id: 'cursos', label: 'Cursos', icon: <BookOpen size={17} /> },
   { id: 'estrutura', label: 'Estrutura acadêmica', icon: <CalendarDays size={17} /> },
   { id: 'certificados', label: 'Certificados', icon: <FileCheck2 size={17} /> },
