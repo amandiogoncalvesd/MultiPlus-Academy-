@@ -115,27 +115,26 @@ export const COURSES_LIST: Course[] = [
 export const MAIN_INSTRUCTOR: Instructor = {
   id: 'esmeralda-sumbelelo',
   name: 'Esmeralda Bruno Sumbelelo',
-  role: 'Diretora Pedagógica & Formadora de Inglês Jurídico',
+  role: 'Formadora',
   credentials: [
     'Licenciada em Linguística / Inglês',
-    '15+ Anos de Experiência Docente e Tradução',
-    'Especialista em Formação Académica e Profissional Corporativa',
-    'Ex-Formadora Sénior na FISK Angola e ISCED',
-    'Membro Ativo da ATIA (Associação de Tradutores e Intérpretes de Angola)',
-    'Certificações Internacionais de Competência Linguística e Metodologia Avançada'
+    '15 anos dedicados ao ensino, com experiência na FISK e no ISCED',
+    'Capacitações em metodologias de ensino pelas Embaixadas Americana e Britânica, além da ANELTA',
+    'Membro da ATIA (Associação dos Tradutores e Intérpretes de Angola) com Cédula Profissional'
   ],
-  bio: 'A Professora Esmeralda Bruno Sumbelelo é uma das referências do ensino de inglês técnico e tradução jurídica em Angola. Ao longo de mais de 15 anos de atuação profissional, liderou a capacitação linguística e jurídica de quadros juniores e seniores de grandes escritórios de advogados, banca, administração pública e operadoras petrolíferas nacionais e transnacionais. É conhecida pela sua metodologia dinâmica, que cruza os sistemas de Civil Law aplicados em Angola e Common Law usados em transações internacionais.',
+  bio: 'Licenciada em Linguística / Inglês, com 15 anos dedicados ao ensino. Possui experiência profissional em instituições como a FISK e o ISCED, capacitações internacionais em metodologias de ensino pelas Embaixadas Americana e Britânica e pela ANELTA. É membro da ATIA, com Cédula Profissional, e possui vivência linguística e cultural em Inglaterra, Brasil, África do Sul, Namíbia e Zimbabué.',
   experienceYears: 15,
   specializations: [
-    'Legal English Drafting',
-    'Comparative Law Terminology',
-    'Legal Translation (Português - Inglês)',
-    'Professional Advocacy Communication'
+    'Metodologias de ensino',
+    'Ensino de Inglês',
+    'Vivência linguística e cultural internacional'
   ],
   institutions: [
-    'FISK Escolas de Línguas',
-    'ISCED (Instituto Superior de Ciências da Educação)',
-    'ATIA (Associação de Tradutores e Intérpretes)'
+    'FISK',
+    'ISCED',
+    'Embaixadas Americana e Britânica',
+    'ANELTA',
+    'ATIA'
   ],
   photo: 'https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg'
 };
@@ -205,26 +204,5 @@ Estudar vocabulário prático como "arbitral award" (sentença arbitral), "inter
       role: 'Formadora MultiPlus',
       avatar: 'https://res.cloudinary.com/deeki0eou/image/upload/v1782520966/multiplus-academy-esmeralda-bruno-sumbelelo_qtuere.jpg'
     }
-  }
-];
-
-export const TESTIMONIALS_PLACEHOLDERS = [
-  {
-    id: 't-1',
-    authorName: 'Dr. Francisco K. Costa',
-    authorRole: 'Advogado Associado Sénior - Gabinete de Luanda',
-    testimonyFeedback: 'Espaço reservado para o testemunho oficial do aluno MultiPlus Academy. A recolha e validação académica do feedback real dos juristas angolanos que frequentam este curso está a ser processada pela nossa equipe pedagógica.'
-  },
-  {
-    id: 't-2',
-    authorName: 'Dra. Maria Celeste Ngola',
-    authorRole: 'Consultora de Compliance de Petróleo e Gás no Huambo',
-    testimonyFeedback: 'Espaço reservado para o testemunho oficial do aluno MultiPlus Academy. A experiência de formação corporativa sobre regulação aduaneira e conteúdo local em Angola será refletida neste canal de avaliações estruturadas.'
-  },
-  {
-    id: 't-3',
-    authorName: 'Dr. André Tomás Luvualo',
-    authorRole: 'Diretor Jurídico Interno - Setor de Logística e Portos',
-    testimonyFeedback: 'Espaço reservado para o testemunho oficial do aluno MultiPlus Academy. Depoimento académico focado no impacto prático duma formação em inglês jurídico na negociação de contratos de transporte marítimo.'
   }
 ];

@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { PRINCIPAL_COURSE, TESTIMONIALS_PLACEHOLDERS, MAIN_INSTRUCTOR, BLOG_POSTS } from '../data';
+import { PRINCIPAL_COURSE, MAIN_INSTRUCTOR, BLOG_POSTS } from '../data';
 import { PageId } from '../types';
 import StarBorder from './ui/StarBorder';
 import TextType from './ui/TextType';
@@ -17,12 +16,10 @@ import {
   BookOpen, 
   CheckCircle, 
   ChevronRight, 
-  MessageSquare,
   BookMarked,
   Info,
   Phone,
   Mail,
-  ChevronLeft,
   Sparkles,
   Globe,
   GraduationCap,
@@ -36,16 +33,6 @@ interface HomePanelProps {
 }
 
 export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelProps) {
-  const [activeTestimony, setActiveTestimony] = useState(0);
-
-  const nextTestimony = () => {
-    setActiveTestimony((prev) => (prev + 1) % TESTIMONIALS_PLACEHOLDERS.length);
-  };
-
-  const prevTestimony = () => {
-    setActiveTestimony((prev) => (prev - 1 + TESTIMONIALS_PLACEHOLDERS.length) % TESTIMONIALS_PLACEHOLDERS.length);
-  };
-
   const handleWhatsApp = () => {
     window.open(`https://wa.me/244956449084?text=Ol%C3%A1%2C+gostaria+de+saber+mais+sobre+as+forma%C3%A7%C3%B5es+de+ingl%C3%AAs+da+MultiPlus+Academy.`, '_blank');
   };
@@ -884,129 +871,6 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
             </div>
 
           </StarBorder>
-
-        </div>
-      </section>
-
-      {/* 6. TESTEMUNHOS SECTION (Sliding placehold structure) */}
-      <section className="py-24 relative overflow-hidden bg-white">
-        
-        {/* Decorative backdrop light blur */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#C89B3C]/5 rounded-full blur-[110px] pointer-events-none" />
-
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          
-          <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C] mb-2 block animate-pulse">Avaliação Pedagógica</span>
-          <h3 className="text-3xl sm:text-4xl font-serif font-black text-slate-900 mb-4">Estrutura de Testemunhos</h3>
-          <p className="text-sm text-[#1C1C1C]/75 max-w-xl mx-auto mb-16 font-sans">
-            Para garantir a integridade absoluta da nossa reputação, as aspas abaixo representam canais estruturados para o testemunho real das próximas turmas.
-          </p>
-
-          <div className="relative min-h-[220px] max-w-3xl mx-auto">
-            
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTestimony}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.4 }}
-              >
-                <StarBorder
-                  as="div"
-                  speed="7s"
-                  thickness={1.5}
-                  className="rounded-3xl overflow-hidden shadow-3xs"
-                  innerClassName="bg-white p-8 sm:p-12 text-left relative w-full h-full"
-                >
-                  <div className="absolute top-6 right-8 text-gray-200 font-serif text-8xl leading-none font-black select-none pointer-events-none">
-                    “
-                  </div>
-
-                  <div className="space-y-6 relative z-10">
-                    <div className="inline-block">
-                      <StarBorder
-                        as="div"
-                        speed="4s"
-                        thickness={1}
-                        className="rounded"
-                        innerClassName="inline-flex items-center gap-1.5 px-3 py-1 bg-[#C89B3C]/10 text-[#C89B3C] text-[10px] font-mono uppercase font-bold tracking-wide"
-                      >
-                        <MessageSquare size={11} />
-                        Avaliação em Validação Letiva
-                      </StarBorder>
-                    </div>
-
-                    <blockquote className="font-serif italic text-sm sm:text-base text-slate-700 leading-relaxed m-0">
-                      "{TESTIMONIALS_PLACEHOLDERS[activeTestimony].testimonyFeedback}"
-                    </blockquote>
-
-                    <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
-                      <div>
-                        <cite className="not-italic font-serif font-bold text-slate-950 text-base block">
-                          {TESTIMONIALS_PLACEHOLDERS[activeTestimony].authorName}
-                        </cite>
-                        <span className="text-xs text-[#C89B3C] font-semibold block mt-0.5 font-sans">
-                          {TESTIMONIALS_PLACEHOLDERS[activeTestimony].authorRole}
-                        </span>
-                      </div>
-
-                      <StarBorder
-                        as="div"
-                        speed="5s"
-                        thickness={1}
-                        className="rounded-full overflow-hidden"
-                        innerClassName="h-9 w-9 bg-slate-50 flex items-center justify-center text-[#C89B3C] p-0"
-                      >
-                        <Award size={16} />
-                      </StarBorder>
-                    </div>
-                  </div>
-                </StarBorder>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Slider navigation controls */}
-            <div className="flex justify-center gap-4 mt-8 relative z-10">
-              <StarBorder
-                as="button"
-                onClick={prevTestimony}
-                speed="4s"
-                thickness={1}
-                className="rounded-full overflow-hidden shadow-3xs cursor-pointer"
-                innerClassName="p-3 bg-white text-slate-800 flex items-center justify-center"
-                aria-label="Depoimento Anterior"
-              >
-                <ChevronLeft size={16} />
-              </StarBorder>
-              
-              <div className="flex items-center gap-2">
-                {TESTIMONIALS_PLACEHOLDERS.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveTestimony(i)}
-                    className={`w-2.5 h-2.5 rounded-full transition-all ${
-                      activeTestimony === i ? 'bg-[#C89B3C] w-6' : 'bg-slate-200 hover:bg-slate-300'
-                    }`}
-                    aria-label={`Ir para slide ${i + 1}`}
-                  />
-                ))}
-              </div>
-
-              <StarBorder
-                as="button"
-                onClick={nextTestimony}
-                speed="4s"
-                thickness={1}
-                className="rounded-full overflow-hidden shadow-3xs cursor-pointer"
-                innerClassName="p-3 bg-white text-slate-800 flex items-center justify-center"
-                aria-label="Depoimento Seguinte"
-              >
-                <ChevronRight size={16} />
-              </StarBorder>
-            </div>
-
-          </div>
 
         </div>
       </section>
