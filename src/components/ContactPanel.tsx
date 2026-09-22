@@ -11,6 +11,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { ACADEMY_EMAIL, buildContactEmail } from '../services/supabase/applicationService';
+import { supabase } from '../lib/supabase/client';
 
 interface ContactPanelProps {
   setCurrentPage: (page: PageId) => void;
@@ -35,21 +36,42 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
     'Formação': 'Candidaturas de Docência Académica',
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitStatus('loading');
 
-    // Entrega real: prepara e abre um e-mail endereçado à secretaria da
-    // MultiPlus Academy com todos os dados preenchidos no formulário.
-    const { url } = buildContactEmail({
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      subject: subjectLabels[formData.subject] ?? formData.subject,
-      message: formData.message,
-    });
-    setPreparedEmailUrl(url);
-    window.location.href = url;
+    const subjectLabel = subjectLabels[formData.subject] ?? formData.subject;
+    let deliveredByServer = false;
+    try {
+      // Entrega principal: Edge Function notify-application (Resend) envia o
+      // e-mail diretamente à secretaria da MultiPlus Academy.
+      const { error } = await supabase.functions.invoke('notify-application', {
+        body: {
+          kind: 'contact',
+          payload: {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            subject: subjectLabel,
+            message: formData.message,
+          },
+        },
+      });
+      if (error) throw error;
+      deliveredByServer = true;
+    } catch {
+      // Reserva: prepara um e-mail no cliente do visitante, endereçado à secretaria.
+      const { url } = buildContactEmail({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        subject: subjectLabel,
+        message: formData.message,
+      });
+      setPreparedEmailUrl(url);
+      window.location.href = url;
+    }
+    if (deliveredByServer) setPreparedEmailUrl('');
     setSubmitStatus('success');
     setFormData({ name: '', email: '', phone: '', subject: 'Geral', message: '' });
   };
@@ -213,10 +235,15 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                         <div className="w-16 h-16 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full flex items-center justify-center mx-auto shadow-xs animate-bounce">
                           <CheckCircle2 size={32} />
                         </div>
-                        <h3 className="text-xl font-serif font-bold text-slate-900">Mensagem Preparada!</h3>
+                        <h3 className="text-xl font-serif font-bold text-slate-900">{preparedEmailUrl ? 'Mensagem Preparada!' : 'Mensagem Enviada!'}</h3>
                         <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed font-medium">
-                          Abrimos o seu aplicativo de e-mail com a mensagem endereçada à secretaria da MultiPlus Academy
-                          (<strong>{ACADEMY_EMAIL}</strong>). Prima <strong>“Enviar”</strong> nessa janela para concluir — a coordenação letiva responderá em até 24 horas úteis.
+                          {preparedEmailUrl ? (
+                            <>Abrimos o seu aplicativo de e-mail com a mensagem endereçada à secretaria da MultiPlus Academy
+                            (<strong>{ACADEMY_EMAIL}</strong>). Prima <strong>“Enviar”</strong> nessa janela para concluir — a coordenação letiva responderá em até 24 horas úteis.</>
+                          ) : (
+                            <>A sua mensagem foi entregue diretamente à secretaria da MultiPlus Academy
+                            (<strong>{ACADEMY_EMAIL}</strong>). A coordenação letiva responderá em até 24 horas úteis.</>
+                          )}
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4">
                           {preparedEmailUrl && (

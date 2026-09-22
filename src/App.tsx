@@ -11,10 +11,9 @@ import BlogPanel from './components/BlogPanel';
 import ContactPanel from './components/ContactPanel';
 import LoginPanel from './components/LoginPanel';
 import VerifyCertificatePanel from './components/VerifyCertificatePanel';
-import { X, GraduationCap, CheckCircle2, Phone, Award, Scale, Mail } from 'lucide-react';
+import { X, GraduationCap, CheckCircle2, Phone, Award, Scale } from 'lucide-react';
 import { useAuth } from './components/auth/AuthProvider';
 import { supabase } from './lib/supabase/client';
-import { ACADEMY_EMAIL, buildApplicationEmail } from './services/supabase/applicationService';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useToast } from './components/ui/Toast';
 import LoadingSpinner from './components/ui/LoadingSpinner';
@@ -43,7 +42,6 @@ export default function App() {
   const [signUpPhone, setSignUpPhone] = useState('');
   const [signUpModality, setSignUpModality] = useState('Híbrido');
   const [signUpSuccess, setSignUpSuccess] = useState(false);
-  const [signUpEmailUrl, setSignUpEmailUrl] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Splash Screen timeout trigger
@@ -105,21 +103,31 @@ export default function App() {
 
       if (error) throw error;
 
-      // Notifica diretamente a secretaria da MultiPlus Academy por e-mail,
-      // com todos os dados necessários para concluir a inscrição do candidato.
+      // Notifica automaticamente a secretaria da MultiPlus Academy por e-mail
+      // (Edge Function notify-application + Resend), com todos os dados
+      // necessários para concluir a inscrição do candidato.
       const courseTitle = courses.find((course) => course.id === signUpCourse)?.titulo
         || courses.find((course) => course.id === signUpCourse)?.title
         || 'Curso não especificado';
-      const email = buildApplicationEmail({
-        name: signUpName,
-        email: signUpEmail,
-        phone: signUpPhone,
-        courseTitle,
-        modality: signUpModality,
-      });
-      setSignUpEmailUrl(email.url);
+      try {
+        await supabase.functions.invoke('notify-application', {
+          body: {
+            kind: 'application',
+            payload: {
+              nome_completo: signUpName,
+              email: signUpEmail,
+              telefone: signUpPhone,
+              course_title: courseTitle,
+              modalidade: signUpModality,
+            },
+          },
+        });
+      } catch (notifyError) {
+        // A candidatura já está registada e visível no painel administrativo;
+        // a notificação por e-mail não deve bloquear o fluxo do candidato.
+        console.warn('Falha ao notificar secretaria por e-mail:', notifyError);
+      }
       setSignUpSuccess(true);
-      window.location.href = email.url;
     } catch (err: any) {
       console.error('Erro ao submeter candidatura:', err);
       toast.error(`Não foi possível enviar a candidatura: ${err.message || 'falha de rede.'}`);
@@ -136,7 +144,6 @@ export default function App() {
       setSignUpName('');
       setSignUpEmail('');
       setSignUpPhone('');
-      setSignUpEmailUrl('');
     }, 300);
   };
 
@@ -383,8 +390,8 @@ export default function App() {
                         <p className="flex items-start gap-1.5">
                           <span className="font-bold text-[#0A2E5D] shrink-0">1.</span>
                           <span>
-                            Abrimos o seu aplicativo de e-mail com a candidatura pronta para envio à secretaria
-                            (<strong>{ACADEMY_EMAIL}</strong>). Prima “Enviar” nessa mensagem para notificar a administração.
+                            A secretaria da MultiPlus Academy foi notificada automaticamente por e-mail com os
+                            seus dados e verá a sua candidatura no painel administrativo.
                           </span>
                         </p>
                         <p className="flex items-start gap-1.5">
@@ -397,16 +404,7 @@ export default function App() {
                         </p>
                       </div>
 
-                      <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
-                        {signUpEmailUrl && (
-                          <button
-                            onClick={() => { window.location.href = signUpEmailUrl; }}
-                            className="w-full sm:w-auto px-8 py-3 bg-[#C89B3C] text-white hover:bg-[#B3852C] text-xs font-mono uppercase tracking-widest font-bold rounded-xl shadow-lg shadow-[#C89B3C]/20 transition-all hover:scale-[1.02] active:scale-[0.98] inline-flex items-center justify-center gap-2"
-                          >
-                            <Mail size={14} />
-                            Reabrir E-mail de Confirmação
-                          </button>
-                        )}
+                      <div className="pt-4">
                         <button
                           onClick={closeSignUpModal}
                           className="w-full sm:w-auto px-10 py-3 bg-[#0A2E5D] text-white hover:bg-[#123C73] text-xs font-mono uppercase tracking-widest font-bold rounded-xl shadow-lg shadow-blue-900/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
