@@ -1,12 +1,13 @@
-import { Activity, Bell, BookOpen, CalendarDays, ChevronRight, FileCheck2, MessageSquare, Network, Settings, Users, X, LogOut } from 'lucide-react';
+import { Activity, Bell, BookOpen, CalendarDays, ChevronRight, FileCheck2, Inbox, MessageSquare, Network, Settings, Users, X, LogOut } from 'lucide-react';
 import { User } from '../../types';
 
-export type AdminTab = 'dashboard' | 'utilizadores' | 'cursos' | 'estrutura' | 'certificados' | 'notificacoes' | 'auditoria' | 'integracoes' | 'configuracoes' | 'perfil';
+export type AdminTab = 'dashboard' | 'utilizadores' | 'candidaturas' | 'cursos' | 'estrutura' | 'certificados' | 'notificacoes' | 'auditoria' | 'integracoes' | 'configuracoes' | 'perfil';
 
 interface Props {
   activeTab: AdminTab;
   isOpen: boolean;
   user: User | null;
+  pendingApplications?: number;
   onClose: () => void;
   onNavigate: (tab: AdminTab) => void;
   onMessages: () => void;
@@ -16,6 +17,7 @@ interface Props {
 const items: Array<{ id: AdminTab | 'messages'; label: string; icon: React.ReactNode }> = [
   { id: 'dashboard', label: 'Visão geral', icon: <Activity size={17} /> },
   { id: 'utilizadores', label: 'Usuários', icon: <Users size={17} /> },
+  { id: 'candidaturas', label: 'Candidaturas', icon: <Inbox size={17} /> },
   { id: 'cursos', label: 'Cursos', icon: <BookOpen size={17} /> },
   { id: 'estrutura', label: 'Estrutura acadêmica', icon: <CalendarDays size={17} /> },
   { id: 'certificados', label: 'Certificados', icon: <FileCheck2 size={17} /> },
@@ -26,7 +28,7 @@ const items: Array<{ id: AdminTab | 'messages'; label: string; icon: React.React
   { id: 'configuracoes', label: 'Configurações', icon: <Settings size={17} /> },
 ];
 
-export default function AdminSidebar({ activeTab, isOpen, user, onClose, onNavigate, onMessages, onSignOut }: Props) {
+export default function AdminSidebar({ activeTab, isOpen, user, pendingApplications = 0, onClose, onNavigate, onMessages, onSignOut }: Props) {
   return (
     <>
       {/* Mobile overlay */}
@@ -81,6 +83,9 @@ export default function AdminSidebar({ activeTab, isOpen, user, onClose, onNavig
               >
                 {item.icon}
                 <span className="flex-1">{item.label}</span>
+                {item.id === 'candidaturas' && pendingApplications > 0 && (
+                  <span aria-label={`${pendingApplications} candidaturas pendentes`} className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 font-mono text-[9px] font-bold text-white">{pendingApplications}</span>
+                )}
                 {active && <ChevronRight size={14} />}
               </button>
             );

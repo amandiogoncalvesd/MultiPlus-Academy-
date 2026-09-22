@@ -1,4 +1,4 @@
-import { Dispatch, FormEvent, ReactNode, SetStateAction, useMemo, useState } from 'react';
+import { Dispatch, FormEvent, ReactNode, SetStateAction, useEffect, useMemo, useState } from 'react';
 import { ChevronRight, Eye, KeyRound, Mail, Phone, Plus, Search, ShieldAlert, UserCheck, Users, X } from 'lucide-react';
 import { User, UserRole } from '../../types';
 import { supabase } from '../../lib/supabase/client';
@@ -6,15 +6,30 @@ import { useToast } from '../ui/Toast';
 import ConfirmDialog from './ConfirmDialog';
 
 type AdminUser = User & { bio?: string; createdAt?: string };
-interface Props { users: AdminUser[]; onRefresh: () => Promise<void> | void; }
+interface Props {
+  users: AdminUser[];
+  onRefresh: () => Promise<void> | void;
+  /** Dados de uma candidatura usados para pré-preencher a criação de usuário. */
+  prefill?: { name: string; email: string; phone: string } | null;
+  onPrefillConsumed?: () => void;
+}
 const roleLabel: Record<UserRole, string> = { ALUNO: 'Aluno', PROFESSOR: 'Professor', ADMIN: 'Administrador' };
 const initials = (user: AdminUser) => `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'U';
 
-export default function AdminUsersPage({ users, onRefresh }: Props) {
+export default function AdminUsersPage({ users, onRefresh, prefill = null, onPrefillConsumed }: Props) {
   const toast = useToast();
   const [query, setQuery] = useState(''); const [role, setRole] = useState<'ALL' | UserRole>('ALL'); const [status, setStatus] = useState<'ALL' | 'ACTIVE' | 'SUSPENDED'>('ALL');
   const [showCreate, setShowCreate] = useState(false); const [selected, setSelected] = useState<AdminUser | null>(null); const [pending, setPending] = useState<AdminUser | null>(null); const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '', bio: '', password: '', role: 'ALUNO' as UserRole });
+
+  // Abre automaticamente o formulário de criação quando uma candidatura envia dados pré-preenchidos.
+  useEffect(() => {
+    if (!prefill) return;
+    setForm((current) => ({ ...current, name: prefill.name, email: prefill.email, phone: prefill.phone, role: 'ALUNO' }));
+    setShowCreate(true);
+    onPrefillConsumed?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefill]);
   const rows = useMemo(() => users.filter((user) => (role === 'ALL' || user.role === role) && (status === 'ALL' || user.status === status) && `${user.firstName} ${user.lastName} ${user.email} ${user.phone || ''} ${user.bio || ''}`.toLowerCase().includes(query.toLowerCase())), [users, role, status, query]);
   const counts = useMemo(() => ({ active: users.filter((u) => u.status === 'ACTIVE').length, students: users.filter((u) => u.role === 'ALUNO').length, teachers: users.filter((u) => u.role === 'PROFESSOR').length }), [users]);
 

@@ -11,9 +11,10 @@ import BlogPanel from './components/BlogPanel';
 import ContactPanel from './components/ContactPanel';
 import LoginPanel from './components/LoginPanel';
 import VerifyCertificatePanel from './components/VerifyCertificatePanel';
-import { X, GraduationCap, CheckCircle2, Phone, Award, Scale } from 'lucide-react';
+import { X, GraduationCap, CheckCircle2, Phone, Award, Scale, Mail } from 'lucide-react';
 import { useAuth } from './components/auth/AuthProvider';
 import { supabase } from './lib/supabase/client';
+import { ACADEMY_EMAIL, buildApplicationEmail } from './services/supabase/applicationService';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useToast } from './components/ui/Toast';
 import LoadingSpinner from './components/ui/LoadingSpinner';
@@ -42,6 +43,7 @@ export default function App() {
   const [signUpPhone, setSignUpPhone] = useState('');
   const [signUpModality, setSignUpModality] = useState('Híbrido');
   const [signUpSuccess, setSignUpSuccess] = useState(false);
+  const [signUpEmailUrl, setSignUpEmailUrl] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Splash Screen timeout trigger
@@ -96,13 +98,28 @@ export default function App() {
           nome_completo: signUpName,
           email: signUpEmail,
           telefone: signUpPhone,
-          course_id: signUpCourse,
+          course_id: signUpCourse || null,
           modalidade: signUpModality,
           status: 'PENDING'
         });
 
       if (error) throw error;
+
+      // Notifica diretamente a secretaria da MultiPlus Academy por e-mail,
+      // com todos os dados necessários para concluir a inscrição do candidato.
+      const courseTitle = courses.find((course) => course.id === signUpCourse)?.titulo
+        || courses.find((course) => course.id === signUpCourse)?.title
+        || 'Curso não especificado';
+      const email = buildApplicationEmail({
+        name: signUpName,
+        email: signUpEmail,
+        phone: signUpPhone,
+        courseTitle,
+        modality: signUpModality,
+      });
+      setSignUpEmailUrl(email.url);
       setSignUpSuccess(true);
+      window.location.href = email.url;
     } catch (err: any) {
       console.error('Erro ao submeter candidatura:', err);
       toast.error(`Não foi possível enviar a candidatura: ${err.message || 'falha de rede.'}`);
@@ -119,6 +136,7 @@ export default function App() {
       setSignUpName('');
       setSignUpEmail('');
       setSignUpPhone('');
+      setSignUpEmailUrl('');
     }, 300);
   };
 
@@ -353,26 +371,42 @@ export default function App() {
                       <div className="space-y-2">
                         <h4 className="text-xl font-serif font-bold text-[#0A2E5D]">Candidatura Pré-Registada!</h4>
                         <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-                          Estimado(a) formando(a), registámos com sucesso o seu pedido interesse letivo para o curso <strong>{courses.find(c => c.id === signUpCourse)?.titulo || 'Curso Selecionado'}</strong>.
+                          Estimado(a) formando(a), registámos com sucesso o seu pedido de interesse letivo para o curso <strong>{courses.find(c => c.id === signUpCourse)?.titulo || 'Curso Selecionado'}</strong>.
                         </p>
                       </div>
 
                       <div className="p-5 bg-[#0A2E5D]/5 rounded-2xl border border-[#0A2E5D]/10 inline-block text-left text-xs text-slate-600 space-y-2.5 max-w-sm shadow-xs">
                         <p className="font-semibold text-[#0A2E5D] flex items-center gap-1.5 border-b border-[#0A2E5D]/10 pb-2">
                           <Award size={15} className="text-[#C89B3C]" />
-                          Próximos Passos Pedagógicos:
+                          Próximos Passos:
                         </p>
                         <p className="flex items-start gap-1.5">
                           <span className="font-bold text-[#0A2E5D] shrink-0">1.</span>
-                          <span>A nossa secretaria letiva entrará em contacto para agendamento de entrevista de nivelamento linguístico oral.</span>
+                          <span>
+                            Abrimos o seu aplicativo de e-mail com a candidatura pronta para envio à secretaria
+                            (<strong>{ACADEMY_EMAIL}</strong>). Prima “Enviar” nessa mensagem para notificar a administração.
+                          </span>
                         </p>
                         <p className="flex items-start gap-1.5">
                           <span className="font-bold text-[#0A2E5D] shrink-0">2.</span>
+                          <span>A nossa secretaria letiva entrará em contacto para agendamento de entrevista de nivelamento linguístico oral.</span>
+                        </p>
+                        <p className="flex items-start gap-1.5">
+                          <span className="font-bold text-[#0A2E5D] shrink-0">3.</span>
                           <span>Envio da guia de confirmação de vaga e ementa do workshop programático.</span>
                         </p>
                       </div>
 
-                      <div className="pt-4">
+                      <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+                        {signUpEmailUrl && (
+                          <button
+                            onClick={() => { window.location.href = signUpEmailUrl; }}
+                            className="w-full sm:w-auto px-8 py-3 bg-[#C89B3C] text-white hover:bg-[#B3852C] text-xs font-mono uppercase tracking-widest font-bold rounded-xl shadow-lg shadow-[#C89B3C]/20 transition-all hover:scale-[1.02] active:scale-[0.98] inline-flex items-center justify-center gap-2"
+                          >
+                            <Mail size={14} />
+                            Reabrir E-mail de Confirmação
+                          </button>
+                        )}
                         <button
                           onClick={closeSignUpModal}
                           className="w-full sm:w-auto px-10 py-3 bg-[#0A2E5D] text-white hover:bg-[#123C73] text-xs font-mono uppercase tracking-widest font-bold rounded-xl shadow-lg shadow-blue-900/10 transition-all hover:scale-[1.02] active:scale-[0.98]"

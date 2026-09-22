@@ -23,6 +23,7 @@ interface Props {
 const labels: Record<AdminTab, string> = {
   dashboard: 'Visão geral',
   utilizadores: 'Usuários',
+  candidaturas: 'Candidaturas',
   cursos: 'Cursos',
   estrutura: 'Estrutura acadêmica',
   certificados: 'Certificados',

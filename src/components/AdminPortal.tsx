@@ -21,6 +21,8 @@ import AcademicStructurePage from './admin/AcademicStructurePage';
 import AdminCertificatesPage from './admin/AdminCertificatesPage';
 import AdminAuditLogPage from './admin/AdminAuditLogPage';
 import AdminOverview from './admin/AdminOverview';
+import AdminApplicationsPanel from './admin/AdminApplicationsPanel';
+import { Application, countPendingApplications } from '../services/supabase/applicationService';
 
 import { 
   Users, Settings, Activity, TrendingUp, DollarSign, MapPin, ShieldCheck, 
@@ -68,6 +70,22 @@ export default function AdminPortal({
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState('');
+  const [pendingApplications, setPendingApplications] = useState(0);
+  const [applicantPrefill, setApplicantPrefill] = useState<{ name: string; email: string; phone: string } | null>(null);
+
+  // Candidaturas recebidas pelo formulário público (badge na sidebar)
+  useEffect(() => {
+    countPendingApplications().then(setPendingApplications).catch(() => undefined);
+  }, [activeTab]);
+
+  const registerApplicant = (application: Application) => {
+    setApplicantPrefill({
+      name: application.nome_completo,
+      email: application.email,
+      phone: application.telefone ?? '',
+    });
+    setActiveTab('utilizadores');
+  };
   
   // Database States
   const [dbUsers, setDbUsers] = useState<User[]>([]);
@@ -602,6 +620,7 @@ export default function AdminPortal({
         activeTab={activeTab as AdminTab}
         isOpen={mobileSidebarOpen}
         user={currentUser}
+        pendingApplications={pendingApplications}
         onClose={() => setMobileSidebarOpen(false)}
         onNavigate={(tab) => setActiveTab(tab)}
         onMessages={() => setCurrentPage('messages')}
@@ -659,7 +678,11 @@ export default function AdminPortal({
           )}
 
             {activeTab === 'utilizadores' && (
-              <AdminUsersPage users={dbUsers} onRefresh={loadDatabase} />
+              <AdminUsersPage users={dbUsers} onRefresh={loadDatabase} prefill={applicantPrefill} onPrefillConsumed={() => setApplicantPrefill(null)} />
+            )}
+
+            {activeTab === 'candidaturas' && (
+              <AdminApplicationsPanel onRegisterApplicant={registerApplicant} onPendingCount={setPendingApplications} />
             )}
 
             {activeTab === 'cursos' && (

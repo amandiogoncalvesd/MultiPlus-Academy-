@@ -8,9 +8,9 @@ import {
   MapPin, 
   CheckCircle2, 
   Send, 
-  AlertTriangle,
   MessageSquare
 } from 'lucide-react';
+import { ACADEMY_EMAIL, buildContactEmail } from '../services/supabase/applicationService';
 
 interface ContactPanelProps {
   setCurrentPage: (page: PageId) => void;
@@ -26,20 +26,32 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
   });
   
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [preparedEmailUrl, setPreparedEmailUrl] = useState('');
+
+  const subjectLabels: Record<string, string> = {
+    Geral: 'Informações Gerais de Cursos',
+    Inscricao: 'Pretensões de Inscrição',
+    InCompany: 'Formação Corporativa Coletiva (In-Company)',
+    'Formação': 'Candidaturas de Docência Académica',
+  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setSubmitStatus('loading');
 
-    // Simulate clean premium response in 1.2 seconds
-    setTimeout(() => {
-      // Future Integration Hook:
-      // To connect this form directly to Google Forms, a developer can fetch to:
-      // https://docs.google.com/forms/u/0/d/e/YOUR_GOOGLE_FORM_ID/formResponse?entry.12345=Value...
-      console.log('Dados submetidos para futuro Google Forms:', formData);
-      setSubmitStatus('success');
-      setFormData({ name: '', email: '', phone: '', subject: 'Geral', message: '' });
-    }, 1200);
+    // Entrega real: prepara e abre um e-mail endereçado à secretaria da
+    // MultiPlus Academy com todos os dados preenchidos no formulário.
+    const { url } = buildContactEmail({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      subject: subjectLabels[formData.subject] ?? formData.subject,
+      message: formData.message,
+    });
+    setPreparedEmailUrl(url);
+    window.location.href = url;
+    setSubmitStatus('success');
+    setFormData({ name: '', email: '', phone: '', subject: 'Geral', message: '' });
   };
 
   const handleWhatsAppDirect = () => {
@@ -182,8 +194,8 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                   
                   <div className="flex justify-between items-center pb-4 border-b border-slate-100">
                     <div>
-                      <h4 className="text-lg font-serif font-black text-slate-900 m-0 leading-tight">Formulário Correspondente</h4>
-                      <p className="text-[9px] text-[#C89B3C] font-mono font-bold tracking-wider mt-0.5">PREPARADO PARA INTEGRAÇÃO DO GOOGLE FORMS</p>
+                      <h4 className="text-lg font-serif font-black text-slate-900 m-0 leading-tight">Formulário de Contacto</h4>
+                      <p className="text-[9px] text-[#C89B3C] font-mono font-bold tracking-wider mt-0.5">ENTREGA DIRETA À SECRETARIA LETIVA</p>
                     </div>
                     <span className="text-[10px] text-slate-300 font-mono font-bold">CODE: EN-ANG-2026</span>
                   </div>
@@ -201,20 +213,36 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                         <div className="w-16 h-16 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full flex items-center justify-center mx-auto shadow-xs animate-bounce">
                           <CheckCircle2 size={32} />
                         </div>
-                        <h3 className="text-xl font-serif font-bold text-slate-900">Mensagem Registada com Sucesso!</h3>
+                        <h3 className="text-xl font-serif font-bold text-slate-900">Mensagem Preparada!</h3>
                         <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed font-medium">
-                          Agradecemos o seu envio. O formulário foi capturado e está pré-mapeado para submissão ao formulário de dados corporativo do Google Forms. A coordenação letiva retornará em até 24 horas úteis.
+                          Abrimos o seu aplicativo de e-mail com a mensagem endereçada à secretaria da MultiPlus Academy
+                          (<strong>{ACADEMY_EMAIL}</strong>). Prima <strong>“Enviar”</strong> nessa janela para concluir — a coordenação letiva responderá em até 24 horas úteis.
                         </p>
-                        <StarBorder
-                          as="button"
-                          onClick={() => setSubmitStatus('idle')}
-                          speed="5s"
-                          thickness={1.5}
-                          className="rounded-lg overflow-hidden cursor-pointer mt-4"
-                          innerClassName="px-6 py-2.5 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-mono uppercase tracking-wider font-bold shadow-sm"
-                        >
-                          Escrever Nova Mensagem
-                        </StarBorder>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4">
+                          {preparedEmailUrl && (
+                            <StarBorder
+                              as="button"
+                              onClick={() => { window.location.href = preparedEmailUrl; }}
+                              speed="5s"
+                              thickness={1.5}
+                              className="rounded-lg overflow-hidden cursor-pointer"
+                              innerClassName="px-6 py-2.5 bg-[#C89B3C] hover:bg-[#B3852C] text-white text-xs font-mono uppercase tracking-wider font-bold shadow-sm flex items-center gap-2"
+                            >
+                              <Send size={13} />
+                              Reabrir E-mail
+                            </StarBorder>
+                          )}
+                          <StarBorder
+                            as="button"
+                            onClick={() => setSubmitStatus('idle')}
+                            speed="5s"
+                            thickness={1.5}
+                            className="rounded-lg overflow-hidden cursor-pointer"
+                            innerClassName="px-6 py-2.5 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-mono uppercase tracking-wider font-bold shadow-sm"
+                          >
+                            Escrever Nova Mensagem
+                          </StarBorder>
+                        </div>
                       </motion.div>
 
                     ) : (
@@ -314,11 +342,12 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                           />
                         </div>
 
-                        {/* Future Mapping code-commented indicator */}
+                        {/* Privacy / delivery note */}
                         <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 flex items-start gap-2.5 text-[10px] text-slate-500 leading-normal">
-                          <AlertTriangle size={14} className="text-[#C89B3C] mt-0.5 flex-shrink-0" />
+                          <Mail size={14} className="text-[#C89B3C] mt-0.5 flex-shrink-0" />
                           <span className="font-medium">
-                            <strong>Nota técnica:</strong> Este formulário possui mapeamento de chaves XML e está estruturalmente pronto para apontar para o webhook de gravação do formulário Google Forms do e-mail da MultiPlus Academy.
+                            Ao submeter, a sua mensagem será preparada no seu próprio aplicativo de e-mail,
+                            endereçada a <strong>{ACADEMY_EMAIL}</strong>. Nenhum dado é partilhado com terceiros.
                           </span>
                         </div>
 
