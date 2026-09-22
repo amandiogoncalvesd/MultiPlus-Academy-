@@ -18,6 +18,8 @@ interface BlogPanelProps {
   setCurrentPage: (page: PageId) => void;
 }
 
+import { toast } from './ui/Toast';
+
 export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,7 +38,7 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
 
   const handleShare = (postTitle: string, e: MouseEvent) => {
     e.stopPropagation();
-    alert(`Link de partilha copiado para a área de transferência:\n"MultiPlus Insights — ${postTitle}"`);
+    toast.success(`Link de partilha copiado para a área de transferência:\n"MultiPlus Insights — ${postTitle}"`);
   };
 
   // Filtering

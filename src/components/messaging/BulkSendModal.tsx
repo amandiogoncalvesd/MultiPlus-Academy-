@@ -16,6 +16,8 @@ interface BulkSendModalProps {
   onSendBulk: (targetIds: string[], text: string) => Promise<void>;
 }
 
+import { toast } from '../ui/Toast';
+
 export default function BulkSendModal({ contacts, onClose, onSendBulk }: BulkSendModalProps) {
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -51,7 +53,7 @@ export default function BulkSendModal({ contacts, onClose, onSendBulk }: BulkSen
       setSelectedIds([]);
       onClose();
     } catch (err: any) {
-      alert(`Erro no envio em massa: ${err.message || err}`);
+      toast.error(`Erro no envio em massa: ${err.message || err}`);
     } finally {
       setLoading(false);
     }

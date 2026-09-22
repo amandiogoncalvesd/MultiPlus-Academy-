@@ -57,6 +57,9 @@ function gerarSenhaForte(): string {
   return `${p1}${p2}${num}${symb}`;
 }
 
+import { toast } from './ui/Toast';
+import { confirmDialog } from './ui/confirmDialog';
+
 export default function AdminPortal({
   setCurrentPage,
 }: AdminPortalProps) {
@@ -369,7 +372,7 @@ export default function AdminPortal({
         .eq('read', false);
       if (error) throw error;
       setActiveAlerts(prev => prev.map(a => ({ ...a, type: 'REVISADO', read: true })));
-      alert('Todas as notificações foram marcadas como lidas.');
+      toast.success('Todas as notificações foram marcadas como lidas.');
     } catch (err) {
       console.error('Erro ao limpar alertas:', err);
     }
@@ -380,7 +383,7 @@ export default function AdminPortal({
     e.preventDefault();
     if (!newUserName || !newUserEmail) return;
     if (!newUserPassword || newUserPassword.length < 8) {
-      alert('Defina uma senha de pelo menos 8 caracteres antes de criar a conta.');
+      toast.success('Defina uma senha de pelo menos 8 caracteres antes de criar a conta.');
       return;
     }
 
@@ -471,7 +474,7 @@ export default function AdminPortal({
       setNewUserPhotoPreview('');
     } catch (err: any) {
       console.error(err);
-      alert(`Erro ao salvar no Supabase via Edge Function: ${err.message || err}`);
+      toast.error(`Erro ao salvar no Supabase via Edge Function: ${err.message || err}`);
     }
   };
 
@@ -497,12 +500,12 @@ export default function AdminPortal({
       setDbUsers(updated);
     } catch (err: any) {
       console.error(err);
-      alert(`Erro ao reajustar estado: ${err.message || err}`);
+      toast.error(`Erro ao reajustar estado: ${err.message || err}`);
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Deseja realmente remover permanentemente este registo do Supabase?')) return;
+    if (!(await confirmDialog({ title: 'Deseja realmente remover permanentemente este registo do Supabase?', danger: true }))) return;
     try {
       const { data, error } = await supabase.functions.invoke('admin-users', {
         body: {
@@ -518,10 +521,10 @@ export default function AdminPortal({
       const updated = dbUsers.filter(u => u.id !== userId);
       setDbUsers(updated);
       addAuditLog("REMOCÃO UTILIZADOR", `Removida conta ID: ${userId}`);
-      alert('Utilizador removido com sucesso!');
+      toast.success('Utilizador removido com sucesso!');
     } catch (err: any) {
       console.error(err);
-      alert(`Erro ao remover utilizador: ${err.message || err}`);
+      toast.error(`Erro ao remover utilizador: ${err.message || err}`);
     }
   };
 
@@ -532,7 +535,7 @@ export default function AdminPortal({
     if (user.role === 'ALUNO') setCurrentPage('student-dashboard');
     else if (user.role === 'PROFESSOR') setCurrentPage('instructor-dashboard');
     else setCurrentPage('admin-dashboard');
-    alert(`Modo de pré-visualização activo para: ${user.firstName} ${user.lastName}`);
+    toast.success(`Modo de pré-visualização activo para: ${user.firstName} ${user.lastName}`);
   };
 
   // Secure audits
@@ -551,7 +554,7 @@ export default function AdminPortal({
   // Reporting simulators
   const generateReport = (format: 'PDF' | 'Excel' | 'CSV') => {
     addAuditLog("EXPORTAÇÃO RELATÓRIO", `Gerou planilha académica de estatística em ${format}`);
-    alert(`Relatório em lote compilado com sucesso! O descarregamento do arquivo .${format.toLowerCase()} foi indexado na fila.`);
+    toast.success(`Relatório em lote compilado com sucesso! O descarregamento do arquivo .${format.toLowerCase()} foi indexado na fila.`);
   };
 
   // Broadcast
@@ -564,7 +567,7 @@ export default function AdminPortal({
     ]);
     addAuditLog("ENVIO COMUNICAÇÃO", `Disparo de mensagem de marketing/aviso para: ${messageTarget}`);
     setMessageContent('');
-    alert('Mensagem enviada com sucesso para toda a árvore de utilizadores correspondente!');
+    toast.success('Mensagem enviada com sucesso para toda a árvore de utilizadores correspondente!');
   };
 
   // Filtered lists

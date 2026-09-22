@@ -24,6 +24,15 @@ const ToastContext = createContext<ToastContextType>({
 
 export const useToast = () => useContext(ToastContext);
 
+// Barramento global: permite emitir toasts fora de componentes React
+// (handlers imperativos, helpers), sem prop drilling.
+let globalAdd: (message: string, type: ToastType) => void = () => {};
+export const toast = {
+  success: (message: string) => globalAdd(message, 'success'),
+  error: (message: string) => globalAdd(message, 'error'),
+  info: (message: string) => globalAdd(message, 'info'),
+};
+
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -34,6 +43,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, 4000);
   }, []);
+
+  React.useEffect(() => {
+    globalAdd = addToast;
+    return () => { globalAdd = () => {}; };
+  }, [addToast]);
 
   const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));

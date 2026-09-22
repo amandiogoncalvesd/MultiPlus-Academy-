@@ -1,7 +1,7 @@
 import { useState, useEffect, FormEvent, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PageId, User } from '../types';
-import { jsPDF } from 'jspdf';
+// jspdf é carregado dinamicamente apenas ao exportar o PDF (chunk separado).
 import { useAuth } from './auth/AuthProvider';
 import { supabase } from '../lib/supabase/client';
 import { userService } from '../services/supabase/userService';
@@ -232,17 +232,18 @@ export default function StudentPortal({
     }
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (!currentUser) return;
-    
+
+    const { jsPDF } = await import('jspdf');
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
       format: 'a4'
     });
 
-    const primaryColor = [10, 46, 93];
-    const goldColor = [200, 155, 60];
+    const primaryColor = [11, 22, 41];
+    const goldColor = [161, 98, 7];
     const darkGray = [28, 28, 28];
     const lightGray = [120, 120, 120];
 

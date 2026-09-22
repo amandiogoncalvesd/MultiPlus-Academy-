@@ -31,6 +31,9 @@ interface InstructorCoursesTabProps {
   onRefresh?: () => void;
 }
 
+import { toast } from '../ui/Toast';
+import { confirmDialog } from '../ui/confirmDialog';
+
 export default function InstructorCoursesTab({
   courses,
   onUpdateCourses,
@@ -89,27 +92,27 @@ export default function InstructorCoursesTab({
       for (const id of studentIds) {
         await enrollmentService.enrollStudent(id, activeCourseForStudents.id);
       }
-      alert('Aluno(s) matriculado(s) com sucesso!');
+      toast.success('Aluno(s) matriculado(s) com sucesso!');
       setShowStudentSelector(false);
       loadCourseStudents(activeCourseForStudents.id);
       loadAllStudentCounts();
     } catch (err: any) {
       console.error('Error enrolling students:', err);
-      alert('Erro ao matricular alunos: ' + (err.message || err));
+      toast.error('Erro ao matricular alunos: ' + (err.message || err));
     }
   };
 
   const handleRemoveStudent = async (studentId: string) => {
     if (!activeCourseForStudents) return;
-    if (confirm('Tem a certeza de que deseja remover este aluno do curso? Ele perderá imediatamente o acesso ao conteúdo académico.')) {
+    if (await confirmDialog({ title: 'Tem a certeza de que deseja remover este aluno do curso? Ele perderá imediatamente o acesso ao conteúdo académico.', danger: true })) {
       try {
         await enrollmentService.removeStudent(studentId, activeCourseForStudents.id);
-        alert('Aluno removido do curso com sucesso!');
+        toast.success('Aluno removido do curso com sucesso!');
         loadCourseStudents(activeCourseForStudents.id);
         loadAllStudentCounts();
       } catch (err: any) {
         console.error('Error removing student:', err);
-        alert('Erro ao remover aluno: ' + (err.message || err));
+        toast.error('Erro ao remover aluno: ' + (err.message || err));
       }
     }
   };
@@ -135,23 +138,23 @@ export default function InstructorCoursesTab({
         status: 'DRAFT',
         teacher_id: original.teacher_id
       });
-      alert(`Curso "${original.title}" duplicado com sucesso!`);
+      toast.success(`Curso "${original.title}" duplicado com sucesso!`);
       if (onRefresh) onRefresh();
     } catch (err: any) {
       console.error('Error duplicating course:', err);
-      alert('Falha ao duplicar curso no Supabase: ' + (err.message || err));
+      toast.error('Falha ao duplicar curso no Supabase: ' + (err.message || err));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Tem certeza de que deseja eliminar indefinidamente este curso e todas as avaliações associadas sob as normas da MultiPlus?')) {
+    if (await confirmDialog({ title: 'Tem certeza de que deseja eliminar indefinidamente este curso e todas as avaliações associadas sob as normas da MultiPlus?', danger: true })) {
       try {
         await courseService.deleteCourse(id);
-        alert('Curso eliminado com êxito do Supabase.');
+        toast.success('Curso eliminado com êxito do Supabase.');
         if (onRefresh) onRefresh();
       } catch (err: any) {
         console.error('Error deleting course:', err);
-        alert('Falha ao deletar curso no Supabase: ' + (err.message || err));
+        toast.error('Falha ao deletar curso no Supabase: ' + (err.message || err));
       }
     }
   };
@@ -162,11 +165,11 @@ export default function InstructorCoursesTab({
       await courseService.updateCourse(id, {
         status: dbStatus
       });
-      alert(`Estado do curso alterado com integridade para: "${newState}"`);
+      toast.success(`Estado do curso alterado com integridade para: "${newState}"`);
       if (onRefresh) onRefresh();
     } catch (err: any) {
       console.error('Error toggling course state:', err);
-      alert('Falha ao alterar estado do curso no Supabase: ' + (err.message || err));
+      toast.error('Falha ao alterar estado do curso no Supabase: ' + (err.message || err));
     }
   };
 
@@ -185,12 +188,12 @@ export default function InstructorCoursesTab({
         description: editSubtitle,
         duration: editDuration
       });
-      alert('Informação do currículo do curso salva com sucesso!');
+      toast.success('Informação do currículo do curso salva com sucesso!');
       setEditingCourseId(null);
       if (onRefresh) onRefresh();
     } catch (err: any) {
       console.error('Error updating course in DB:', err);
-      alert('Falha ao atualizar curso no Supabase: ' + (err.message || err));
+      toast.error('Falha ao atualizar curso no Supabase: ' + (err.message || err));
     }
   };
 
