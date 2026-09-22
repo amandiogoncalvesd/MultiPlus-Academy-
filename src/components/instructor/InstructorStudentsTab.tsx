@@ -313,7 +313,7 @@ export default function InstructorStudentsTab({
                           <div className="flex flex-col w-full gap-1">
                             <div className="w-full bg-cream-250 dark:bg-ink-800 rounded-full h-1.5 overflow-hidden">
                               <div
-                                  className="bg-[#C89B3C] h-full transition-all duration-500"
+                                  className="bg-[#A16207] h-full transition-all duration-500"
                                   style={{ width: `${progressPercent}%` }}
                               />
                             </div>

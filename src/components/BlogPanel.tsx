@@ -74,7 +74,7 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
             {/* Header portion */}
             <div className="border-b border-slate-200 pb-12 pt-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div className="space-y-4 max-w-2xl text-left">
-                <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C]">Doutrina e Atualidades</span>
+                <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207]">Doutrina e Atualidades</span>
                 <h1 className="text-4xl font-serif font-black tracking-tight text-slate-900 m-0 leading-tight">MultiPlus Insights</h1>
                 <p className="text-sm text-slate-600 font-sans leading-relaxed">
                   Artigos explicativos, comentários doutrinários e tendências regulatórias sobre o ecossistema legal angolano e internacional.
@@ -89,7 +89,7 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Pesquisar artigos..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#C89B3C] focus:bg-white transition-colors"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-[#A16207] focus:bg-white transition-colors"
                 />
               </div>
             </div>
@@ -107,7 +107,7 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
                   className="rounded-full overflow-hidden cursor-pointer"
                   innerClassName={`relative z-1 px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all capitalize whitespace-nowrap ${
                     activeCategory === cat
-                      ? 'bg-[#0A2E5D] text-white'
+                      ? 'bg-[#0B1629] text-white'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
                   }`}
                 >
@@ -132,24 +132,24 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
                     alt={filteredPosts[0].title}
                     className="w-full h-full object-cover hover:scale-[1.01] transition-all duration-700"
                   />
-                  <div className="absolute top-4 left-4 bg-[#0A2E5D] text-white text-[9px] font-mono font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg shadow border border-white/10">
+                  <div className="absolute top-4 left-4 bg-[#0B1629] text-white text-[9px] font-mono font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg shadow border border-white/10">
                     ARTIGO EM DESTAQUE
                   </div>
                 </div>
 
                 <div className="lg:col-span-5 p-8 sm:p-10 flex flex-col justify-between space-y-6">
                   <div className="space-y-4">
-                    <span className="text-xs font-mono font-bold text-[#C89B3C] uppercase tracking-wider">{filteredPosts[0].category}</span>
+                    <span className="text-xs font-mono font-bold text-[#A16207] uppercase tracking-wider">{filteredPosts[0].category}</span>
                     <h2 className="text-2xl font-serif font-bold text-slate-900 tracking-tight leading-snug">{filteredPosts[0].title}</h2>
                     <p className="text-xs sm:text-sm text-slate-500 leading-relaxed font-sans line-clamp-3">{filteredPosts[0].excerpt}</p>
                   </div>
 
                   <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-mono text-slate-400">
                     <div className="flex items-center gap-1.5">
-                      <Clock size={12} className="text-[#C89B3C]" />
+                      <Clock size={12} className="text-[#A16207]" />
                       <span className="font-semibold text-slate-500">{filteredPosts[0].readTime}</span>
                     </div>
-                    <span className="text-[#0A2E5D] font-bold uppercase tracking-wider font-mono text-[10px] hover:text-[#C89B3C] transition-colors">Ler Artigo</span>
+                    <span className="text-[#0B1629] font-bold uppercase tracking-wider font-mono text-[10px] hover:text-[#A16207] transition-colors">Ler Artigo</span>
                   </div>
                 </div>
               </StarBorder>
@@ -202,7 +202,7 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
                         thickness={1}
                         className="rounded overflow-hidden cursor-pointer"
                         innerClassName={`p-1.5 rounded bg-white transition-colors flex items-center justify-center ${
-                          bookmarkedIds.includes(post.id) ? 'text-[#C89B3C] bg-[#C89B3C]/5' : 'text-slate-400'
+                          bookmarkedIds.includes(post.id) ? 'text-[#A16207] bg-[#A16207]/5' : 'text-slate-400'
                         }`}
                         title="Guardar artigo"
                       >
@@ -236,7 +236,7 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
                 </p>
                 <button
                   onClick={() => { setSearchTerm(''); setActiveCategory('all'); }}
-                  className="px-4 py-2 rounded-lg bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-mono font-bold uppercase transition-colors shadow-sm"
+                  className="px-4 py-2 rounded-lg bg-[#0B1629] hover:bg-[#16233A] text-white text-xs font-mono font-bold uppercase transition-colors shadow-sm"
                 >
                   Ver Todos os Artigos
                 </button>
@@ -264,7 +264,7 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
                 speed="6s"
                 thickness={1.5}
                 className="rounded-lg overflow-hidden cursor-pointer"
-                innerClassName="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest uppercase text-[#0A2E5D] hover:text-[#C89B3C] bg-slate-50 px-3.5 py-2"
+                innerClassName="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest uppercase text-[#0B1629] hover:text-[#A16207] bg-slate-50 px-3.5 py-2"
               >
                 <ArrowLeft size={14} />
                 Voltar ao Diretório do Blog
@@ -280,7 +280,7 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
                   speed="5s"
                   thickness={1}
                   className="rounded-lg overflow-hidden"
-                  innerClassName="px-2.5 py-1 bg-slate-50 text-xs text-[#0A2E5D] font-bold uppercase font-mono tracking-wide"
+                  innerClassName="px-2.5 py-1 bg-slate-50 text-xs text-[#0B1629] font-bold uppercase font-mono tracking-wide"
                 >
                   {selectedPost.category}
                 </StarBorder>
@@ -301,7 +301,7 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full border border-slate-200 overflow-hidden bg-white flex items-center justify-center">
-                    <User size={18} className="text-[#C89B3C]" />
+                    <User size={18} className="text-[#A16207]" />
                   </div>
                   <div>
                     <span className="block text-sm font-serif font-extrabold text-slate-800">{selectedPost.author.name}</span>
@@ -310,7 +310,7 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
                 </div>
 
                 <div className="flex items-center gap-1.5 text-xs font-mono text-slate-500 pr-2 font-bold">
-                  <Clock size={12} className="text-[#C89B3C]" />
+                  <Clock size={12} className="text-[#A16207]" />
                   <span>{selectedPost.readTime}</span>
                 </div>
               </StarBorder>
@@ -340,7 +340,7 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
               {selectedPost.content.split('\n\n').map((paragraph, pIdx) => {
                 if (paragraph.startsWith('1.') || paragraph.startsWith('2.') || paragraph.startsWith('3.')) {
                   return (
-                    <div key={pIdx} className="pl-4 border-l-2 border-[#C89B3C] italic text-slate-500 my-4 bg-slate-50 py-1 rounded-r">
+                    <div key={pIdx} className="pl-4 border-l-2 border-[#A16207] italic text-slate-500 my-4 bg-slate-50 py-1 rounded-r">
                       {paragraph}
                     </div>
                   );
@@ -356,7 +356,7 @@ export default function BlogPanel({ setCurrentPage }: BlogPanelProps) {
             {/* Read Next segment / buttons */}
             <div className="pt-12 flex flex-col sm:flex-row items-center justify-between gap-6 text-slate-500">
               <div className="flex items-center gap-2">
-                <CheckCircle size={16} className="text-[#C89B3C]" />
+                <CheckCircle size={16} className="text-[#A16207]" />
                 <span className="text-xs text-slate-500 font-sans font-semibold">MultiPlus Insights — Autenticidade e Excelência Académica.</span>
               </div>
 

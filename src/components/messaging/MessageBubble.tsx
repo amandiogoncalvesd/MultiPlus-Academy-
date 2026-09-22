@@ -70,7 +70,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({
         <div
           className={`p-3 rounded-2xl relative shadow-xs border transition-all text-xs text-left ${
             isMe
-              ? 'bg-gradient-to-r from-gold-600 to-[#E2B755] dark:from-gold-600/90 dark:to-gold-700/90 text-white rounded-br-none border-gold-600/10'
+              ? 'bg-gradient-to-r from-gold-600 to-[#CA8A04] dark:from-gold-600/90 dark:to-gold-700/90 text-white rounded-br-none border-gold-600/10'
               : 'bg-cream-200/90 dark:bg-ink-850/95 text-ink-900 dark:text-cream-100 rounded-bl-none border-gray-150 dark:border-ink-800'
           }`}
         >

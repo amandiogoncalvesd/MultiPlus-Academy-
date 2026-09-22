@@ -54,7 +54,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             )}
             <button
               onClick={onShowNewModal}
-              className="p-1.5 rounded-full bg-gradient-to-r from-gold-600 to-[#E2B755] hover:shadow-md hover:scale-105 text-white transition-all border-0 cursor-pointer flex items-center justify-center"
+              className="p-1.5 rounded-full bg-gradient-to-r from-gold-600 to-[#CA8A04] hover:shadow-md hover:scale-105 text-white transition-all border-0 cursor-pointer flex items-center justify-center"
               title="Nova Conversa" aria-label="Iniciar nova conversa"
             >
               <Plus className="w-4 h-4" />
@@ -104,7 +104,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 onClick={() => onSelectPartner(p)}
                 className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all text-left border-0 cursor-pointer relative ${
                   isSelected
-                    ? 'bg-gradient-to-r from-gold-600 to-[#E2B755] text-white shadow-md font-bold'
+                    ? 'bg-gradient-to-r from-gold-600 to-[#CA8A04] text-white shadow-md font-bold'
                     : 'hover:bg-cream-200/80 dark:hover:bg-ink-800 bg-cream-150/40 dark:bg-ink-900/20 border border-gray-150/40 dark:border-ink-800/40 text-ink-900 dark:text-cream-100'
                 }`}
               >

@@ -210,7 +210,7 @@ export default function StudentMaterialsTab({ userId }: StudentMaterialsTabProps
                   </div>
                 </div>
 
-                <h4 className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 leading-snug group-hover:text-gold-600 dark:group-hover:text-[#E2B755] transition-colors mt-1 mb-0 line-clamp-1">
+                <h4 className="text-sm font-serif font-black text-ink-900 dark:text-cream-100 leading-snug group-hover:text-gold-600 dark:group-hover:text-[#CA8A04] transition-colors mt-1 mb-0 line-clamp-1">
                   {mat.titulo}
                 </h4>
                 <p className="text-[11px] text-neutral-400 dark:text-cream-100/70 leading-normal font-sans line-clamp-2 mt-1 mb-0">

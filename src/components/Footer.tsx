@@ -34,8 +34,8 @@ export default function Footer({ setCurrentPage }: FooterProps) {
     <footer id="global-footer" className="bg-slate-50 text-slate-800 pt-20 pb-10 border-t border-slate-200 relative overflow-hidden">
       
       {/* Decorative luxury abstract radial highlights */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-[#C89B3C]/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#0A2E5D]/5 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[#A16207]/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#0B1629]/5 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 pb-16 border-b border-slate-200">
@@ -50,7 +50,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
               />
             </div>
             <p className="text-slate-600 text-sm leading-relaxed font-sans max-w-sm font-medium">
-              <span className="font-serif italic text-[#C89B3C] font-semibold mr-1">"Transformando Competências em Oportunidades"</span>
+              <span className="font-serif italic text-[#A16207] font-semibold mr-1">"Transformando Competências em Oportunidades"</span>
               <br />
               Referência no ensino do Inglês Jurídico adaptado ao mercado angolano de excelência comercial.
             </p>
@@ -61,7 +61,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
                 speed="4s"
                 thickness={1}
                 className="rounded-full overflow-hidden"
-                innerClassName="p-2.5 bg-white flex items-center justify-center text-slate-600 hover:text-[#C89B3C] transition-colors"
+                innerClassName="p-2.5 bg-white flex items-center justify-center text-slate-600 hover:text-[#A16207] transition-colors"
               >
                 <Facebook size={16} />
               </StarBorder>
@@ -71,7 +71,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
                 speed="4s"
                 thickness={1}
                 className="rounded-full overflow-hidden"
-                innerClassName="p-2.5 bg-white flex items-center justify-center text-slate-600 hover:text-[#C89B3C] transition-colors"
+                innerClassName="p-2.5 bg-white flex items-center justify-center text-slate-600 hover:text-[#A16207] transition-colors"
               >
                 <Instagram size={16} />
               </StarBorder>
@@ -81,7 +81,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
                 speed="4s"
                 thickness={1}
                 className="rounded-full overflow-hidden"
-                innerClassName="p-2.5 bg-white flex items-center justify-center text-slate-600 hover:text-[#C89B3C] transition-colors"
+                innerClassName="p-2.5 bg-white flex items-center justify-center text-slate-600 hover:text-[#A16207] transition-colors"
               >
                 <Linkedin size={16} />
               </StarBorder>
@@ -90,7 +90,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
 
           {/* Column 2: Quick Links */}
           <div className="lg:pl-8 text-left">
-            <h4 className="text-sm font-bold tracking-wider uppercase text-[#0A2E5D] font-mono mb-6">Navegação</h4>
+            <h4 className="text-sm font-bold tracking-wider uppercase text-[#0B1629] font-mono mb-6">Navegação</h4>
             <ul className="space-y-3">
               {footerLinks.map((link, idx) => (
                 <li key={idx}>
@@ -99,7 +99,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
                       setCurrentPage(link.page);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="text-slate-600 hover:text-[#C89B3C] text-sm tracking-wide transition-colors duration-200 text-left font-medium cursor-pointer"
+                    className="text-slate-600 hover:text-[#A16207] text-sm tracking-wide transition-colors duration-200 text-left font-medium cursor-pointer"
                   >
                     {link.label}
                   </button>
@@ -110,24 +110,24 @@ export default function Footer({ setCurrentPage }: FooterProps) {
 
           {/* Column 3: Contact & Info */}
           <div className="text-left">
-            <h4 className="text-sm font-bold tracking-wider uppercase text-[#0A2E5D] font-mono mb-6">Contactos Oficiais</h4>
+            <h4 className="text-sm font-bold tracking-wider uppercase text-[#0B1629] font-mono mb-6">Contactos Oficiais</h4>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
-                <Phone size={16} className="text-[#C89B3C] mt-0.5 flex-shrink-0" />
+                <Phone size={16} className="text-[#A16207] mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-slate-700">
                   <span className="block font-semibold">+244 956 449 084</span>
                   <span className="text-xs text-slate-500 font-mono">Atendimento Académico</span>
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <Mail size={16} className="text-[#C89B3C] mt-0.5 flex-shrink-0" />
+                <Mail size={16} className="text-[#A16207] mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-slate-700 break-all">
                   <span className="block font-semibold">multiplusacademy@gmail.com</span>
                   <span className="text-xs text-slate-500 font-mono">Correio Eletrónico Geral</span>
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <MapPin size={16} className="text-[#C89B3C] mt-0.5 flex-shrink-0" />
+                <MapPin size={16} className="text-[#A16207] mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-slate-700">
                   <span className="block font-semibold font-serif">Huambo, Angola</span>
                 </div>
@@ -137,7 +137,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
 
           {/* Column 4: Newsletter */}
           <div className="text-left">
-            <h4 className="text-sm font-bold tracking-wider uppercase text-[#0A2E5D] font-mono mb-6">Informativos Académicos</h4>
+            <h4 className="text-sm font-bold tracking-wider uppercase text-[#0B1629] font-mono mb-6">Informativos Académicos</h4>
             <p className="text-xs text-slate-600 leading-relaxed mb-4 font-medium">
               Subscreva para receber insights e as últimas novidades sobre o Inglês Jurídico e atualizações do mercado em Angola.
             </p>
@@ -152,11 +152,11 @@ export default function Footer({ setCurrentPage }: FooterProps) {
                     type="email"
                     required
                     placeholder="Seu email institucional"
-                    className="w-full bg-white border border-slate-200 rounded-lg py-2.5 pl-3 pr-10 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#C89B3C] transition-colors shadow-sm"
+                    className="w-full bg-white border border-slate-200 rounded-lg py-2.5 pl-3 pr-10 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#A16207] transition-colors shadow-sm"
                   />
                   <button
                     type="submit"
-                    className="absolute right-1 top-1 bottom-1 px-2.5 rounded bg-[#0A2E5D] hover:bg-[#123C73] text-white flex items-center justify-center transition-colors cursor-pointer"
+                    className="absolute right-1 top-1 bottom-1 px-2.5 rounded bg-[#0B1629] hover:bg-[#16233A] text-white flex items-center justify-center transition-colors cursor-pointer"
                     aria-label="Subscrever"
                   >
                     <Send size={12} />
@@ -178,8 +178,8 @@ export default function Footer({ setCurrentPage }: FooterProps) {
             </p>
           </div>
           <div className="flex gap-6 items-center text-xs text-slate-500">
-            <a href="#" className="hover:text-[#C89B3C] transition-colors font-medium">Termos de Uso</a>
-            <a href="#" className="hover:text-[#C89B3C] transition-colors font-medium">Política de Privacidade</a>
+            <a href="#" className="hover:text-[#A16207] transition-colors font-medium">Termos de Uso</a>
+            <a href="#" className="hover:text-[#A16207] transition-colors font-medium">Política de Privacidade</a>
             <StarBorder
               as="button"
               onClick={handleScrollToTop}
@@ -189,7 +189,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
               innerClassName="flex items-center gap-1.5 p-2 px-3 bg-white text-slate-700 font-mono text-2xs uppercase tracking-wider"
             >
               Topo
-              <ArrowUp size={12} className="text-[#C89B3C]" />
+              <ArrowUp size={12} className="text-[#A16207]" />
             </StarBorder>
           </div>
         </div>

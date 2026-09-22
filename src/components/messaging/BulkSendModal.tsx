@@ -145,7 +145,7 @@ export default function BulkSendModal({ contacts, onClose, onSendBulk }: BulkSen
             <button
               type="submit"
               disabled={selectedIds.length === 0 || !message.trim() || loading}
-              className="self-end p-3 rounded-2xl bg-gradient-to-r from-gold-600 to-[#E2B755] hover:shadow-lg hover:scale-105 text-white disabled:opacity-50 transition-all shadow-sm border-0 cursor-pointer flex items-center justify-center"
+              className="self-end p-3 rounded-2xl bg-gradient-to-r from-gold-600 to-[#CA8A04] hover:shadow-lg hover:scale-105 text-white disabled:opacity-50 transition-all shadow-sm border-0 cursor-pointer flex items-center justify-center"
             >
               <Send className="w-5 h-5" />
             </button>

@@ -79,8 +79,8 @@ function CarouselItem({ item, index, itemWidth, round, trackItemOffset, x, trans
       key={`${item?.id ?? index}-${index}`}
       className={`relative shrink-0 flex flex-col ${
         round
-          ? 'items-center justify-center text-center bg-[#0A2E5D] border-0'
-          : 'items-start justify-between bg-white border border-slate-200/80 rounded-2xl shadow-sm hover:border-[#C89B3C]/30 hover:shadow-md transition-all duration-300'
+          ? 'items-center justify-center text-center bg-[#0B1629] border-0'
+          : 'items-start justify-between bg-white border border-slate-200/80 rounded-2xl shadow-sm hover:border-[#A16207]/30 hover:shadow-md transition-all duration-300'
       } overflow-hidden cursor-grab active:cursor-grabbing`}
       style={{
         width: itemWidth,
@@ -91,7 +91,7 @@ function CarouselItem({ item, index, itemWidth, round, trackItemOffset, x, trans
       transition={transition}
     >
       <div className={`${round ? 'p-0 m-0' : 'mb-4 p-5 pb-1'}`}>
-        <span className="flex h-[32px] w-[32px] items-center justify-center rounded-lg bg-[#0A2E5D] shadow-sm">
+        <span className="flex h-[32px] w-[32px] items-center justify-center rounded-lg bg-[#0B1629] shadow-sm">
           {item.icon}
         </span>
       </div>
@@ -286,7 +286,7 @@ export default function Carousel({
               aria-current={activeIndex === index}
               className={`h-2 w-2 rounded-full cursor-pointer border-0 p-0 appearance-none transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                 activeIndex === index
-                  ? 'bg-[#C89B3C] scale-125'
+                  ? 'bg-[#A16207] scale-125'
                   : 'bg-slate-300 hover:bg-slate-400'
               }`}
               animate={{

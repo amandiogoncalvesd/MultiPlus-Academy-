@@ -96,9 +96,9 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
       <section className="relative min-h-[calc(100dvh-64px)] bg-white text-slate-800 flex items-center pt-16 pb-20 overflow-hidden border-b border-slate-200/50">
         
         {/* Subtle, luxurious ambient background gradients */}
-        <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[70%] bg-gradient-to-br from-[#C89B3C]/10 to-transparent rounded-full blur-[160px] pointer-events-none" />
+        <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[70%] bg-gradient-to-br from-[#A16207]/10 to-transparent rounded-full blur-[160px] pointer-events-none" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[60%] bg-slate-100 rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C89B3C]/30 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#A16207]/30 to-transparent" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
@@ -110,9 +110,9 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#0A2E5D]/5 border border-[#C89B3C]/15 rounded-full text-xs font-mono text-[#C89B3C] font-semibold tracking-widest uppercase"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#0B1629]/5 border border-[#A16207]/15 rounded-full text-xs font-mono text-[#A16207] font-semibold tracking-widest uppercase"
               >
-                <span className="flex h-2 w-2 rounded-full bg-[#C89B3C] animate-pulse"></span>
+                <span className="flex h-2 w-2 rounded-full bg-[#A16207] animate-pulse"></span>
                 Portal Institucional Oficial • MultiPlus Academy
               </motion.div>
 
@@ -121,7 +121,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7, delay: 0.1 }}
-                  className="text-4xl sm:text-5xl lg:text-6xl font-serif font-black tracking-tight leading-[1.1] text-[#0A2E5D]"
+                  className="text-4xl sm:text-5xl lg:text-6xl font-serif font-black tracking-tight leading-[1.1] text-[#0B1629]"
                 >
                   Transformando <br />
                   Competências em <br />
@@ -134,8 +134,8 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                       pauseDuration={2500}
                       showCursor={true}
                       cursorCharacter="|"
-                      className="text-transparent bg-clip-text bg-gradient-to-r from-[#C89B3C] to-[#E2B755]"
-                      cursorClassName="text-[#C89B3C] font-sans ml-1 text-3xl sm:text-4xl lg:text-5xl"
+                      className="text-transparent bg-clip-text bg-gradient-to-r from-[#A16207] to-[#CA8A04]"
+                      cursorClassName="text-[#A16207] font-sans ml-1 text-3xl sm:text-4xl lg:text-5xl"
                     />
                   </span>
                 </motion.h1>
@@ -166,10 +166,10 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   speed="4s"
                   thickness={2}
                   className="w-full sm:w-auto hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 rounded-xl overflow-hidden hover:shadow-[0_8px_32px_rgba(200,155,60,0.15)] cursor-pointer"
-                  innerClassName="relative z-1 bg-gradient-to-r from-[#0A2E5D] to-[#123C73] border border-[#C89B3C]/30 text-white text-center text-sm font-bold py-4 px-8 rounded-xl tracking-wider uppercase flex items-center justify-center gap-2"
+                  innerClassName="relative z-1 bg-gradient-to-r from-[#0B1629] to-[#16233A] border border-[#A16207]/30 text-white text-center text-sm font-bold py-4 px-8 rounded-xl tracking-wider uppercase flex items-center justify-center gap-2"
                 >
                   Explorar Cursos
-                  <ArrowRight size={16} className="text-[#C89B3C]" />
+                  <ArrowRight size={16} className="text-[#A16207]" />
                 </StarBorder>
                 <StarBorder
                   as="button"
@@ -177,7 +177,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   speed="5s"
                   thickness={1.5}
                   className="w-full sm:w-auto rounded-xl overflow-hidden cursor-pointer"
-                  innerClassName="px-8 py-4 text-sm font-bold tracking-wider uppercase transition-all duration-300 text-center text-[#0A2E5D] bg-[#0A2E5D]/5 hover:bg-[#0A2E5D]/10 w-full"
+                  innerClassName="px-8 py-4 text-sm font-bold tracking-wider uppercase transition-all duration-300 text-center text-[#0B1629] bg-[#0B1629]/5 hover:bg-[#0B1629]/10 w-full"
                 >
                   Saber Mais
                 </StarBorder>
@@ -217,7 +217,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   Híbrido de Alta Performance
                 </div>
                 <div className="flex flex-col items-start">
-                  <span className="block text-xl font-serif text-[#C89B3C] font-bold tracking-tight mb-1">CEFR</span>
+                  <span className="block text-xl font-serif text-[#A16207] font-bold tracking-tight mb-1">CEFR</span>
                   Níveis Oficiais de Proficiência
                 </div>
                 <div className="col-span-2 sm:col-span-1 flex flex-col items-start">
@@ -246,10 +246,10 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 <div className="flex items-center justify-between border-b border-slate-100 pb-4 relative z-10">
                   <div className="flex items-center gap-1.5">
                     <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#C89B3C]/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#A16207]/50" />
                     <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
                   </div>
-                  <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase font-bold">PORTAL ID DE ALUNO MULTIPLUS</span>
+                  <span className="text-[9px] font-mono tracking-widest text-[#A16207] uppercase font-bold">PORTAL ID DE ALUNO MULTIPLUS</span>
                 </div>
 
                 {/* Central Interactive Mockup Grid */}
@@ -268,7 +268,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                         <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">AULA SÍNCRONA AO VIVO</span>
                       </div>
-                      <span className="text-[10px] font-mono text-[#C89B3C] font-semibold">Regime Híbrido</span>
+                      <span className="text-[10px] font-mono text-[#A16207] font-semibold">Regime Híbrido</span>
                     </div>
 
                     <p className="text-sm font-serif font-bold text-slate-900 tracking-wide">
@@ -277,10 +277,10 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
 
                     <div className="flex items-center justify-between text-[11px] text-slate-600 py-1 font-sans">
                       <div className="flex items-center gap-1.5">
-                        <Sparkles size={11} className="text-[#C89B3C]" />
+                        <Sparkles size={11} className="text-[#A16207]" />
                         <span>Formadora Esmeralda Sumbelelo</span>
                       </div>
-                      <span className="text-[10px] font-mono bg-[#C89B3C]/10 px-1.5 py-0.5 rounded text-[#C89B3C] font-semibold">CEFR B2-C1</span>
+                      <span className="text-[10px] font-mono bg-[#A16207]/10 px-1.5 py-0.5 rounded text-[#A16207] font-semibold">CEFR B2-C1</span>
                     </div>
 
                     {/* Progress slider bar mock */}
@@ -290,7 +290,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                         <span>75% Concluído</span>
                       </div>
                       <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-[#C89B3C] to-[#E2B755] rounded-full" style={{ width: '75%' }} />
+                        <div className="h-full bg-gradient-to-r from-[#A16207] to-[#CA8A04] rounded-full" style={{ width: '75%' }} />
                       </div>
                     </div>
                   </StarBorder>
@@ -305,10 +305,10 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                       className="rounded-2xl overflow-hidden shadow-3xs"
                       innerClassName="w-full bg-slate-50 p-3.5 space-y-2 text-left"
                     >
-                      <div className="p-1 px-2.5 rounded bg-[#C89B3C]/10 text-[#C89B3C] font-mono text-[9px] uppercase font-bold tracking-wider float-right">
+                      <div className="p-1 px-2.5 rounded bg-[#A16207]/10 text-[#A16207] font-mono text-[9px] uppercase font-bold tracking-wider float-right">
                         EXCELÊNCIA
                       </div>
-                      <BookMarked size={16} className="text-[#C89B3C]" />
+                      <BookMarked size={16} className="text-[#A16207]" />
                       <p className="text-[9px] font-mono text-slate-400 uppercase font-black truncate">REDE CURRICULAR</p>
                       <p className="text-xs font-serif font-bold text-slate-800 mt-1">Multi-Programas</p>
                     </StarBorder>
@@ -320,10 +320,10 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                       className="rounded-2xl overflow-hidden shadow-3xs"
                       innerClassName="w-full bg-slate-50 p-3.5 space-y-2 text-left"
                     >
-                      <div className="p-1 px-2 rounded bg-[#0A2E5D]/10 text-[#0A2E5D] font-mono text-[9px] uppercase font-bold tracking-wider float-right">
+                      <div className="p-1 px-2 rounded bg-[#0B1629]/10 text-[#0B1629] font-mono text-[9px] uppercase font-bold tracking-wider float-right">
                         GLOBAL
                       </div>
-                      <Globe size={16} className="text-[#C89B3C]" />
+                      <Globe size={16} className="text-[#A16207]" />
                       <p className="text-[9px] font-mono text-slate-400 uppercase font-black truncate">CONETIVIDADE</p>
                       <p className="text-xs font-serif font-bold text-slate-800 mt-1">Línguas Internacionais</p>
                     </StarBorder>
@@ -339,7 +339,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                     innerClassName="w-full bg-slate-50 p-4 flex items-center justify-between text-left"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-[#0A2E5D] border border-[#C89B3C]/30 rounded-lg flex items-center justify-center">
+                      <div className="p-2 bg-[#0B1629] border border-[#A16207]/30 rounded-lg flex items-center justify-center">
                         <img 
                           src="/brand/multiplus-academy-logo-original.png"
                           alt="Logo MultiPlus" 
@@ -348,7 +348,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                       </div>
                       <div className="text-left">
                         <p className="text-xs font-serif font-bold text-slate-900 m-0">MultiPlus Academy</p>
-                        <p className="text-[10px] font-mono text-[#C89B3C] tracking-wide mt-0.5 m-0">EST. 2026</p>
+                        <p className="text-[10px] font-mono text-[#A16207] tracking-wide mt-0.5 m-0">EST. 2026</p>
                       </div>
                     </div>
                     <span className="text-[10px] text-slate-400 font-mono">EN - AO</span>
@@ -359,7 +359,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 {/* Bottom decorative notes */}
                 <div className="border-t border-slate-100 pt-4 flex justify-between items-center relative z-10 text-[9px] font-mono text-slate-400">
                   <span>SISTEMA PREMIUM DE EDUCAÇÃO</span>
-                  <span className="text-[#C89B3C] font-semibold">FORMANDO LÍDERES</span>
+                  <span className="text-[#A16207] font-semibold">FORMANDO LÍDERES</span>
                 </div>
 
               </div>
@@ -389,8 +389,8 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(200,155,60,0.05),transparent_60%)] pointer-events-none" />
                   
                   <div className="flex justify-between items-start relative z-10 w-full">
-                    <span className="text-xs font-mono tracking-widest text-[#C89B3C] bg-[#C89B3C]/10 px-3 py-1 rounded-md uppercase font-bold">SOBRE NÓS</span>
-                    <GraduationCap size={20} className="text-[#C89B3C]" />
+                    <span className="text-xs font-mono tracking-widest text-[#A16207] bg-[#A16207]/10 px-3 py-1 rounded-md uppercase font-bold">SOBRE NÓS</span>
+                    <GraduationCap size={20} className="text-[#A16207]" />
                   </div>
 
                   <div className="space-y-4 relative z-10 text-left w-full">
@@ -401,7 +401,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                     </p>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100 flex justify-between items-center relative z-10 text-[9px] font-mono text-[#C89B3C]/80 w-full">
+                  <div className="pt-4 border-t border-slate-100 flex justify-between items-center relative z-10 text-[9px] font-mono text-[#A16207]/80 w-full">
                     <span>MULTIPLUS ACADEMY</span>
                     <span>HUAMBO, ANGOLA</span>
                   </div>
@@ -412,7 +412,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
 
             {/* Right side: Prose text with high-end margins */}
             <div className="lg:col-span-7 text-left space-y-6">
-              <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C] block">Apresentação Institucional</span>
+              <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207] block">Apresentação Institucional</span>
               <h2 className="text-3xl sm:text-4xl font-serif font-black text-slate-900 leading-tight m-0">
                 Uma Academia Moderna Dedicada ao Desenvolvimento de Competências
               </h2>
@@ -439,7 +439,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   speed="5s"
                   thickness={1.5}
                   className="rounded-lg overflow-hidden cursor-pointer"
-                  innerClassName="px-6 py-3 text-xs font-bold uppercase tracking-wider bg-[#0A2E5D] hover:bg-[#123C73] text-white transition-colors"
+                  innerClassName="px-6 py-3 text-xs font-bold uppercase tracking-wider bg-[#0B1629] hover:bg-[#16233A] text-white transition-colors"
                 >
                   Conhecer Nossa História
                 </StarBorder>
@@ -518,7 +518,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C] block">Diferenciais Pedagógicos</span>
+            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207] block">Diferenciais Pedagógicos</span>
             <h3 className="text-3xl sm:text-4xl font-serif font-black text-slate-900 leading-tight m-0">Por que Escolher a MultiPlus Academy?</h3>
             <p className="text-sm text-slate-600 font-sans leading-relaxed mt-2">
               Desenvolvemos uma estrutura focada em alta performance para que alcance a proficiência necessária no menor intervalo de tempo possível.
@@ -542,17 +542,17 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   innerClassName="bg-white p-8 relative flex flex-col justify-between text-left h-full w-full"
                 >
                   {/* Minimalist structural top decor */}
-                  <div className="absolute top-0 left-0 w-full h-1 bg-[#0A2E5D]/10 rounded-t-2xl hover:bg-[#C89B3C]/50 transition-colors pointer-events-none" />
+                  <div className="absolute top-0 left-0 w-full h-1 bg-[#0B1629]/10 rounded-t-2xl hover:bg-[#A16207]/50 transition-colors pointer-events-none" />
                   
                   <div className="space-y-4">
-                    <div className="p-3 w-12 h-12 rounded-xl bg-[#0A2E5D]/5 flex items-center justify-center mb-6 border border-[#0A2E5D]/10 text-[#C89B3C]">
+                    <div className="p-3 w-12 h-12 rounded-xl bg-[#0B1629]/5 flex items-center justify-center mb-6 border border-[#0B1629]/10 text-[#A16207]">
                       {benefit.icon}
                     </div>
                     <h4 className="text-lg font-serif font-bold text-slate-900 m-0">{benefit.title}</h4>
                     <p className="text-xs text-slate-600 leading-relaxed font-sans">{benefit.description}</p>
                   </div>
 
-                  <div className="pt-6 mt-4 border-t border-slate-100 text-[9px] font-mono tracking-widest uppercase text-[#C89B3C] font-bold">
+                  <div className="pt-6 mt-4 border-t border-slate-100 text-[9px] font-mono tracking-widest uppercase text-[#A16207] font-bold">
                     Padrão MultiPlus
                   </div>
                 </StarBorder>
@@ -566,11 +566,11 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
       {/* INTERACTIVE CAROUSEL SHOWCASE */}
       <section className="py-24 bg-white relative border-b border-slate-100 overflow-hidden">
         {/* Subtle decorative background detail */}
-        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[350px] h-[350px] bg-[#C89B3C]/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[350px] h-[350px] bg-[#A16207]/5 rounded-full blur-[100px] pointer-events-none" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C] block">Eixos de Excelência</span>
+            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207] block">Eixos de Excelência</span>
             <h3 className="text-3xl sm:text-4xl font-serif font-black text-slate-900 leading-tight m-0">Nossas Áreas de Foco</h3>
             <p className="text-sm text-slate-600 font-sans leading-relaxed">
               Arraste e explore de forma dinâmica e interativa as competências técnicas linguísticas que desenvolvemos ao longo dos nossos programas curriculares avançados.
@@ -598,7 +598,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C] block">Nossos Programas</span>
+            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207] block">Nossos Programas</span>
             <h3 className="text-3xl sm:text-4xl font-serif font-black text-slate-900 leading-tight m-0">Capacitações Ativas & Planeadas</h3>
             <p className="text-sm text-slate-600 font-sans leading-relaxed">
               Descubra a nossa formação inaugural ativa e conheça os futuros caminhos de especialização curricular que estão a ser preparados para si.
@@ -617,11 +617,11 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
               
               {/* Left Column of flagship: Course Info Banner & Badge */}
               <div className="lg:col-span-5 bg-slate-50 text-slate-800 p-8 sm:p-12 relative flex flex-col justify-between overflow-hidden text-left border-r border-slate-100">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#C89B3C]/10 to-transparent rounded-full pointer-events-none" />
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#A16207]/10 to-transparent rounded-full pointer-events-none" />
                 
                 <div className="space-y-6 relative z-10">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C89B3C]/10 border border-[#C89B3C]/20 text-[10px] font-mono tracking-widest uppercase text-[#C89B3C] font-bold">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#C89B3C] animate-pulse" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#A16207]/10 border border-[#A16207]/20 text-[10px] font-mono tracking-widest uppercase text-[#A16207] font-bold">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#A16207] animate-pulse" />
                     Curso Ativo em Destaque
                   </span>
 
@@ -636,7 +636,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
 
                 <div className="pt-8 border-t border-slate-200 mt-8 relative z-10 flex justify-between items-center">
                   <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400">MultiPlus Premium System</span>
-                  <span className="text-xs font-mono font-bold text-[#C89B3C]">72h de Carga Letiva</span>
+                  <span className="text-xs font-mono font-bold text-[#A16207]">72h de Carga Letiva</span>
                 </div>
               </div>
 
@@ -645,7 +645,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                   
                   <div className="flex items-start gap-3">
-                    <Calendar className="text-[#C89B3C] w-5 h-5 mt-0.5 flex-shrink-0" />
+                    <Calendar className="text-[#A16207] w-5 h-5 mt-0.5 flex-shrink-0" />
                     <div>
                       <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider">Período de Início</span>
                       <span className="text-sm font-semibold text-slate-900">{PRINCIPAL_COURSE.startDate}</span>
@@ -653,7 +653,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <Clock className="text-[#C89B3C] w-5 h-5 mt-0.5 flex-shrink-0" />
+                    <Clock className="text-[#A16207] w-5 h-5 mt-0.5 flex-shrink-0" />
                     <div>
                       <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider">Carga Horária</span>
                       <span className="text-sm font-semibold text-slate-900">{PRINCIPAL_COURSE.hours}</span>
@@ -661,7 +661,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <MapPin className="text-[#C89B3C] w-5 h-5 mt-0.5 flex-shrink-0" />
+                    <MapPin className="text-[#A16207] w-5 h-5 mt-0.5 flex-shrink-0" />
                     <div>
                       <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider">Formato das Aulas</span>
                       <span className="text-sm font-semibold text-slate-900">{PRINCIPAL_COURSE.modality} (Huambo, Angola)</span>
@@ -669,7 +669,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <Award className="text-[#C89B3C] w-5 h-5 mt-0.5 flex-shrink-0" />
+                    <Award className="text-[#A16207] w-5 h-5 mt-0.5 flex-shrink-0" />
                     <div>
                       <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider">Duração</span>
                       <span className="text-sm font-semibold text-slate-900">{PRINCIPAL_COURSE.duration}</span>
@@ -679,22 +679,22 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 </div>
 
                 <div className="space-y-3 pt-4 border-t border-gray-150">
-                  <p className="text-xs font-mono font-bold text-[#C89B3C] uppercase tracking-widest m-0">Foco do Desenvolvimento Técnico</p>
+                  <p className="text-xs font-mono font-bold text-[#A16207] uppercase tracking-widest m-0">Foco do Desenvolvimento Técnico</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs text-slate-600">
                     <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#C89B3C]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#A16207]" />
                       <span>Terminologia Comparada Civil/Common Law</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#C89B3C]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#A16207]" />
                       <span>Drafting e Estruturação de Cláusulas</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#C89B3C]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#A16207]" />
                       <span>Inglês de Petróleo, Gás & Energia em Angola</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#C89B3C]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#A16207]" />
                       <span>Oratória e Simulação de Resolução de Litígios</span>
                     </div>
                   </div>
@@ -710,7 +710,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                     speed="5s"
                     thickness={1.5}
                     className="flex-1 rounded-xl overflow-hidden cursor-pointer"
-                    innerClassName="w-full py-3.5 px-6 text-center text-xs font-bold uppercase tracking-wider bg-[#0A2E5D] hover:bg-[#123C73] text-white transition-colors"
+                    innerClassName="w-full py-3.5 px-6 text-center text-xs font-bold uppercase tracking-wider bg-[#0B1629] hover:bg-[#16233A] text-white transition-colors"
                   >
                     Ver Grade Curricular
                   </StarBorder>
@@ -720,7 +720,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                     speed="5s"
                     thickness={1.5}
                     className="flex-1 rounded-xl overflow-hidden cursor-pointer"
-                    innerClassName="w-full py-3.5 px-6 text-center text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-[#C89B3C] to-[#C89B3C] text-white hover:opacity-95 transition-opacity"
+                    innerClassName="w-full py-3.5 px-6 text-center text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-[#A16207] to-[#A16207] text-white hover:opacity-95 transition-opacity"
                   >
                     Solicitar Admissão Académica
                   </StarBorder>
@@ -732,7 +732,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
 
           {/* Grid header for future additions */}
           <div className="text-left max-w-2xl mb-8 space-y-2">
-            <span className="text-[#C89B3C] text-xs font-mono font-bold tracking-widest uppercase block">Expansão de Programas</span>
+            <span className="text-[#A16207] text-xs font-mono font-bold tracking-widest uppercase block">Expansão de Programas</span>
             <h4 className="text-2xl font-serif font-bold text-slate-900 m-0">Próximos Programas Curriculares</h4>
             <p className="text-xs text-neutral-400 m-0 leading-relaxed">
               O planeamento strategic da MultiPlus Academy foi construído para expandir a capacitação de línguas a várias vertentes intelectuais e de comércio internacional. Em fase de preparação pedagógica:
@@ -754,14 +754,14 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   <span className="inline-block text-[9px] font-mono tracking-widest uppercase text-neutral-400 bg-slate-100 px-2 py-0.5 rounded font-bold">
                     PREPARANDO
                   </span>
-                  <h5 className="text-sm font-serif font-bold text-slate-900 group-hover:text-[#C89B3C] transition-colors mt-2 leading-tight">
+                  <h5 className="text-sm font-serif font-bold text-slate-900 group-hover:text-[#A16207] transition-colors mt-2 leading-tight">
                     {prog.title}
                   </h5>
                   <p className="text-[11px] text-neutral-400 leading-relaxed font-sans mt-1">
                     {prog.desc}
                   </p>
                 </div>
-                <div className="pt-4 mt-4 border-t border-slate-100 text-[9px] font-mono tracking-widest uppercase text-[#C89B3C]/85 font-black">
+                <div className="pt-4 mt-4 border-t border-slate-100 text-[9px] font-mono tracking-widest uppercase text-[#A16207]/85 font-black">
                   Brevemente
                 </div>
               </StarBorder>
@@ -776,7 +776,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
-            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C] block">Direção Letiva</span>
+            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207] block">Direção Letiva</span>
             <h3 className="text-3xl sm:text-4xl font-serif font-black text-slate-900 m-0">Coordenação Pedagógica</h3>
             <p className="text-sm text-slate-600">
               Aprenda com formadores que unem vasta bagagem em linguística aplicada, tradução corporativa e ensino internacional.
@@ -794,7 +794,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
             
             {/* Visual Frame left */}
             <div className="md:col-span-5 relative py-8 px-6 bg-slate-50 flex flex-col justify-center items-center overflow-hidden border-r border-slate-100">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#C89B3C]/5 rounded-full pointer-events-none" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#A16207]/5 rounded-full pointer-events-none" />
               
               <StarBorder
                 as="div"
@@ -812,7 +812,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
 
               <div className="mt-6 text-center">
                 <span className="block text-2xl font-serif font-bold text-slate-900 tracking-tight">{MAIN_INSTRUCTOR.experienceYears}+ Anos</span>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-[#C89B3C] font-semibold block mt-1">Carreira Docente & Tradução</span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#A16207] font-semibold block mt-1">Carreira Docente & Tradução</span>
               </div>
             </div>
 
@@ -821,7 +821,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
               <div className="space-y-4">
                 <div>
                   <h4 className="text-2xl font-serif font-bold text-slate-900 m-0">{MAIN_INSTRUCTOR.name}</h4>
-                  <p className="text-xs font-mono text-[#C89B3C] font-bold tracking-wide mt-1 uppercase">{MAIN_INSTRUCTOR.role}</p>
+                  <p className="text-xs font-mono text-[#A16207] font-bold tracking-wide mt-1 uppercase">{MAIN_INSTRUCTOR.role}</p>
                 </div>
 
                 <p className="text-xs sm:text-sm text-[#1C1C1C]/85 leading-relaxed font-sans m-0">
@@ -834,7 +834,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     {MAIN_INSTRUCTOR.credentials.slice(0, 4).map((cred, idx) => (
                       <div key={idx} className="flex items-center gap-2 text-[#1C1C1C]/80">
-                        <CheckCircle size={12} className="text-[#C89B3C] flex-shrink-0" />
+                        <CheckCircle size={12} className="text-[#A16207] flex-shrink-0" />
                         <span className="truncate">{cred}</span>
                       </div>
                     ))}
@@ -861,10 +861,10 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   speed="5s"
                   thickness={1.5}
                   className="w-full sm:w-auto rounded-lg overflow-hidden cursor-pointer"
-                  innerClassName="px-5 py-2.5 text-xs font-bold uppercase tracking-wider bg-[#0A2E5D] hover:bg-[#123C73] text-white flex items-center justify-center gap-1.5 transition-colors"
+                  innerClassName="px-5 py-2.5 text-xs font-bold uppercase tracking-wider bg-[#0B1629] hover:bg-[#16233A] text-white flex items-center justify-center gap-1.5 transition-colors"
                 >
                   Ver Perfil Docente
-                  <ArrowRight size={13} className="text-[#C89B3C]" />
+                  <ArrowRight size={13} className="text-[#A16207]" />
                 </StarBorder>
               </div>
 
@@ -881,7 +881,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-4 text-left">
             <div className="space-y-2">
-              <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C] block">Conteúdos E Artigos</span>
+              <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207] block">Conteúdos E Artigos</span>
               <h3 className="text-3xl sm:text-4xl font-serif font-black text-slate-900 m-0">Canal de Aprendizagem & Blog</h3>
               <p className="text-sm text-slate-600 m-0 leading-relaxed max-w-xl font-sans">
                 Aceda a novidades literárias, análises de termos internacionais e notícias académicas escritas pela nossa coordenação científica.
@@ -900,7 +900,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
               innerClassName="px-5 py-2.5 text-xs font-bold uppercase tracking-wider bg-white text-slate-800 flex items-center gap-2 transition-all"
             >
               Ver Todos os Artigos
-              <ArrowRight size={14} className="text-[#C89B3C]" />
+              <ArrowRight size={14} className="text-[#A16207]" />
             </StarBorder>
           </div>
 
@@ -921,14 +921,14 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
               >
                 
                 {/* Image header */}
-                <div className="aspect-[16/10] overflow-hidden relative bg-[#0A2E5D] w-full">
+                <div className="aspect-[16/10] overflow-hidden relative bg-[#0B1629] w-full">
                   <img
                     src={post.image}
                     alt={post.title}
                     className="w-full h-full object-cover grayscale opacity-90 group-hover:scale-105 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
                     referrerPolicy="no-referrer"
                   />
-                  <div className="absolute top-4 left-4 bg-[#0A2E5D]/90 backdrop-blur text-[#C89B3C] text-[9px] font-mono font-bold px-2.5 py-1 rounded-md uppercase tracking-wider border border-[#C89B3C]/20">
+                  <div className="absolute top-4 left-4 bg-[#0B1629]/90 backdrop-blur text-[#A16207] text-[9px] font-mono font-bold px-2.5 py-1 rounded-md uppercase tracking-wider border border-[#A16207]/20">
                     {post.category}
                   </div>
                 </div>
@@ -941,7 +941,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                       <span>•</span>
                       <span>{post.readTime}</span>
                     </div>
-                    <h4 className="text-base font-serif font-bold text-slate-900 leading-snug line-clamp-2 group-hover:text-[#C89B3C] transition-colors mt-1">
+                    <h4 className="text-base font-serif font-bold text-slate-900 leading-snug line-clamp-2 group-hover:text-[#A16207] transition-colors mt-1">
                       {post.title}
                     </h4>
                     <p className="text-xs text-slate-500 leading-relaxed font-sans line-clamp-2 mt-2 m-0">
@@ -977,7 +977,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
             <div className="lg:col-span-5 flex flex-col justify-between space-y-8 text-left">
               
               <div className="space-y-4">
-                <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C] block">Contacto Direto</span>
+                <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207] block">Contacto Direto</span>
                 <h3 className="text-3xl sm:text-4xl font-serif font-black text-slate-900 leading-tight m-0">Esclareça Toda e Qualquer Dúvida</h3>
                 <p className="text-sm text-slate-600">
                   Pretende formar turmas integradas na sua corporação ou organizar workshops específicos de inglês técnico? Entre em contacto connosco agora.
@@ -995,7 +995,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   className="rounded-xl overflow-hidden block"
                   innerClassName="flex items-center gap-4 p-4 bg-slate-50/50 hover:bg-slate-50 transition-all group w-full text-left"
                 >
-                  <div className="p-3 rounded-lg bg-[#0A2E5D]/5 text-[#0A2E5D] group-hover:bg-[#C89B3C]/10 group-hover:text-[#C89B3C] transition-colors">
+                  <div className="p-3 rounded-lg bg-[#0B1629]/5 text-[#0B1629] group-hover:bg-[#A16207]/10 group-hover:text-[#A16207] transition-colors">
                     <Phone size={18} />
                   </div>
                   <div>
@@ -1013,7 +1013,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   className="rounded-xl overflow-hidden block"
                   innerClassName="flex items-center gap-4 p-4 bg-slate-50/50 hover:bg-slate-50 transition-all group w-full text-left"
                 >
-                  <div className="p-3 rounded-lg bg-[#0A2E5D]/5 text-[#0A2E5D] group-hover:bg-[#C89B3C]/10 group-hover:text-[#C89B3C] transition-colors">
+                  <div className="p-3 rounded-lg bg-[#0B1629]/5 text-[#0B1629] group-hover:bg-[#A16207]/10 group-hover:text-[#A16207] transition-colors">
                     <Mail size={18} />
                   </div>
                   <div>
@@ -1031,7 +1031,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   className="w-full rounded-xl overflow-hidden cursor-pointer block"
                   innerClassName="flex items-center gap-4 p-4 bg-slate-50/50 hover:bg-slate-50 transition-all text-left group w-full"
                 >
-                  <div className="p-3 px-3.5 rounded-lg bg-[#0A2E5D]/5 text-[#0A2E5D] group-hover:bg-[#C89B3C]/10 group-hover:text-[#C89B3C] transition-colors text-xs font-mono font-extrabold uppercase">
+                  <div className="p-3 px-3.5 rounded-lg bg-[#0B1629]/5 text-[#0B1629] group-hover:bg-[#A16207]/10 group-hover:text-[#A16207] transition-colors text-xs font-mono font-extrabold uppercase">
                     W/A
                   </div>
                   <div>
@@ -1048,7 +1048,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   className="rounded-xl overflow-hidden block"
                   innerClassName="flex items-center gap-4 p-4 bg-slate-50/50 w-full text-left"
                 >
-                  <div className="p-3 rounded-lg bg-[#0A2E5D]/5 text-[#0A2E5D]">
+                  <div className="p-3 rounded-lg bg-[#0B1629]/5 text-[#0B1629]">
                     <MapPin size={18} />
                   </div>
                   <div>
@@ -1069,7 +1069,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   speed="5s"
                   thickness={1.5}
                   className="w-full rounded-xl overflow-hidden cursor-pointer block"
-                  innerClassName="w-full py-3.5 text-xs font-bold uppercase tracking-wider bg-[#0A2E5D] text-white hover:bg-[#123C73] transition-colors text-center"
+                  innerClassName="w-full py-3.5 text-xs font-bold uppercase tracking-wider bg-[#0B1629] text-white hover:bg-[#16233A] transition-colors text-center"
                 >
                   Ir para Formulário Completo
                 </StarBorder>
@@ -1088,9 +1088,9 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
               >
                 
                 {/* Header widget decor */}
-                <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between text-xs font-mono text-[#0A2E5D]">
+                <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between text-xs font-mono text-[#0B1629]">
                   <span className="font-semibold flex items-center gap-1.5 uppercase">
-                    <Globe size={12} className="text-[#C89B3C] animate-spin-slow" />
+                    <Globe size={12} className="text-[#A16207] animate-spin-slow" />
                     Plataforma de Conectividade Global
                   </span>
                   <span className="text-slate-400 text-[9px] uppercase font-bold tracking-wider">Angola Conectada ao Mundo</span>
@@ -1103,71 +1103,71 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(10,46,93,0.03),transparent_70%)] pointer-events-none" />
                   
                   {/* Grid overlay lines to give an institutional/geopolitical digital command feel */}
-                  <div className="absolute inset-0 opacity-35 bg-[linear-gradient(to_right,#0a2e5d08_1px,transparent_1px),linear-gradient(to_bottom,#0a2e5d08_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
+                  <div className="absolute inset-0 opacity-35 bg-[linear-gradient(to_right,#0B162908_1px,transparent_1px),linear-gradient(to_bottom,#0B162908_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
 
                   {/* Premium World Map vector outlines, elegantly stylized custom shapes */}
                   <svg viewBox="0 0 540 280" className="w-full h-full relative z-10 text-slate-750/60 transition-all select-none opacity-90 animate-fadeIn">
                     
                     {/* Simplified North America Continent Math Vector */}
-                    <path d="M40,50 L110,40 L160,50 L150,90 L110,120 L80,125 L50,110 Z" fill="#0A2E5D" stroke="#0A2E5D" strokeWidth="0.5" opacity="0.85" />
-                    <path d="M120,40 L155,25 L180,45 L155,65 Z" fill="#0A2E5D" opacity="0.35" />
+                    <path d="M40,50 L110,40 L160,50 L150,90 L110,120 L80,125 L50,110 Z" fill="#0B1629" stroke="#0B1629" strokeWidth="0.5" opacity="0.85" />
+                    <path d="M120,40 L155,25 L180,45 L155,65 Z" fill="#0B1629" opacity="0.35" />
 
                     {/* Simplified South America Continent Math Vector */}
-                    <path d="M100,140 L140,135 L165,155 L150,210 L135,255 L120,265 L115,240 L95,170 Z" fill="#0A2E5D" stroke="#0A2E5D" strokeWidth="0.5" opacity="0.85" />
+                    <path d="M100,140 L140,135 L165,155 L150,210 L135,255 L120,265 L115,240 L95,170 Z" fill="#0B1629" stroke="#0B1629" strokeWidth="0.5" opacity="0.85" />
 
                     {/* Simplified Eurasia (Europe/Asia) Continent Math Vector */}
-                    <path d="M220,50 L280,30 L360,25 L450,30 L490,55 L480,105 L440,115 L430,85 L390,125 L340,120 L320,130 L280,120 L270,90 L240,65 Z" fill="#0A2E5D" stroke="#0A2E5D" strokeWidth="0.5" opacity="0.85" />
-                    <path d="M380,135 L420,130 L445,160 L460,190 L440,210 L400,205 Z" fill="#0A2E5D" opacity="0.45" />
+                    <path d="M220,50 L280,30 L360,25 L450,30 L490,55 L480,105 L440,115 L430,85 L390,125 L340,120 L320,130 L280,120 L270,90 L240,65 Z" fill="#0B1629" stroke="#0B1629" strokeWidth="0.5" opacity="0.85" />
+                    <path d="M380,135 L420,130 L445,160 L460,190 L440,210 L400,205 Z" fill="#0B1629" opacity="0.45" />
 
                     {/* Simplified Africa Continent Math Vector (Elegantly aligned) */}
-                    <path d="M230,125 L285,115 L320,125 L325,155 L305,210 L280,250 L270,255 L260,230 L250,210 L233,185 Z" fill="#0A2E5D" stroke="#0A2E5D" strokeWidth="0.5" opacity="0.85" />
+                    <path d="M230,125 L285,115 L320,125 L325,155 L305,210 L280,250 L270,255 L260,230 L250,210 L233,185 Z" fill="#0B1629" stroke="#0B1629" strokeWidth="0.5" opacity="0.85" />
                     
                     {/* Australia */}
-                    <path d="M440,215 L485,210 L500,235 L475,255 L445,245 Z" fill="#0A2E5D" stroke="#0A2E5D" strokeWidth="0.5" opacity="0.85" />
+                    <path d="M440,215 L485,210 L500,235 L475,255 L445,245 Z" fill="#0B1629" stroke="#0B1629" strokeWidth="0.5" opacity="0.85" />
 
                     {/* Premium Connection Pathway Trajectory Arcs (glowing connections) */}
                     <g fill="none" strokeWidth="1.2">
                       {/* Huambo to Lisbon */}
-                      <path d="M 270 215 Q 235 155 258 95" stroke="#C89B3C" strokeDasharray="4 3" className="animate-pulse" />
+                      <path d="M 270 215 Q 235 155 258 95" stroke="#A16207" strokeDasharray="4 3" className="animate-pulse" />
                       {/* Huambo to London */}
-                      <path d="M 270 215 Q 242 145 275 75" stroke="#C89B3C" strokeDasharray="3 3" />
+                      <path d="M 270 215 Q 242 145 275 75" stroke="#A16207" strokeDasharray="3 3" />
                       {/* Huambo to Houston */}
-                      <path d="M 270 215 Q 155 185 110 85" stroke="#0A2E5D" strokeDasharray="5 4" opacity="0.5" />
+                      <path d="M 270 215 Q 155 185 110 85" stroke="#0B1629" strokeDasharray="5 4" opacity="0.5" />
                       {/* Huambo to Dubai */}
-                      <path d="M 270 215 Q 315 175 342 115" stroke="#C89B3C" strokeDasharray="4 2" />
+                      <path d="M 270 215 Q 315 175 342 115" stroke="#A16207" strokeDasharray="4 2" />
                       {/* Huambo to Singapore */}
-                      <path d="M 270 215 Q 370 235 440 185" stroke="#0A2E5D" strokeDasharray="6 3" opacity="0.4" />
+                      <path d="M 270 215 Q 370 235 440 185" stroke="#0B1629" strokeDasharray="6 3" opacity="0.4" />
                     </g>
 
                     {/* Interceptor Glowing Hub Nodes & Pulsing points */}
                     
                     {/* Houston Node */}
-                    <circle cx="110" cy="85" r="3" fill="#0A2E5D" />
-                    <circle cx="110" cy="85" r="6" fill="none" stroke="#0A2E5D" strokeWidth="0.5" opacity="0.5" />
+                    <circle cx="110" cy="85" r="3" fill="#0B1629" />
+                    <circle cx="110" cy="85" r="6" fill="none" stroke="#0B1629" strokeWidth="0.5" opacity="0.5" />
                     
                     {/* Lisbon Node */}
-                    <circle cx="258" cy="95" r="3" fill="#C89B3C" />
-                    <circle cx="258" cy="95" r="6" fill="none" stroke="#C89B3C" strokeWidth="0.5" opacity="0.6" />
+                    <circle cx="258" cy="95" r="3" fill="#A16207" />
+                    <circle cx="258" cy="95" r="6" fill="none" stroke="#A16207" strokeWidth="0.5" opacity="0.6" />
 
                     {/* London Node */}
-                    <circle cx="275" cy="75" r="3" fill="#C89B3C" />
-                    <circle cx="275" cy="75" r="7" fill="none" stroke="#C89B3C" strokeWidth="0.5" opacity="0.6" />
+                    <circle cx="275" cy="75" r="3" fill="#A16207" />
+                    <circle cx="275" cy="75" r="7" fill="none" stroke="#A16207" strokeWidth="0.5" opacity="0.6" />
 
                     {/* Dubai Node */}
-                    <circle cx="342" cy="115" r="3" fill="#C89B3C" />
-                    <circle cx="342" cy="115" r="6" fill="none" stroke="#C89B3C" strokeWidth="0.5" opacity="0.5" />
+                    <circle cx="342" cy="115" r="3" fill="#A16207" />
+                    <circle cx="342" cy="115" r="6" fill="none" stroke="#A16207" strokeWidth="0.5" opacity="0.5" />
 
                     {/* Main Sede Hub: Angola (Luanda / Huambo) */}
                     <g className="cursor-pointer">
-                      <circle cx="270" cy="215" r="8" fill="none" stroke="#C89B3C" strokeWidth="1" className="animate-ping opacity-60" style={{ transformOrigin: '270px 215px' }} />
-                      <circle cx="270" cy="215" r="14" fill="none" stroke="#C89B3C" strokeWidth="0.5" className="animate-pulse opacity-20" style={{ transformOrigin: '270px 215px' }} />
-                      <circle cx="270" cy="215" r="4.5" fill="#C89B3C" />
-                      <circle cx="270" cy="215" r="1.5" fill="#0A2E5D" />
+                      <circle cx="270" cy="215" r="8" fill="none" stroke="#A16207" strokeWidth="1" className="animate-ping opacity-60" style={{ transformOrigin: '270px 215px' }} />
+                      <circle cx="270" cy="215" r="14" fill="none" stroke="#A16207" strokeWidth="0.5" className="animate-pulse opacity-20" style={{ transformOrigin: '270px 215px' }} />
+                      <circle cx="270" cy="215" r="4.5" fill="#A16207" />
+                      <circle cx="270" cy="215" r="1.5" fill="#0B1629" />
                     </g>
                     
                     {/* Map Labels with clean styled typography */}
                     <g fill="#475569" fontSize="7" fontFamily="monospace" letterSpacing="0.5" opacity="0.95">
-                      <text x="282" y="219" fill="#C89B3C" fontWeight="bold">HUAMBO HUB (AO)</text>
+                      <text x="282" y="219" fill="#A16207" fontWeight="bold">HUAMBO HUB (AO)</text>
                       <text x="212" y="205" fill="#475569">LUANDA</text>
                       <text x="186" y="99" fill="#475569">LISBOA</text>
                       <text x="284" y="73" fill="#475569">LONDRES</text>
@@ -1188,7 +1188,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                       className="rounded-xl overflow-hidden max-w-[270px]"
                       innerClassName="bg-white/95 p-3 shadow-[0_4px_20px_rgba(10,46,93,0.06)] text-left backdrop-blur-sm w-full h-full"
                     >
-                      <span className="text-[7.5px] font-mono font-black text-[#C89B3C] block tracking-widest uppercase">Rede Académica Global</span>
+                      <span className="text-[7.5px] font-mono font-black text-[#A16207] block tracking-widest uppercase">Rede Académica Global</span>
                       <h4 className="text-xs font-serif font-black text-slate-900 mt-1 leading-normal m-0 mb-0.5">Sede Central do Huambo</h4>
                       <p className="text-[9px] text-slate-600 leading-relaxed font-sans mt-0.5 m-0">
                         Capacitação linguística de elite conectando profissionais angolanos aos principais centros jurídicos, energéticos e comerciais mundiais.

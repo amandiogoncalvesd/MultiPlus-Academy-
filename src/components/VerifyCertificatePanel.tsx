@@ -79,7 +79,7 @@ export default function VerifyCertificatePanel({
             speed="6s"
             thickness={1.5}
             className="rounded-lg overflow-hidden cursor-pointer"
-            innerClassName="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest uppercase text-[#0A2E5D] hover:text-[#C89B3C] bg-slate-50 px-3.5 py-2"
+            innerClassName="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest uppercase text-[#0B1629] hover:text-[#A16207] bg-slate-50 px-3.5 py-2"
           >
             <ArrowLeft size={14} />
             Voltar à Página Principal
@@ -94,7 +94,7 @@ export default function VerifyCertificatePanel({
           className="w-full rounded-3xl overflow-hidden shadow-sm"
           innerClassName="relative z-1 p-8 rounded-3xl bg-white w-full text-center space-y-6 border border-slate-200"
         >
-          <div className="w-16 h-16 bg-slate-50 text-[#C89B3C] border border-slate-200 rounded-full flex items-center justify-center mx-auto shadow-sm">
+          <div className="w-16 h-16 bg-slate-50 text-[#A16207] border border-slate-200 rounded-full flex items-center justify-center mx-auto shadow-sm">
             <Award size={32} />
           </div>
 
@@ -113,7 +113,7 @@ export default function VerifyCertificatePanel({
                 placeholder="Ex: MPA-2026-001"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-center font-mono text-sm tracking-wider font-extrabold text-slate-900 focus:outline-none focus:border-[#C89B3C] focus:bg-white transition-colors placeholder-slate-400 shadow-2xs"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-center font-mono text-sm tracking-wider font-extrabold text-slate-900 focus:outline-none focus:border-[#A16207] focus:bg-white transition-colors placeholder-slate-400 shadow-2xs"
               />
             </div>
             
@@ -124,7 +124,7 @@ export default function VerifyCertificatePanel({
                 speed="4s"
                 thickness={2}
                 className="w-full rounded-xl overflow-hidden cursor-pointer shadow-md"
-                innerClassName="relative z-1 w-full py-3.5 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-mono font-bold uppercase rounded-xl tracking-wider flex items-center justify-center"
+                innerClassName="relative z-1 w-full py-3.5 bg-[#0B1629] hover:bg-[#16233A] text-white text-xs font-mono font-bold uppercase rounded-xl tracking-wider flex items-center justify-center"
               >
                 Consultar Autenticidade
               </StarBorder>
@@ -195,7 +195,7 @@ export default function VerifyCertificatePanel({
                         href={result.pdfUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0A2E5D] hover:bg-[#123C73] text-white rounded-xl text-xs font-mono font-black uppercase tracking-wider transition-colors no-underline cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0B1629] hover:bg-[#16233A] text-white rounded-xl text-xs font-mono font-black uppercase tracking-wider transition-colors no-underline cursor-pointer"
                       >
                         <Award size={14} /> Descarregar Certificado (PDF Oficial)
                       </a>

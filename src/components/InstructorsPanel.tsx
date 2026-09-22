@@ -27,9 +27,9 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
       
       {/* Banner portion */}
       <section className="py-16 bg-slate-50 text-slate-900 text-center relative border-b border-slate-200">
-        <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(to_right,#C89B3C_1px,transparent_1px)] bg-[size:40px_40px]" />
+        <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(to_right,#A16207_1px,transparent_1px)] bg-[size:40px_40px]" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-4">
-          <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C]">Sobre a Formadora</span>
+          <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207]">Sobre a Formadora</span>
           <h1 className="text-4xl font-serif font-black tracking-tight mt-0 text-slate-900 leading-tight">Formadora</h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto">
             Conheça a formação, experiência profissional, acreditação e vivência internacional da formadora.
@@ -67,7 +67,7 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
                     <div>
                       <span className="block text-[8px] font-mono tracking-wider text-slate-400 uppercase">Vivência Internacional</span>
                       <span className="text-xs font-bold flex items-center gap-1 text-slate-900">
-                        <MapPin size={10} className="text-[#C89B3C]" />
+                        <MapPin size={10} className="text-[#A16207]" />
                         Inglaterra, Brasil, África do Sul, Namíbia e Zimbabué
                       </span>
                     </div>
@@ -78,7 +78,7 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
                       speed="5s"
                       thickness={1.5}
                       className="rounded-lg overflow-hidden cursor-pointer"
-                      innerClassName="relative z-1 px-3 py-1.5 bg-[#C89B3C] text-white text-[9px] font-bold rounded-lg hover:bg-[#B3852C] transition-colors uppercase tracking-wider"
+                      innerClassName="relative z-1 px-3 py-1.5 bg-[#A16207] text-white text-[9px] font-bold rounded-lg hover:bg-[#854D0D] transition-colors uppercase tracking-wider"
                     >
                       Consultar
                     </StarBorder>
@@ -87,7 +87,7 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
               </StarBorder>
 
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-[#C89B3C]"><Clock size={18} /></div><div><span className="block text-[9px] font-mono uppercase text-slate-400">Experiência profissional</span><span className="text-sm font-bold text-slate-900">{currentTeacher.experienceYears} anos dedicados ao ensino</span></div></div>
+                <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-[#A16207]"><Clock size={18} /></div><div><span className="block text-[9px] font-mono uppercase text-slate-400">Experiência profissional</span><span className="text-sm font-bold text-slate-900">{currentTeacher.experienceYears} anos dedicados ao ensino</span></div></div>
               </div>
             </div>
 
@@ -95,7 +95,7 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
             <div className="lg:col-span-7 space-y-8 text-left">
               
               <div>
-                <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C] mb-2 block">
+                <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207] mb-2 block">
                   {currentTeacher.role}
                 </span>
                 <h2 className="text-3xl font-serif font-black text-slate-900 m-0">
@@ -105,7 +105,7 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
 
               {/* Biography Section */}
               <div className="space-y-3">
-                <span className="block font-mono font-bold uppercase text-[10px] tracking-widest text-[#C89B3C]">Sobre a Formadora</span>
+                <span className="block font-mono font-bold uppercase text-[10px] tracking-widest text-[#A16207]">Sobre a Formadora</span>
                 <p className="text-sm text-slate-600 leading-relaxed font-sans m-0 font-medium">
                   {currentTeacher.bio}
                 </p>
@@ -113,7 +113,7 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
 
               {/* Expertise Area Badges */}
               <div className="space-y-3">
-                <span className="block font-mono font-bold uppercase text-[10px] tracking-widest text-[#C89B3C]">Áreas de atuação</span>
+                <span className="block font-mono font-bold uppercase text-[10px] tracking-widest text-[#A16207]">Áreas de atuação</span>
                 <div className="flex flex-wrap gap-2">
                   {currentTeacher.specializations.map((spec, idx) => (
                     <StarBorder
@@ -132,7 +132,7 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
 
               {/* Credentials Outline */}
               <div className="space-y-4">
-                <span className="block font-mono font-bold uppercase text-[10px] tracking-widest text-[#C89B3C]">Formação, experiência e acreditação</span>
+                <span className="block font-mono font-bold uppercase text-[10px] tracking-widest text-[#A16207]">Formação, experiência e acreditação</span>
                 
                 <div className="space-y-3">
                   {currentTeacher.credentials.map((cred, idx) => (
@@ -142,9 +142,9 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
                       speed="8s"
                       thickness={1}
                       className="rounded-xl overflow-hidden shadow-2xs"
-                      innerClassName="relative z-1 flex items-start gap-3 text-sm text-slate-600 bg-white p-4 rounded-xl hover:border-[#C89B3C]/30 transition-all w-full text-left"
+                      innerClassName="relative z-1 flex items-start gap-3 text-sm text-slate-600 bg-white p-4 rounded-xl hover:border-[#A16207]/30 transition-all w-full text-left"
                     >
-                      <CheckCircle size={16} className="text-[#C89B3C] mt-0.5 flex-shrink-0" />
+                      <CheckCircle size={16} className="text-[#A16207] mt-0.5 flex-shrink-0" />
                       <div>
                         <span className="font-sans leading-relaxed block font-semibold text-slate-700">{cred}</span>
                       </div>
@@ -166,7 +166,7 @@ export default function InstructorsPanel({ setCurrentPage }: InstructorsPanelPro
                       className="rounded border border-slate-200 shadow-3xs overflow-hidden"
                       innerClassName="relative z-1 flex items-center gap-1.5 bg-slate-50 px-2.5 py-1"
                     >
-                      <BookOpen size={12} className="text-[#C89B3C]" />
+                      <BookOpen size={12} className="text-[#A16207]" />
                       {inst}
                     </StarBorder>
                   ))}

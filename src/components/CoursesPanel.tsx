@@ -101,9 +101,9 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
       
       {/* Banner design */}
       <section className="py-16 bg-slate-50 text-slate-900 overflow-hidden relative border-b border-slate-200">
-        <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(to_right,#C89B3C_1px,transparent_1px)] bg-[size:30px_30px]" />
+        <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(to_right,#A16207_1px,transparent_1px)] bg-[size:30px_30px]" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-4">
-          <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C]">Catálogo Académico</span>
+          <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207]">Catálogo Académico</span>
           <h1 className="text-4xl font-serif font-black tracking-tight text-slate-900 m-0">Formações Especializadas de Alta Carreira</h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
             Consulte a nossa trilha curricular desenhada para cobrir as exigências legislativas, aduaneiras e corporativas do mercado soberano de Angola.
@@ -124,7 +124,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Pesquisar por termos, contratos ou áreas..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#C89B3C] focus:bg-white transition-colors text-slate-900 placeholder-slate-400 shadow-inner"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#A16207] focus:bg-white transition-colors text-slate-900 placeholder-slate-400 shadow-inner"
               />
               {searchQuery && (
                 <button
@@ -149,7 +149,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                 className="rounded-lg overflow-hidden cursor-pointer"
                 innerClassName={`relative z-1 px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase whitespace-nowrap ${
                   selectedModality === 'all'
-                    ? 'bg-[#0A2E5D] text-white'
+                    ? 'bg-[#0B1629] text-white'
                     : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
                 }`}
               >
@@ -164,7 +164,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                 className="rounded-lg overflow-hidden cursor-pointer"
                 innerClassName={`relative z-1 px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase whitespace-nowrap ${
                   selectedModality === 'híbrido'
-                    ? 'bg-[#0A2E5D] text-white'
+                    ? 'bg-[#0B1629] text-white'
                     : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
                 }`}
               >
@@ -179,7 +179,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                 className="rounded-lg overflow-hidden cursor-pointer"
                 innerClassName={`relative z-1 px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase whitespace-nowrap ${
                   selectedModality === 'online'
-                    ? 'bg-[#0A2E5D] text-white'
+                    ? 'bg-[#0B1629] text-white'
                     : 'bg-slate-100 text-slate-500 hover:bg-slate-200/80'
                 }`}
               >
@@ -221,19 +221,19 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                       
                       {/* Visual header */}
                       <div className="bg-slate-50/80 border-b border-slate-100 p-6 text-slate-900 relative w-full">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#C89B3C]/5 to-transparent rounded-full pointer-events-none" />
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#A16207]/5 to-transparent rounded-full pointer-events-none" />
                         
                         <div className="flex justify-between items-center mb-4">
-                          <span className="bg-white text-[#C89B3C] text-[9px] font-mono tracking-widest font-extrabold px-2.5 py-1 rounded-md uppercase border border-slate-200 shadow-xs">
+                          <span className="bg-white text-[#A16207] text-[9px] font-mono tracking-widest font-extrabold px-2.5 py-1 rounded-md uppercase border border-slate-200 shadow-xs">
                             {course.modality}
                           </span>
                           <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest font-semibold">{course.duration}</span>
                         </div>
 
-                        <h3 className="text-xl font-serif font-bold text-slate-900 leading-snug hover:text-[#C89B3C] transition-colors line-clamp-2">
+                        <h3 className="text-xl font-serif font-bold text-slate-900 leading-snug hover:text-[#A16207] transition-colors line-clamp-2">
                           {course.title}
                         </h3>
-                        <p className="text-[11px] text-[#C89B3C] font-semibold mt-1.5 tracking-wide font-sans">{course.subtitle}</p>
+                        <p className="text-[11px] text-[#A16207] font-semibold mt-1.5 tracking-wide font-sans">{course.subtitle}</p>
                       </div>
 
                       {/* Summary prose */}
@@ -244,11 +244,11 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
 
                         <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-mono text-slate-400">
                           <div className="flex items-center gap-1.5">
-                            <Clock size={12} className="text-[#C89B3C]" />
+                            <Clock size={12} className="text-[#A16207]" />
                             <span className="font-medium">{course.hours}</span>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <Calendar size={12} className="text-[#C89B3C]" />
+                            <Calendar size={12} className="text-[#A16207]" />
                             <span className="font-medium">{course.startDate}</span>
                           </div>
                         </div>
@@ -265,7 +265,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
 
                         <button
                           onClick={onOpenSignUp}
-                          className="py-2.5 bg-[#0A2E5D] hover:bg-[#123C73] text-white rounded-lg text-xs font-bold uppercase tracking-wider text-center transition-colors cursor-pointer shadow-xs"
+                          className="py-2.5 bg-[#0B1629] hover:bg-[#16233A] text-white rounded-lg text-xs font-bold uppercase tracking-wider text-center transition-colors cursor-pointer shadow-xs"
                         >
                           Inscrever-se
                         </button>
@@ -290,7 +290,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                 </p>
                 <button
                   onClick={() => { setSearchQuery(''); setSelectedModality('all'); }}
-                  className="px-4 py-2 bg-[#0A2E5D] hover:bg-[#123C73] text-white rounded-lg text-xs font-mono font-bold uppercase tracking-wider shadow-sm"
+                  className="px-4 py-2 bg-[#0B1629] hover:bg-[#16233A] text-white rounded-lg text-xs font-mono font-bold uppercase tracking-wider shadow-sm"
                 >
                   Limpar Todos os Filtros
                 </button>
@@ -324,7 +324,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
               className="relative w-full max-w-3xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200 flex flex-col max-h-[85vh]"
             >
               {/* Premium golden visual bar */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-[#C89B3C]" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-[#A16207]" />
 
               {/* Modal Banner */}
               <div className="bg-slate-50 text-slate-900 p-6 sm:p-8 relative pt-10 border-b border-slate-100 text-left">
@@ -336,14 +336,14 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                   <X size={16} />
                 </button>
                 
-                <span className="px-3 py-1 rounded-lg bg-white text-[#C89B3C] text-[9px] font-mono tracking-widest font-black uppercase border border-slate-200 shadow-xs">
+                <span className="px-3 py-1 rounded-lg bg-white text-[#A16207] text-[9px] font-mono tracking-widest font-black uppercase border border-slate-200 shadow-xs">
                   {activeCourseDetails.modality}
                 </span>
 
                 <h3 className="text-xl sm:text-2xl font-serif font-bold mt-4 pr-10 text-slate-900 leading-tight">
                   {activeCourseDetails.title}
                 </h3>
-                <p className="text-xs text-[#C89B3C] font-semibold mt-1.5 font-mono">{activeCourseDetails.subtitle}</p>
+                <p className="text-xs text-[#A16207] font-semibold mt-1.5 font-mono">{activeCourseDetails.subtitle}</p>
               </div>
 
               {/* Scrollable description box */}
@@ -408,7 +408,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                 {/* Target Audience Bullet Point list */}
                 {activeCourseDetails.targetAudience && activeCourseDetails.targetAudience.length > 0 && (
                   <div className="space-y-3">
-                    <span className="block font-mono font-bold uppercase text-[9px] tracking-widest text-[#C89B3C]">Grupo De Candidaturas Elegíveis</span>
+                    <span className="block font-mono font-bold uppercase text-[9px] tracking-widest text-[#A16207]">Grupo De Candidaturas Elegíveis</span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
                       {activeCourseDetails.targetAudience.map((aud, i) => (
                         <StarBorder
@@ -419,7 +419,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                           className="rounded-xl overflow-hidden shadow-xs hover:shadow-sm"
                           innerClassName="flex items-center gap-2.5 text-slate-700 bg-white p-3 w-full h-full text-left"
                         >
-                          <CheckCircle size={15} className="text-[#C89B3C] flex-shrink-0" />
+                          <CheckCircle size={15} className="text-[#A16207] flex-shrink-0" />
                           <span className="font-semibold text-slate-700">{aud}</span>
                         </StarBorder>
                       ))}
@@ -443,7 +443,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                           innerClassName="p-5 bg-white space-y-3 w-full h-full text-left"
                         >
                           <div className="flex items-center gap-2.5">
-                            <span className="px-2.5 py-0.5 rounded bg-slate-100 text-[10px] font-mono font-bold text-slate-800 border border-slate-200 group-hover:bg-[#0A2E5D] group-hover:text-white group-hover:border-[#0A2E5D] transition-all">
+                            <span className="px-2.5 py-0.5 rounded bg-slate-100 text-[10px] font-mono font-bold text-slate-800 border border-slate-200 group-hover:bg-[#0B1629] group-hover:text-white group-hover:border-[#0B1629] transition-all">
                               {mod.number}
                             </span>
                             <h4 className="text-sm font-serif font-bold text-slate-900 m-0">{mod.title}</h4>
@@ -489,7 +489,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                     speed="5s"
                     thickness={1.5}
                     className="flex-1 sm:flex-none rounded-xl overflow-hidden cursor-pointer"
-                    innerClassName="px-8 py-3 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-bold uppercase tracking-widest transition-all shadow-lg active:scale-[0.98] w-full"
+                    innerClassName="px-8 py-3 bg-[#0B1629] hover:bg-[#16233A] text-white text-xs font-bold uppercase tracking-widest transition-all shadow-lg active:scale-[0.98] w-full"
                   >
                     Prosseguir Inscrição
                   </StarBorder>

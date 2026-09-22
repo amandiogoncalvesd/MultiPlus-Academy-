@@ -257,7 +257,7 @@ export default function CertificateIssueModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-grow py-2.5 bg-gradient-to-r from-gold-600 to-[#E2B755] hover:shadow-lg text-white text-2xs font-mono font-bold uppercase rounded-xl border-0 cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+                className="flex-grow py-2.5 bg-gradient-to-r from-gold-600 to-[#CA8A04] hover:shadow-lg text-white text-2xs font-mono font-bold uppercase rounded-xl border-0 cursor-pointer transition-colors flex items-center justify-center gap-1.5"
               >
                 {isSubmitting ? (
                   <>

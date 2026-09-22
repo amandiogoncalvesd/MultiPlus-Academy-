@@ -506,7 +506,7 @@ const PillNav: React.FC<PillNavProps> = ({
             width: 'calc(var(--nav-h) - 6px)',
             height: 'calc(var(--nav-h) - 6px)',
             background: 'var(--container-bg, #ffffff)',
-            color: isDarkMode ? '#C89B3C' : '#0A2E5D',
+            color: isDarkMode ? '#A16207' : '#0B1629',
           }}
         >
           {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}

@@ -38,17 +38,17 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="min-h-screen bg-[#F8F8F6] flex flex-col justify-center items-center px-4 py-12 text-center select-none">
-          <div className="absolute top-0 left-0 w-full h-1.5 bg-[#C89B3C]" />
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-[#A16207]" />
           
           <div className="max-w-md w-full bg-white border border-slate-200/80 rounded-3xl p-8 sm:p-10 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#C89B3C]/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#A16207]/5 rounded-full blur-3xl pointer-events-none" />
             
             <div className="flex flex-col items-center">
               <div className="p-4 bg-amber-50 rounded-2xl text-amber-600 mb-6 border border-amber-100">
                 <AlertTriangle size={36} className="animate-bounce" />
               </div>
 
-              <span className="text-[10px] font-mono tracking-widest text-[#C89B3C] uppercase block mb-1 font-bold">
+              <span className="text-[10px] font-mono tracking-widest text-[#A16207] uppercase block mb-1 font-bold">
                 MultiPlus Academy • Sistema de Proteção
               </span>
               
@@ -69,7 +69,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <div className="flex flex-col sm:flex-row gap-3 w-full">
                 <button
                   onClick={this.handleReset}
-                  className="flex-grow flex items-center justify-center gap-2 py-3 px-4 bg-[#0A2E5D] hover:bg-[#08244a] text-white font-mono text-3xs font-extrabold uppercase rounded-xl transition-all cursor-pointer shadow-sm border-0"
+                  className="flex-grow flex items-center justify-center gap-2 py-3 px-4 bg-[#0B1629] hover:bg-[#08244a] text-white font-mono text-3xs font-extrabold uppercase rounded-xl transition-all cursor-pointer shadow-sm border-0"
                 >
                   <RefreshCw size={12} />
                   Recarregar Aplicação

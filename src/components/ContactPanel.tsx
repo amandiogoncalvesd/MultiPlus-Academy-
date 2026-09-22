@@ -85,9 +85,9 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
       
       {/* Banner */}
       <section className="py-16 bg-slate-50 text-slate-900 text-center relative border-b border-slate-200">
-        <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(#C89B3C_1.5px,transparent_1.5px)] [background-size:24px_24px]" />
+        <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(#A16207_1.5px,transparent_1.5px)] [background-size:24px_24px]" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-4">
-          <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C]">Canais de Atendimento</span>
+          <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207]">Canais de Atendimento</span>
           <h1 className="text-4xl font-serif font-black tracking-tight mt-0 text-slate-900 leading-tight">Contacte a MultiPlus Academy</h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
             Estamos integralmente à sua disposição para analisar o seu perfil académico e organizar o seu assento letivo coordenado.
@@ -104,7 +104,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
             <div className="lg:col-span-5 flex flex-col justify-between space-y-8">
               
               <div className="space-y-4">
-                <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#C89B3C]">Canais Rápidos</span>
+                <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#A16207]">Canais Rápidos</span>
                 <h2 className="text-2xl sm:text-3xl font-serif font-black text-slate-900 leading-tight m-0">Canais Oficiais de Suporte</h2>
                 <p className="text-xs sm:text-sm text-slate-500 font-sans leading-relaxed m-0 font-medium">
                   Para propostas académicas de cariz institucional, corporativa, licenciaturas de escritórios ou candidaturas de corpo docente, prefira nosso contacto expedito.
@@ -122,7 +122,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                   className="rounded-xl overflow-hidden shadow-3xs"
                   innerClassName="relative z-1 flex items-center gap-4 p-4 bg-white w-full text-left"
                 >
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 text-[#C89B3C]">
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 text-[#A16207]">
                     <Phone size={18} />
                   </div>
                   <div>
@@ -141,7 +141,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                   className="rounded-xl overflow-hidden shadow-3xs"
                   innerClassName="relative z-1 flex items-center gap-4 p-4 bg-white w-full text-left"
                 >
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 text-[#C89B3C]">
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 text-[#A16207]">
                     <Mail size={18} />
                   </div>
                   <div>
@@ -160,7 +160,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                   className="rounded-xl overflow-hidden shadow-3xs"
                   innerClassName="relative z-1 flex items-center gap-4 p-4 bg-white w-full text-left"
                 >
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 text-[#C89B3C]">
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 text-[#A16207]">
                     <MapPin size={18} />
                   </div>
                   <div>
@@ -177,7 +177,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                 speed="10s"
                 thickness={2}
                 className="rounded-2xl overflow-hidden shadow-md"
-                innerClassName="relative z-1 p-6 bg-[#0A2E5D] text-white space-y-4 overflow-hidden w-full h-full text-left"
+                innerClassName="relative z-1 p-6 bg-[#0B1629] text-white space-y-4 overflow-hidden w-full h-full text-left"
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full pointer-events-none" />
                 
@@ -192,7 +192,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                   speed="5s"
                   thickness={1.5}
                   className="w-full rounded-lg overflow-hidden cursor-pointer shadow-md"
-                  innerClassName="relative z-1 w-full py-2.5 bg-[#C89B3C] text-white hover:bg-[#B3852C] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2"
+                  innerClassName="relative z-1 w-full py-2.5 bg-[#A16207] text-white hover:bg-[#854D0D] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2"
                 >
                   <MessageSquare size={14} />
                   Iniciar Conversa no WhatsApp
@@ -217,7 +217,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                   <div className="flex justify-between items-center pb-4 border-b border-slate-100">
                     <div>
                       <h4 className="text-lg font-serif font-black text-slate-900 m-0 leading-tight">Formulário de Contacto</h4>
-                      <p className="text-[9px] text-[#C89B3C] font-mono font-bold tracking-wider mt-0.5">ENTREGA DIRETA À SECRETARIA LETIVA</p>
+                      <p className="text-[9px] text-[#A16207] font-mono font-bold tracking-wider mt-0.5">ENTREGA DIRETA À SECRETARIA LETIVA</p>
                     </div>
                     <span className="text-[10px] text-slate-300 font-mono font-bold">CODE: EN-ANG-2026</span>
                   </div>
@@ -253,7 +253,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                               speed="5s"
                               thickness={1.5}
                               className="rounded-lg overflow-hidden cursor-pointer"
-                              innerClassName="px-6 py-2.5 bg-[#C89B3C] hover:bg-[#B3852C] text-white text-xs font-mono uppercase tracking-wider font-bold shadow-sm flex items-center gap-2"
+                              innerClassName="px-6 py-2.5 bg-[#A16207] hover:bg-[#854D0D] text-white text-xs font-mono uppercase tracking-wider font-bold shadow-sm flex items-center gap-2"
                             >
                               <Send size={13} />
                               Reabrir E-mail
@@ -265,7 +265,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                             speed="5s"
                             thickness={1.5}
                             className="rounded-lg overflow-hidden cursor-pointer"
-                            innerClassName="px-6 py-2.5 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-mono uppercase tracking-wider font-bold shadow-sm"
+                            innerClassName="px-6 py-2.5 bg-[#0B1629] hover:bg-[#16233A] text-white text-xs font-mono uppercase tracking-wider font-bold shadow-sm"
                           >
                             Escrever Nova Mensagem
                           </StarBorder>
@@ -289,7 +289,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                             placeholder="Ex: Dr. António Manuel"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-sans focus:outline-none focus:border-[#C89B3C] focus:bg-white transition-colors text-slate-900 placeholder-slate-400 shadow-2xs"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-sans focus:outline-none focus:border-[#A16207] focus:bg-white transition-colors text-slate-900 placeholder-slate-400 shadow-2xs"
                             disabled={submitStatus === 'loading'}
                           />
                         </div>
@@ -309,7 +309,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                               placeholder="nome@corporacao.ao"
                               value={formData.email}
                               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-sans focus:outline-none focus:border-[#C89B3C] focus:bg-white transition-colors text-slate-900 placeholder-slate-400 shadow-2xs"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-sans focus:outline-none focus:border-[#A16207] focus:bg-white transition-colors text-slate-900 placeholder-slate-400 shadow-2xs"
                               disabled={submitStatus === 'loading'}
                             />
                           </div>
@@ -326,7 +326,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                               placeholder="Ex: +244 9xx xxx xxx"
                               value={formData.phone}
                               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-sans focus:outline-none focus:border-[#C89B3C] focus:bg-white transition-colors text-slate-900 placeholder-slate-400 shadow-2xs"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-sans focus:outline-none focus:border-[#A16207] focus:bg-white transition-colors text-slate-900 placeholder-slate-400 shadow-2xs"
                               disabled={submitStatus === 'loading'}
                             />
                           </div>
@@ -342,7 +342,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                             id="subject-select"
                             value={formData.subject}
                             onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-sans focus:outline-none focus:border-[#C89B3C] focus:bg-white transition-colors text-slate-900 shadow-2xs"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-sans focus:outline-none focus:border-[#A16207] focus:bg-white transition-colors text-slate-900 shadow-2xs"
                             disabled={submitStatus === 'loading'}
                           >
                             <option value="Geral">Informações Gerais de Cursos</option>
@@ -364,14 +364,14 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                             placeholder="Escreva sua pretensão letiva detalhada, número de participantes ou dúvidas de grade..."
                             value={formData.message}
                             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-sans focus:outline-none focus:border-[#C89B3C] focus:bg-white transition-colors text-slate-900 placeholder-slate-400 resize-none shadow-2xs"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-sans focus:outline-none focus:border-[#A16207] focus:bg-white transition-colors text-slate-900 placeholder-slate-400 resize-none shadow-2xs"
                             disabled={submitStatus === 'loading'}
                           />
                         </div>
 
                         {/* Privacy / delivery note */}
                         <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 flex items-start gap-2.5 text-[10px] text-slate-500 leading-normal">
-                          <Mail size={14} className="text-[#C89B3C] mt-0.5 flex-shrink-0" />
+                          <Mail size={14} className="text-[#A16207] mt-0.5 flex-shrink-0" />
                           <span className="font-medium">
                             Ao submeter, a sua mensagem será preparada no seu próprio aplicativo de e-mail,
                             endereçada a <strong>{ACADEMY_EMAIL}</strong>. Nenhum dado é partilhado com terceiros.
@@ -387,7 +387,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                             speed="4s"
                             thickness={2}
                             className="w-full rounded-xl overflow-hidden cursor-pointer"
-                            innerClassName="relative z-1 w-full py-3.5 rounded-xl uppercase tracking-wider text-xs font-bold bg-[#0A2E5D] hover:bg-[#123C73] text-white flex items-center justify-center gap-2 disabled:opacity-50 transition-colors shadow-md"
+                            innerClassName="relative z-1 w-full py-3.5 rounded-xl uppercase tracking-wider text-xs font-bold bg-[#0B1629] hover:bg-[#16233A] text-white flex items-center justify-center gap-2 disabled:opacity-50 transition-colors shadow-md"
                           >
                             {submitStatus === 'loading' ? (
                               <>

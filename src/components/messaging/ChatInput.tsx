@@ -95,7 +95,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           type="submit"
           disabled={!inputText.trim()}
           aria-label={editingMessage ? 'Guardar edição' : 'Enviar mensagem'}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-gold-600 to-[#E2B755] text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-45"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-gold-600 to-[#CA8A04] text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-45"
         >
           {editingMessage ? <Check size={18} /> : <Send size={18} />}
         </button>

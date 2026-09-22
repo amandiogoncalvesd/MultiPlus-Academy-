@@ -123,7 +123,7 @@ export default function StudentCertificatesTab({
                 as="div"
                 speed="8s"
                 thickness={1.5}
-                color="#C89B3C"
+                color="#A16207"
                 className="rounded-3xl overflow-hidden shadow-xl"
                 innerClassName="bg-[#0e141f] p-6 text-left text-cream-100 flex flex-col justify-between min-h-[380px] w-full relative"
               >
@@ -192,7 +192,7 @@ export default function StudentCertificatesTab({
                   <button
                     onClick={() => triggerExport(cert.id, courseTitle)}
                     disabled={downloadingId !== null}
-                    className="px-4 py-2 bg-gradient-to-r from-gold-600 to-[#E2B755] hover:scale-105 active:scale-95 text-ink-900 rounded-xl text-3xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-0"
+                    className="px-4 py-2 bg-gradient-to-r from-gold-600 to-[#CA8A04] hover:scale-105 active:scale-95 text-ink-900 rounded-xl text-3xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-0"
                   >
                     {downloadingId === cert.id ? (
                       <span className="h-4.5 w-4.5 border-2 border-ink-900 border-t-transparent rounded-full animate-spin shrink-0" />

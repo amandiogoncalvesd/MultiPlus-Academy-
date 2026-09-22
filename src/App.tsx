@@ -216,10 +216,10 @@ export default function App() {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6, ease: 'easeInOut' }}
-            className="fixed inset-0 z-[9999] bg-[#0A2E5D] flex flex-col items-center justify-center text-white"
+            className="fixed inset-0 z-[9999] bg-[#0B1629] flex flex-col items-center justify-center text-white"
           >
             {/* Soft luxury ambient highlights */}
-            <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-[#C89B3C]/5 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-[#A16207]/5 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-sky-950/20 rounded-full blur-[150px] pointer-events-none" />
 
             <div className="relative z-10 flex flex-col items-center text-center space-y-6 max-w-md px-6">
@@ -230,7 +230,7 @@ export default function App() {
                 className="relative"
               >
                 {/* Visual shimmer background */}
-                <div className="absolute inset-0 bg-[#C89B3C]/10 rounded-full blur-xl animate-pulse" />
+                <div className="absolute inset-0 bg-[#A16207]/10 rounded-full blur-xl animate-pulse" />
                 <img
                   src="/brand/multiplus-academy-logo-original.png"
                   alt="MultiPlus Academy"
@@ -243,7 +243,7 @@ export default function App() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.6 }}
-                  className="text-lg font-serif font-black tracking-wider text-[#C89B3C] uppercase"
+                  className="text-lg font-serif font-black tracking-wider text-[#A16207] uppercase"
                 >
                   MultiPlus Academy
                 </motion.h2>
@@ -251,7 +251,7 @@ export default function App() {
                   initial={{ width: 0 }}
                   animate={{ width: '40px' }}
                   transition={{ delay: 0.7, duration: 0.5 }}
-                  className="h-0.5 bg-[#C89B3C] mx-auto rounded"
+                  className="h-0.5 bg-[#A16207] mx-auto rounded"
                 />
                 <motion.p
                   initial={{ opacity: 0, y: 10 }}
@@ -274,7 +274,7 @@ export default function App() {
                   initial={{ left: '-100%' }}
                   animate={{ left: '100%' }}
                   transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
-                  className="absolute top-0 bottom-0 bg-[#C89B3C] w-1/2 rounded-full"
+                  className="absolute top-0 bottom-0 bg-[#A16207] w-1/2 rounded-full"
                 />
               </motion.div>
             </div>
@@ -335,26 +335,26 @@ export default function App() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.93, opacity: 0, y: 20 }}
               transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.5 }}
-              className="relative w-full max-w-xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-[#C89B3C]/40 text-left shadow-[#C89B3C]/10"
+              className="relative w-full max-w-xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-[#A16207]/40 text-left shadow-[#A16207]/10"
             >
               {/* Premium golden visual bar */}
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#C89B3C] via-[#E2B755] to-[#C89B3C]" />
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#A16207] via-[#CA8A04] to-[#A16207]" />
 
-              <div className="bg-gradient-to-b from-[#0A2E5D] to-[#08254c] text-white p-6 sm:p-8 relative pt-8">
+              <div className="bg-gradient-to-b from-[#0B1629] to-[#101827] text-white p-6 sm:p-8 relative pt-8">
                 <button
                   onClick={closeSignUpModal}
-                  className="absolute right-6 top-8 p-2 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/15 transition-all focus:outline-none focus:ring-2 focus:ring-[#C89B3C]"
+                  className="absolute right-6 top-8 p-2 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/15 transition-all focus:outline-none focus:ring-2 focus:ring-[#A16207]"
                   aria-label="Voltar"
                 >
                   <X size={15} />
                 </button>
 
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-white/10 rounded-xl text-[#C89B3C] border border-white/10 shadow-inner">
+                  <div className="p-2.5 bg-white/10 rounded-xl text-[#A16207] border border-white/10 shadow-inner">
                     <GraduationCap size={20} className="animate-pulse" />
                   </div>
                   <div>
-                    <span className="text-[9px] font-mono tracking-widest text-[#C89B3C] uppercase block font-semibold">Admissão Académica</span>
+                    <span className="text-[9px] font-mono tracking-widest text-[#A16207] uppercase block font-semibold">Admissão Académica</span>
                     <h3 className="text-lg sm:text-xl font-serif font-bold text-white m-0">Formulário de Candidatura</h3>
                   </div>
                 </div>
@@ -376,30 +376,30 @@ export default function App() {
                       </div>
                       
                       <div className="space-y-2">
-                        <h4 className="text-xl font-serif font-bold text-[#0A2E5D]">Candidatura Pré-Registada!</h4>
+                        <h4 className="text-xl font-serif font-bold text-[#0B1629]">Candidatura Pré-Registada!</h4>
                         <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
                           Estimado(a) formando(a), registámos com sucesso o seu pedido de interesse letivo para o curso <strong>{courses.find(c => c.id === signUpCourse)?.titulo || 'Curso Selecionado'}</strong>.
                         </p>
                       </div>
 
-                      <div className="p-5 bg-[#0A2E5D]/5 rounded-2xl border border-[#0A2E5D]/10 inline-block text-left text-xs text-slate-600 space-y-2.5 max-w-sm shadow-xs">
-                        <p className="font-semibold text-[#0A2E5D] flex items-center gap-1.5 border-b border-[#0A2E5D]/10 pb-2">
-                          <Award size={15} className="text-[#C89B3C]" />
+                      <div className="p-5 bg-[#0B1629]/5 rounded-2xl border border-[#0B1629]/10 inline-block text-left text-xs text-slate-600 space-y-2.5 max-w-sm shadow-xs">
+                        <p className="font-semibold text-[#0B1629] flex items-center gap-1.5 border-b border-[#0B1629]/10 pb-2">
+                          <Award size={15} className="text-[#A16207]" />
                           Próximos Passos:
                         </p>
                         <p className="flex items-start gap-1.5">
-                          <span className="font-bold text-[#0A2E5D] shrink-0">1.</span>
+                          <span className="font-bold text-[#0B1629] shrink-0">1.</span>
                           <span>
                             A secretaria da MultiPlus Academy foi notificada automaticamente por e-mail com os
                             seus dados e verá a sua candidatura no painel administrativo.
                           </span>
                         </p>
                         <p className="flex items-start gap-1.5">
-                          <span className="font-bold text-[#0A2E5D] shrink-0">2.</span>
+                          <span className="font-bold text-[#0B1629] shrink-0">2.</span>
                           <span>A nossa secretaria letiva entrará em contacto para agendamento de entrevista de nivelamento linguístico oral.</span>
                         </p>
                         <p className="flex items-start gap-1.5">
-                          <span className="font-bold text-[#0A2E5D] shrink-0">3.</span>
+                          <span className="font-bold text-[#0B1629] shrink-0">3.</span>
                           <span>Envio da guia de confirmação de vaga e ementa do workshop programático.</span>
                         </p>
                       </div>
@@ -407,7 +407,7 @@ export default function App() {
                       <div className="pt-4">
                         <button
                           onClick={closeSignUpModal}
-                          className="w-full sm:w-auto px-10 py-3 bg-[#0A2E5D] text-white hover:bg-[#123C73] text-xs font-mono uppercase tracking-widest font-bold rounded-xl shadow-lg shadow-blue-900/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                          className="w-full sm:w-auto px-10 py-3 bg-[#0B1629] text-white hover:bg-[#16233A] text-xs font-mono uppercase tracking-widest font-bold rounded-xl shadow-lg shadow-blue-900/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
                         >
                           Concluir e Fechar
                         </button>
@@ -520,7 +520,7 @@ export default function App() {
                               onClick={() => setSignUpModality(mod)}
                               className={`py-3 text-center rounded-xl border text-xs font-semibold tracking-wide transition-all ${
                                 signUpModality === mod
-                                  ? 'bg-[#0A2E5D]/5 text-[#0A2E5D] border-[#C89B3C]/60 shadow-xs'
+                                  ? 'bg-[#0B1629]/5 text-[#0B1629] border-[#A16207]/60 shadow-xs'
                                   : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
                               }`}
                               disabled={loading}
@@ -539,7 +539,7 @@ export default function App() {
                         <button
                           type="submit"
                           disabled={loading}
-                          className="w-full py-4 bg-[#C89B3C] text-white rounded-xl uppercase tracking-widest text-xs font-bold neo-button-gold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-lg shadow-[#C89B3C]/10 hover:scale-[1.01] active:scale-[0.99]"
+                          className="w-full py-4 bg-[#A16207] text-white rounded-xl uppercase tracking-widest text-xs font-bold neo-button-gold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-lg shadow-[#A16207]/10 hover:scale-[1.01] active:scale-[0.99]"
                         >
                           {loading ? (
                             <>

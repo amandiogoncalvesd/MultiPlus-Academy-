@@ -247,7 +247,7 @@ export default function StudentTasksTab({ userId }: StudentTasksTabProps) {
                       VALOR: {task.points} PONTOS
                     </span>
                     {task.status === 'PENDING' && (
-                      <span className="text-[9px] font-mono text-amber-600 dark:text-[#E2B755] font-bold">
+                      <span className="text-[9px] font-mono text-amber-600 dark:text-[#CA8A04] font-bold">
                         {task.dueDate ? `PRAZO: ${task.dueDate}` : 'Sem prazo definido'}
                       </span>
                     )}
@@ -355,7 +355,7 @@ export default function StudentTasksTab({ userId }: StudentTasksTabProps) {
             <button
               onClick={handleSubmitTask}
               disabled={!fileToUpload || successAnimation}
-              className="w-full py-2.5 bg-gradient-to-r from-gold-600 to-[#E2B755] text-cream-100 hover:scale-[1.02] active:scale-95 disabled:opacity-40 rounded-xl text-2xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-0 relative z-10"
+              className="w-full py-2.5 bg-gradient-to-r from-gold-600 to-[#CA8A04] text-cream-100 hover:scale-[1.02] active:scale-95 disabled:opacity-40 rounded-xl text-2xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer border-0 relative z-10"
             >
               {successAnimation ? (
                 <>

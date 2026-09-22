@@ -84,7 +84,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
             className="w-full rounded-3xl overflow-hidden shadow-sm"
             innerClassName="relative z-1 p-8 sm:p-10 rounded-3xl bg-white w-full border border-slate-200"
           >
-            <div className="absolute top-0 left-0 w-full h-1 bg-[#C89B3C]" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-[#A16207]" />
             
             <div className="space-y-6 text-left">
               <div className="flex flex-col items-center text-center pb-4 border-b border-slate-100">
@@ -93,7 +93,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
                   alt="MultiPlus Academy"
                   className="h-20 w-auto object-contain rounded-xl mb-4 p-1 border border-slate-200 bg-white"
                 />
-                <span className="text-[10px] font-mono tracking-widest text-[#C89B3C] uppercase block mb-1 font-bold">Acesso Restrito</span>
+                <span className="text-[10px] font-mono tracking-widest text-[#A16207] uppercase block mb-1 font-bold">Acesso Restrito</span>
                 <h1 className="text-2xl font-serif font-black text-slate-900 leading-tight m-0">
                   {isRegister ? 'Criar Conta Académica' : 'Área de Membros'}
                 </h1>
@@ -116,7 +116,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
                         placeholder="António"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-sans focus:outline-none focus:border-[#C89B3C] focus:bg-white text-slate-900 placeholder-slate-400 shadow-2xs"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-sans focus:outline-none focus:border-[#A16207] focus:bg-white text-slate-900 placeholder-slate-400 shadow-2xs"
                       />
                     </div>
                     <div>
@@ -127,7 +127,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
                         placeholder="Carvalho"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-sans focus:outline-none focus:border-[#C89B3C] focus:bg-white text-slate-900 placeholder-slate-400 shadow-2xs"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-sans focus:outline-none focus:border-[#A16207] focus:bg-white text-slate-900 placeholder-slate-400 shadow-2xs"
                       />
                     </div>
                   </div>
@@ -143,7 +143,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
                       placeholder="seu.email@gabinete.ao"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs font-sans focus:outline-none focus:border-[#C89B3C] focus:bg-white text-slate-900 placeholder-slate-400 shadow-2xs"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs font-sans focus:outline-none focus:border-[#A16207] focus:bg-white text-slate-900 placeholder-slate-400 shadow-2xs"
                     />
                   </div>
                 </div>
@@ -158,7 +158,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
                       placeholder="Senha do portal"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs font-sans focus:outline-none focus:border-[#C89B3C] focus:bg-white text-slate-900 placeholder-slate-400 shadow-2xs"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs font-sans focus:outline-none focus:border-[#A16207] focus:bg-white text-slate-900 placeholder-slate-400 shadow-2xs"
                     />
                   </div>
                 </div>
@@ -172,7 +172,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
                         placeholder="+244 9xx xxx xxx"
                         value={mobilePhone}
                         onChange={(e) => setMobilePhone(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-sans focus:outline-none focus:border-[#C89B3C] focus:bg-white text-slate-900 placeholder-slate-400 shadow-2xs"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-sans focus:outline-none focus:border-[#A16207] focus:bg-white text-slate-900 placeholder-slate-400 shadow-2xs"
                       />
                     </div>
                     <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5">
@@ -191,7 +191,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
                     speed="4s"
                     thickness={2}
                     className="w-full rounded-xl overflow-hidden cursor-pointer shadow-md"
-                    innerClassName="relative z-1 w-full py-3.5 bg-[#0A2E5D] hover:bg-[#123C73] text-white text-xs font-mono font-bold uppercase rounded-xl tracking-wider flex items-center justify-center gap-2"
+                    innerClassName="relative z-1 w-full py-3.5 bg-[#0B1629] hover:bg-[#16233A] text-white text-xs font-mono font-bold uppercase rounded-xl tracking-wider flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <>
@@ -215,7 +215,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
                 </span>
                 <button
                   onClick={() => setIsRegister(!isRegister)}
-                  className="font-mono uppercase font-bold text-[#C89B3C] hover:underline cursor-pointer bg-transparent border-none p-0"
+                  className="font-mono uppercase font-bold text-[#A16207] hover:underline cursor-pointer bg-transparent border-none p-0"
                 >
                   {isRegister ? 'Inicie Sessão' : 'Registar Conta'}
                 </button>
@@ -228,7 +228,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
         {/* Right Column: Informação Institucional */}
         <div className="lg:col-span-6 flex flex-col justify-center space-y-6">
           <div className="space-y-3">
-            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#C89B3C] block">Portal Académico</span>
+            <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207] block">Portal Académico</span>
             <h2 className="text-3xl font-serif font-black text-slate-900 leading-tight m-0">MultiPlus Academy LMS</h2>
             <p className="text-sm text-slate-600 leading-relaxed font-sans m-0 font-medium">
               O portal institucional de ensino letivo para juristas e profissionais de elite em Angola. Através de uma autenticação robusta integrada ao Supabase, garantimos privacidade de dados e conformidade pedagógica total.
@@ -240,17 +240,17 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
               {
                 title: 'Acompanhamento de Elite',
                 desc: 'Acompanhe as suas aulas assistidas, faça anotações em tempo real e descarregue materiais exclusivos anexados.',
-                icon: <GraduationCap size={18} className="text-[#C89B3C]" />
+                icon: <GraduationCap size={18} className="text-[#A16207]" />
               },
               {
                 title: 'Secretaria Digital',
                 desc: 'Gerencie o seu histórico escolar, consulte as ementas dos cursos e comprove as suas notas diretamente online.',
-                icon: <FileCheck size={18} className="text-[#C89B3C]" />
+                icon: <FileCheck size={18} className="text-[#A16207]" />
               },
               {
                 title: 'Certificados Verificáveis',
                 desc: 'Ao concluir as disciplinas, obtenha certificados com código único de validação e verificação criptográfica por QR Code.',
-                icon: <ShieldCheck size={18} className="text-[#C89B3C]" />
+                icon: <ShieldCheck size={18} className="text-[#A16207]" />
               }
             ].map((feature, idx) => (
               <StarBorder
@@ -261,7 +261,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
                 className="rounded-2xl overflow-hidden shadow-3xs text-left"
                 innerClassName="relative z-1 bg-white p-5 rounded-2xl flex items-start gap-4 w-full h-full text-left"
               >
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex-shrink-0 text-[#C89B3C]">
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex-shrink-0 text-[#A16207]">
                   {feature.icon}
                 </div>
                 <div className="space-y-1">
@@ -279,7 +279,7 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
             className="rounded-2xl overflow-hidden"
             innerClassName="relative z-1 p-4 bg-slate-50 rounded-2xl flex items-start gap-2.5 text-xs text-slate-500 leading-normal text-left w-full"
           >
-            <Key size={14} className="text-[#C89B3C] mt-0.5 flex-shrink-0" />
+            <Key size={14} className="text-[#A16207] mt-0.5 flex-shrink-0" />
             <span className="font-medium">
               <strong>Padrão de Segurança Estrito:</strong> A plataforma utiliza criptografia ponta a ponta e Row Level Security (RLS) PostgreSQL para manter os dados de estudantes e formadores 100% privados e em conformidade corporativa.
             </span>
