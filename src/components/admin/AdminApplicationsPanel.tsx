@@ -44,12 +44,34 @@ export default function AdminApplicationsPanel({ onRegisterApplicant, onPendingC
     let active = true;
     (async () => {
       try {
-        const rows = await listApplications();
+        setLoading(true);
+        const { data, error } = await supabase.functions.invoke('get-applications', { body: {} });
+        if (error) throw error;
+        if (!Array.isArray(data)) throw new Error('Resposta inesperada');
+        const mapped: any[] = data.map((r: any) => ({
+          id: r.id,
+          nome_completo: r.nome_completo,
+          email: r.email,
+          telefone: r.telefone,
+          course_id: r.course_id,
+          modalidade: r.modalidade,
+          status: r.status,
+          created_at: r.created_at,
+          updated_at: r.updated_at,
+          courses: r.courses ? { titulo: r.courses.titulo } : null,
+        }));
         if (!active) return;
-        setApplications(rows);
-        onPendingCount(rows.filter((a) => a.status === 'PENDING').length);
+        setApplications(mapped);
+        onPendingCount(mapped.filter((a: any) => a.status === 'PENDING').length);
       } catch {
-        if (active) toast.error('Não foi possível carregar as candidaturas.');
+        try {
+          const rows = await listApplications();
+          if (!active) return;
+          setApplications(rows);
+          onPendingCount(rows.filter((a) => a.status === 'PENDING').length);
+        } catch {
+          if (active) toast.error('Nao foi possivel carregar as candidaturas.');
+        }
       } finally {
         if (active) setLoading(false);
       }
