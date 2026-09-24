@@ -70,6 +70,7 @@ export default function ChatShell({ role }: ChatShellProps) {
   const [activePartner, setActivePartner] = useState<ChatPartner | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
+  const [attachments, setAttachments] = useState<File[]>([]);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [showNewModal, setShowNewModal] = useState(false);
@@ -117,6 +118,7 @@ export default function ChatShell({ role }: ChatShellProps) {
         status: replyToMsg.lido ? 'READ' : 'SENT'
       } as ChatMessage : null,
       status: dbMsg.status as any || (dbMsg.lido ? 'READ' : 'SENT'),
+      media: (dbMsg as any).chat_media || null,
       reactions: JSON.parse(localStorage.getItem(`local_reactions_${dbMsg.id}`) || '[]')
     };
   }, []);
@@ -327,13 +329,15 @@ export default function ChatShell({ role }: ChatShellProps) {
   };
 
   // Handle Send or edit Message
-  const handleSend = async (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent, files?: File[]) => {
     e.preventDefault();
-    if (!user?.id || !activePartner || !inputText.trim() || sending) return;
+    const pendingAttachments = files ?? attachments;
+    if (!user?.id || !activePartner || (!inputText.trim() && pendingAttachments.length === 0) || sending) return;
 
     setSending(true);
     const textToSend = inputText.trim();
     setInputText('');
+    setAttachments([]);
 
     // Stop writing broadcast immediately
     if (typingTimeoutRef.current) {
@@ -353,12 +357,13 @@ export default function ChatShell({ role }: ChatShellProps) {
         );
         setEditingMessage(null);
       } else {
-        const responseMsg = await messageService.sendMessage(
-          user.id,
-          activePartner.id,
-          textToSend,
-          replyingToMessage?.id || undefined
-        );
+        const responseMsg = await messageService.sendMessage({
+          senderId: user.id,
+          receiverId: activePartner.id,
+          texto: textToSend,
+          replyToMessageId: replyingToMessage?.id || undefined,
+          attachments: pendingAttachments.length ? pendingAttachments : undefined,
+        });
         
         // Map response DBMessage to rich ChatMessage
         const mapped = mapDBMessageToChatMessage(responseMsg, messages as any);
@@ -377,6 +382,7 @@ export default function ChatShell({ role }: ChatShellProps) {
     } catch (err: any) {
       console.error('Error in handleSend:', err);
       setInputText(textToSend); // restore draft
+      setAttachments(pendingAttachments);
     } finally {
       setSending(false);
     }
@@ -528,6 +534,8 @@ export default function ChatShell({ role }: ChatShellProps) {
               inputText={inputText}
               onInputChange={setInputText}
               onSubmit={handleSend}
+              attachments={attachments}
+              onAttachmentsChange={setAttachments}
               editingMessage={editingMessage}
               onCancelEdit={() => {
                 setEditingMessage(null);

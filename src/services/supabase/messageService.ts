@@ -70,7 +70,7 @@ export const messageService = {
     try {
       let query = supabase
         .from('messages')
-        .select('*')
+        .select('*, chat_media(*)')
         .or(`and(sender_id.eq.${userId},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${userId})`)
         .order('created_at', { ascending: false })
         .limit(limit);

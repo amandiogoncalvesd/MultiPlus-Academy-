@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Reply, Edit2, Trash2, Check, CheckCheck, Clock, AlertCircle, Smile
+  Reply, Edit2, Trash2, Check, CheckCheck, Clock, AlertCircle, Smile, FileText
 } from 'lucide-react';
 import { ChatMessage, ChatTheme } from '../../types/chat.types';
 
@@ -101,6 +101,32 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({
             <p className="leading-snug break-words whitespace-pre-line m-0 text-xs sm:text-[13px]">
               {message.text}
             </p>
+          )}
+
+          {/* Attachments */}
+          {message.media && message.media.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {message.media.map((mediaItem) => (
+                <div key={mediaItem.id} className="rounded-xl border border-gray-150 overflow-hidden max-w-48 bg-white dark:bg-ink-900 shadow-xs">
+                  {mediaItem.fileType === 'image' ? (
+                    <a href={mediaItem.url} target="_blank" rel="noopener noreferrer" aria-label={`Abrir imagem: ${mediaItem.fileName}`} className="block">
+                      <img src={mediaItem.url} alt={mediaItem.fileName} className="h-28 w-full object-cover hover:scale-[1.02] transition-transform duration-300" />
+                    </a>
+                  ) : mediaItem.fileType === 'video' ? (
+                    <a href={mediaItem.url} target="_blank" rel="noopener noreferrer" aria-label={`Abrir vídeo: ${mediaItem.fileName}`} className="group flex h-20 items-center justify-center bg-slate-900 relative">
+                      <video src={mediaItem.url} preload="metadata" className="h-20 w-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
+                      <span className="absolute rounded-full bg-white/20 text-white text-[9px] font-bold px-2 py-0.5 backdrop-blur-sm">VÍDEO</span>
+                    </a>
+                  ) : (
+                    <a href={mediaItem.url} target="_blank" rel="noopener noreferrer" aria-label={`Abrir documento: ${mediaItem.fileName}`} className="flex items-center gap-2 px-3 py-2.5 text-xs text-ink-900 dark:text-cream-100 hover:underline">
+                      <FileText size={14} className="text-gold-600 shrink-0" />
+                      <span className="truncate">{mediaItem.fileName}</span>
+                      <span className="text-[9px] text-neutral-400">({(mediaItem.fileSize / 1024).toFixed(0)} KB)</span>
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
 
           {/* Timestamp and status details row */}
