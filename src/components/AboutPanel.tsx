@@ -167,7 +167,7 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
                 </div>
                 <h3 className="text-2xl font-serif font-bold text-slate-900">Nossa Visão</h3>
                 <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                  Ser reconhecida no mercado de Angola e das Nações de Expressão Portuguesa como a instituição de elite de referência máxima no ensino especializado de linguística aplicada ao direito comparado, estendendo a nossa operação para um sistema integrado de ensino LMS no futuro.
+                  Ser referência no ensino especializado de inglês para as áreas jurídica e corporativa em Angola e nos países de expressão portuguesa, com um sistema LMS integrado.
                 </p>
               </div>
             </StarBorder>
@@ -227,7 +227,7 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
               <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207] block">Estratégia e Conexões Transnacionais</span>
               <h3 className="text-3xl sm:text-4xl font-serif font-black tracking-tight text-white leading-tight m-0">Nossas Pontes com os Grandes Hubs Globais</h3>
               <p className="text-sm text-slate-400 font-sans leading-relaxed m-0">
-                A prática jurídica de elite em Angola não ocorre isoladamente. Ao dominar as estruturas linguísticas do inglês jurídico, o profissional de Angola ganha autoridade direta perante clientes e investidores sediados nos maiores polos corporativos mundiais.
+                O domínio do inglês jurídico aproxima os profissionais angolanos de clientes e investidores internacionais — ensinamos com materiais e casos de prática real.
               </p>
 
               <div className="space-y-4 pt-4 border-t border-slate-800">
@@ -293,7 +293,7 @@ export default function AboutPanel({ setCurrentPage }: AboutPanelProps) {
                   <h4 className="text-xl font-serif font-bold text-slate-900">{MAIN_INSTRUCTOR.name}</h4>
                   <p className="text-xs text-[#A16207] font-bold tracking-wide uppercase font-mono mt-1">Diretora Pedagógica & Tradutora ATIA</p>
                   <p className="text-xs text-slate-600 font-sans mt-3 leading-relaxed">
-                    Com mais de 15 anos ensinando em renomadas instituições como FISK e ISCED, coordena as diretrizes científicas do curso de elite de Legal English em Angola.
+                    Com mais de 15 anos de ensino em instituições como FISK e ISCED, coordena as diretrizes académicas do curso de Legal English.
                   </p>
                 </div>
 

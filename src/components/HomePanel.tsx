@@ -2,9 +2,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { PRINCIPAL_COURSE, MAIN_INSTRUCTOR, BLOG_POSTS } from '../data';
 import { PageId } from '../types';
 import StarBorder from './ui/StarBorder';
-import TextType from './ui/TextType';
+// Texto do herói estático (a tese, sem efeito datilográfico) — A2.
 import Carousel from './ui/Carousel';
-import { GlobeInteractive } from './ui/cobe-globe-interactive';
+
 import { 
   Award, 
   Clock, 
@@ -93,7 +93,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
     <div id="home-panel-root" className="bg-white text-[#1C1C1C] overflow-x-hidden font-sans">
       
       {/* 1. HERO SECTION — pt reduced since App.tsx provides 64px for fixed navbar */}
-      <section className="relative min-h-[calc(100dvh-64px)] bg-white text-slate-800 flex items-center pt-16 pb-20 overflow-hidden border-b border-slate-200/50">
+      <section className="relative min-h-[calc(100dvh-64px)] bg-white text-slate-800 flex items-center pt-16 pb-14 overflow-hidden border-b border-slate-200/50">
         
         {/* Subtle, luxurious ambient background gradients */}
         <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[70%] bg-gradient-to-br from-[#A16207]/10 to-transparent rounded-full blur-[160px] pointer-events-none" />
@@ -112,8 +112,8 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 transition={{ duration: 0.6 }}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-[#0B1629]/5 border border-[#A16207]/15 rounded-full text-xs font-mono text-[#A16207] font-semibold tracking-widest uppercase"
               >
-                <span className="flex h-2 w-2 rounded-full bg-[#A16207] animate-pulse"></span>
-                Portal Institucional Oficial • MultiPlus Academy
+                <span className="flex h-2 w-2 rounded-full bg-[#A16207]"></span>
+                Huambo · Angola — Inglês profissional e jurídico
               </motion.div>
 
               <div className="space-y-4">
@@ -125,19 +125,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 >
                   Transformando <br />
                   Competências em <br />
-                  <span className="inline-block min-h-[1.2em]">
-                    <TextType
-                      as="span"
-                      text={["Oportunidades.", "Resultados.", "Sucesso.", "Liderança."]}
-                      typingSpeed={80}
-                      deletingSpeed={40}
-                      pauseDuration={2500}
-                      showCursor={true}
-                      cursorCharacter="|"
-                      className="text-transparent bg-clip-text bg-gradient-to-r from-[#A16207] to-[#CA8A04]"
-                      cursorClassName="text-[#A16207] font-sans ml-1 text-3xl sm:text-4xl lg:text-5xl"
-                    />
-                  </span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#A16207] to-[#CA8A04]">Oportunidades.</span>
                 </motion.h1>
                 
                 <motion.p
@@ -180,28 +168,6 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                   innerClassName="px-8 py-4 text-sm font-bold tracking-wider uppercase transition-all duration-300 text-center text-[#0B1629] bg-[#0B1629]/5 hover:bg-[#0B1629]/10 w-full"
                 >
                   Saber Mais
-                </StarBorder>
-              </motion.div>
-
-              {/* Interactive Cobe Globe Component */}
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.4 }}
-                className="pt-6 pb-6 flex justify-center lg:justify-start"
-              >
-                {/* Globe Canvas Container showing ONLY the globe */}
-                <StarBorder
-                  as="div"
-                  speed="8s"
-                  thickness={2}
-                  className="rounded-full overflow-hidden shadow-lg"
-                  innerClassName="w-full max-w-[360px] sm:max-w-[420px] aspect-square flex-shrink-0 flex items-center justify-center bg-slate-900 p-4 relative overflow-hidden"
-                >
-                  <GlobeInteractive 
-                    speed={0.005}
-                    className="w-full h-full"
-                  />
                 </StarBorder>
               </motion.div>
 
@@ -484,7 +450,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                 </div>
                 <h4 className="text-lg font-serif font-bold text-slate-900 m-0">Nossa Visão</h4>
                 <p className="text-xs text-[#1C1C1C]/70 leading-relaxed font-sans m-0">
-                  Ser tida como a academia de elite mais inovadora e respeitada de ensino técnico e geral de Inglês em Angola, expandindo continuamente a nossa oferta curricular com tecnologia LMS premium.
+                  Ser a academia de referência no ensino técnico e geral de inglês em Angola, com oferta curricular apoiada em tecnologia LMS.
                 </p>
               </div>
             </StarBorder>
@@ -1191,7 +1157,7 @@ export default function HomePanel({ setCurrentPage, onOpenSignUp }: HomePanelPro
                       <span className="text-[7.5px] font-mono font-black text-[#A16207] block tracking-widest uppercase">Rede Académica Global</span>
                       <h4 className="text-xs font-serif font-black text-slate-900 mt-1 leading-normal m-0 mb-0.5">Sede Central do Huambo</h4>
                       <p className="text-[9px] text-slate-600 leading-relaxed font-sans mt-0.5 m-0">
-                        Capacitação linguística de elite conectando profissionais angolanos aos principais centros jurídicos, energéticos e comerciais mundiais.
+                        Capacitação linguística que conecta profissionais angolanos aos principais centros jurídicos e comerciais internacionais.
                       </p>
                     </StarBorder>
 

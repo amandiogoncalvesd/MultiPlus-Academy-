@@ -196,12 +196,12 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
                     {loading ? (
                       <>
                         <RefreshCw size={14} className="animate-spin" />
-                        A Autenticar no Supabase Auth...
+                        A autenticar…
                       </>
                     ) : (
                       <>
                         {isRegister ? <UserPlus size={14} /> : <UserCheck size={14} />}
-                        {isRegister ? 'Criar Conta de Membro' : 'Aceder à Minha Vaga'}
+                        {isRegister ? 'Criar conta de estudante' : 'Entrar no portal'}
                       </>
                     )}
                   </StarBorder>
@@ -231,14 +231,14 @@ export default function LoginPanel({ setCurrentPage }: LoginPanelProps) {
             <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207] block">Portal Académico</span>
             <h2 className="text-3xl font-serif font-black text-slate-900 leading-tight m-0">MultiPlus Academy LMS</h2>
             <p className="text-sm text-slate-600 leading-relaxed font-sans m-0 font-medium">
-              O portal institucional de ensino letivo para juristas e profissionais de elite em Angola. Através de uma autenticação robusta integrada ao Supabase, garantimos privacidade de dados e conformidade pedagógica total.
+              O portal académico da MultiPlus Academy: aulas agendadas, materiais, notas, presença e certificados num só lugar, com autenticação segura.
             </p>
           </div>
 
           <div className="space-y-4">
             {[
               {
-                title: 'Acompanhamento de Elite',
+                title: 'Acompanhamento contínuo',
                 desc: 'Acompanhe as suas aulas assistidas, faça anotações em tempo real e descarregue materiais exclusivos anexados.',
                 icon: <GraduationCap size={18} className="text-[#A16207]" />
               },

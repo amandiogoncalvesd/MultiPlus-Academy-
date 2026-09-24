@@ -63,7 +63,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
               {
                 number: 'MÊS II',
                 title: 'Prática de Drafting',
-                topics: ['Redação de Cláusulas Contratuais de elite', 'Resolução de disputas internacionais']
+                topics: ['Redação de cláusulas contratuais', 'Resolução de disputas internacionais']
               }
             ]
           }));
@@ -97,16 +97,16 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
   });
 
   return (
-    <div id="courses-panel-root" className="bg-white text-slate-800 pt-10 pb-16">
-      
+    <div id="courses-panel-root" className="bg-white text-slate-800 pt-16 pb-16">
+
       {/* Banner design */}
-      <section className="py-16 bg-slate-50 text-slate-900 overflow-hidden relative border-b border-slate-200">
+      <section className="py-10 bg-[#FAFAF9] text-slate-900 overflow-hidden relative border-b border-slate-200">
         <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(to_right,#A16207_1px,transparent_1px)] bg-[size:30px_30px]" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-3">
           <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207]">Catálogo Académico</span>
-          <h1 className="text-4xl font-serif font-black tracking-tight text-slate-900 m-0">Formações Especializadas de Alta Carreira</h1>
+          <h1 className="text-3xl sm:text-4xl font-serif font-black tracking-tight text-slate-900 m-0">Inglês profissional e jurídico</h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
-            Consulte a nossa trilha curricular desenhada para cobrir as exigências legislativas, aduaneiras e corporativas do mercado soberano de Angola.
+            Trilha curricular híbrida — presencial no Huambo e online — do nível inicial à proficiência CEFR.
           </p>
         </div>
       </section>
@@ -192,7 +192,7 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
       </section>
 
       {/* Grid of Course Cards */}
-      <section className="py-20 bg-white">
+      <section className="pt-10 pb-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <AnimatePresence mode="popLayout">
@@ -205,8 +205,6 @@ export default function CoursesPanel({ setCurrentPage, onOpenSignUp }: CoursesPa
                   <motion.div
                     layout
                     key={course.id}
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.98 }}
                     transition={{ duration: 0.4 }}
                     className="h-full"

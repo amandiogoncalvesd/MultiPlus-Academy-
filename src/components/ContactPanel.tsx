@@ -90,7 +90,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
           <span className="text-xs font-mono font-bold tracking-widest uppercase text-[#A16207]">Canais de Atendimento</span>
           <h1 className="text-4xl font-serif font-black tracking-tight mt-0 text-slate-900 leading-tight">Contacte a MultiPlus Academy</h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
-            Estamos integralmente à sua disposição para analisar o seu perfil académico e organizar o seu assento letivo coordenado.
+            Estamos disponíveis para esclarecer dúvidas e organizar a sua inscrição.
           </p>
         </div>
       </section>
@@ -107,7 +107,7 @@ export default function ContactPanel({ setCurrentPage }: ContactPanelProps) {
                 <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#A16207]">Canais Rápidos</span>
                 <h2 className="text-2xl sm:text-3xl font-serif font-black text-slate-900 leading-tight m-0">Canais Oficiais de Suporte</h2>
                 <p className="text-xs sm:text-sm text-slate-500 font-sans leading-relaxed m-0 font-medium">
-                  Para propostas académicas de cariz institucional, corporativa, licenciaturas de escritórios ou candidaturas de corpo docente, prefira nosso contacto expedito.
+                  Para propostas institucionais, formação corporativa ou candidaturas de docentes, use os contactos diretos.
                 </p>
               </div>
 
