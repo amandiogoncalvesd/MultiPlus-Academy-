@@ -21,6 +21,7 @@ import LoadingSpinner from './components/ui/LoadingSpinner';
 import AppExperiencePrompt from './components/ui/AppExperiencePrompt';
 
 const StudentPortal = lazy(() => import('./components/StudentPortal'));
+const DashboardComponentsDemo = lazy(() => import('./components/dashboard/DashboardComponentsDemo'));
 const InstructorPortal = lazy(() => import('./components/InstructorPortal'));
 const AdminPortal = lazy(() => import('./components/AdminPortal'));
 const MessagesPage = lazy(() => import('./components/MessagesPage'));
@@ -175,6 +176,7 @@ export default function App() {
             <AdminPortal setCurrentPage={setCurrentPage} />
           </ProtectedRoute>
         );
+      case 'demo': return <DashboardComponentsDemo />;
       case 'verify-certificate':
         return (
           <VerifyCertificatePanel 
